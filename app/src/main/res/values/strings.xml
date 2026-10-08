@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SongMeld</string>
+
+    <string name="songs_title">Songs</string>
+    <plurals name="song_count">
+        <item quantity="one">%d song on this device</item>
+        <item quantity="other">%d songs on this device</item>
+    </plurals>
+    <string name="search_songs_hint">Search songs, artists, albums</string>
+    <string name="clear_search">Clear search</string>
+
+    <string name="permission_music_title">Find your music</string>
+    <string name="permission_music_body">Allow SongMeld to read audio files so it can build your local music library. This permission is only used for music stored on your device.</string>
+    <string name="permission_allow_access">Allow music access</string>
+    <string name="permission_open_settings">Open app settings</string>
+    <string name="permission_privacy_note">You can change music access at any time in Android settings.</string>
+
+    <string name="loading_music">Looking for music…</string>
+    <string name="empty_library_title">No songs found</string>
+    <string name="empty_library_body">Add some audio files to your device and they’ll appear here.</string>
+    <string name="empty_search_title">No matches</string>
+    <string name="empty_search_body">Nothing matches “%1$s”. Try another title, artist, or album.</string>
+    <string name="load_error_title">Couldn’t load your music</string>
+    <string name="load_error_body">SongMeld ran into a problem while reading the local library.</string>
+    <string name="retry">Try again</string>
 </resources>
