@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 8–11 fallback. Wallpaper-derived palettes require Android 12+. -->
+    <color name="songmeld_launcher_background">#FFA069</color>
+    <color name="songmeld_launcher_foreground">#754428</color>
+</resources>
