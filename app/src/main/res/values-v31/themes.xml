@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: animate the badge as soon as the system paints its splash.
+         No static full-logo frame precedes the motion. -->
+    <style name="Theme.SongMeld.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/songmeld_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/songmeld_splash_animated</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.SongMeld</item>
+    </style>
+</resources>

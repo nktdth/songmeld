@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <!-- API 26-30: the animated Compose mark is the first visible logo. -->
+    <path android:fillColor="@android:color/transparent"
+        android:pathData="M0,0 H36 V36 H0 Z" />
+</vector>
