@@ -15,8 +15,9 @@ Splash and launcher icons read the same Android resources:
   warm neutral on older Android and wallpaper-derived `system_neutral1_*`
   on Android 12+.
 
-The checked-in `branding/songmeld-logo.svg` is **unchanged**. These are
-runtime colors, not edits to the official static branding file.
+The canonical SVG keeps its purple/white artwork, but now has the optical
+centering baked into the note path. README displays its own orange/brown
+SVG variant. Runtime Android colors still use the resources above.
 
 ## Startup without the static-then-rotating jump
 
@@ -59,7 +60,8 @@ configuration recreation. See AndroidX `core-splashscreen` platform limitations.
 
 ## Brand ownership
 
-The path data comes from the checked-in brand SVG; if the brand is redesigned,
-update both `SongMeldSplashIntro.kt` and the animated-vector base shape and
-recompute compatible morph end points. The existing launcher and full logo
-assets are otherwise unchanged.
+The source SVG contains the already-corrected note geometry; no splash-only
+translation is applied. When editing `branding/songmeld-logo.svg`, run
+`python3 tools/sync_branding.py` to update all vector paths, the Compose
+outer shape, and the animated-vector morph start shape. Changing the outer
+badge also requires manually regenerating a compatible morph target (`valueTo`).

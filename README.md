@@ -1,6 +1,6 @@
 # SongMeld
 
-<img src="branding/songmeld-logo.svg" alt="SongMeld logo" width="96" />
+<img src="branding/songmeld-logo-orange.svg" alt="SongMeld orange logo" width="96" />
 
 SongMeld is a modern open-source Android music toolbox built with
 Kotlin, Jetpack Compose, and Material 3.
@@ -14,7 +14,7 @@ Features and APIs may change frequently during early development.
 
 ## Branding
 
-The [full logo](branding/songmeld-logo.svg) and the [standalone music/wrench mark](branding/songmeld-mark.svg) are maintained separately. Android uses the standalone mark for its adaptive and themed launcher icons. See [branding guidelines](docs/branding.md).
+The README uses the [orange and dark brown logo](branding/songmeld-logo-orange.svg), matching SongMeld's Android 8–11 fallback palette (`#FFA069` and `#57331E`). The [full branding SVG](branding/songmeld-logo.svg) and [standalone music/wrench mark](branding/songmeld-mark.svg) share the same optically centered note geometry. Android 12+ uses wallpaper-based dynamic colors at runtime. See the [branding guidelines](docs/branding.md).
 
 ## License
 

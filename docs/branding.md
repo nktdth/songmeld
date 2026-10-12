@@ -1,57 +1,66 @@
 # SongMeld branding
 
-SongMeld uses two related but distinct assets. Keep them separate so changing
-Android launcher masks cannot accidentally alter the full brand logo.
+## Canonical icon geometry
 
-| Asset | Source | Usage |
+**`branding/songmeld-logo.svg` is the single source of truth** for the outer
+scalloped badge (`logo-star`) and the inner wrench/music note (`logo-note`).
+The note's optical adjustment is baked into the path coordinates:
+**left by 0.42 and down by 0.38** in the 24 × 24 SVG viewport, relative to the
+original design. This balances the elongated upper flag without an individual
+`translateX` / `translateY` in the launcher, splash, or in-app logo.
+
+Do not repeat this adjustment in code or when embedding the logo elsewhere.
+The Android launcher foreground and monochrome icon keep only a centered
+`0.80` **scale** to respect adaptive-icon safe areas. The animated Android
+splash uses a `+6,+6` **canvas placement** to center the complete logo in a
+36 × 36 viewport; this is not an optical correction to the note.
+
+## Asset inventory
+
+| Asset | File | Purpose |
 | --- | --- | --- |
-| Full logo | [`branding/songmeld-logo.svg`](../branding/songmeld-logo.svg) | GitHub, About, project documentation, future splash screens |
-| Standalone mark | [`branding/songmeld-mark.svg`](../branding/songmeld-mark.svg) | Single wrench-note, without the outer badge |
-| Android full logo | `app/src/main/res/drawable/songmeld_logo.xml` | Render the complete logo with Android's `painterResource` |
-| Android mark | `app/src/main/res/drawable/songmeld_mark.xml` | Render the note alone inside the UI |
-| Launcher foreground | `app/src/main/res/drawable/ic_launcher_foreground.xml` | Wallpaper-adaptive note with small left/down alignment correction |
-| Launcher monochrome | `app/src/main/res/drawable/ic_launcher_monochrome.xml` | Monochrome mark tinted by compatible Android 13+ launchers |
-| Launcher background | `@color/songmeld_launcher_background` | Orange `#FFA069` on Android 8–11; wallpaper colors on Android 12+ |
+| Canonical full SVG | [`branding/songmeld-logo.svg`](../branding/songmeld-logo.svg) | Master badge + note geometry, original purple/white presentation |
+| README default icon | [`branding/songmeld-logo-orange.svg`](../branding/songmeld-logo-orange.svg) | Static orange (`#FFA069`) + brown (`#57331E`) logo for GitHub |
+| Standalone SVG mark | [`branding/songmeld-mark.svg`](../branding/songmeld-mark.svg) | Note only, matching the canonical geometry |
+| In-app full logo | `res/drawable/songmeld_logo.xml` | Brand-colored badge and note |
+| In-app mark | `res/drawable/songmeld_mark.xml` | Note without the badge |
+| Adaptive foreground | `res/drawable/ic_launcher_foreground.xml` | Launcher note, scaled to fit the safe zone |
+| Monochrome launcher | `res/drawable/ic_launcher_monochrome.xml` | Themed icon using the same note geometry |
+| Compose splash note | `res/drawable/songmeld_splash_note.xml` | Stationary note over a rotating badge |
+| System splash | `res/drawable/songmeld_splash_vector.xml` | Badge and note, center placed for animated vector splash |
 
-## Launcher setup
+Paths under `res/` are relative to `app/src/main`.
 
-The manifest references `@mipmap/ic_launcher` and
-`@mipmap/ic_launcher_round`. Both are adaptive icons (Android 8.0+):
+## Updating or reusing the logo
 
-- Foreground: the existing wrench-note silhouette only, with no outer badge.
-  It uses `#754428` on Android 8–11 and the wallpaper-derived system
-  accent palette on Android 12+.
-- Background: `#FFA069` on Android 8–11, wallpaper-derived on Android 12+.
-- Monochrome: same mark geometry, allowing supported Android 13+ launchers to
-  apply their themed-icon coloring when the user enables that feature.
+After editing the canonical `branding/songmeld-logo.svg`, run from the repo root:
 
-Resources are intentionally split across `res/values/colors.xml`,
-`res/values-v31/colors.xml`, and `res/values-night-v31/colors.xml`.
-Android 12 does **not** guarantee native launcher-themed icons. Its launcher
-icon still uses dynamic wallpaper colors via the system palette references;
-native monochrome themed icons are supported from Android 13 and depend on
-launcher support and user settings. Android 12+ OEM behavior can vary.
+```bash
+python3 tools/sync_branding.py
+python3 tools/sync_branding.py --check
+```
 
-The original SVG geometry uses a 24 × 24 viewport. Android draws the
-adaptive foreground in a 108 × 108 dp layer, but launchers may mask that layer
-to circles, rounded squares, or other shapes. The foreground uses an 0.80
-centered scale with a small launcher-only translation (`x=-0.42`, `y=+0.38`
-in the 24-unit viewport) to visually balance the larger upper flag. The same
-translation is applied to the monochrome icon. Keep it inside the 66 dp
-adaptive-icon safe area; do not enlarge it without checking mask clipping.
+The script uses only Python's standard library. It updates the README variant,
+standalone mark, Android VectorDrawables, and the source badge used by the
+Android/Compose splash. `--check` fails when generated assets are out of sync,
+which makes it suitable for CI.
 
-This change deliberately does **not** edit the source logo, source standalone
-mark, or the Android in-app brand drawables.
+The badge morph animation contains an intentionally hand-tuned target path:
+`app/src/main/res/animator/songmeld_badge_morph.xml` (`valueTo`). If changing
+the **outer badge geometry**, update that morph target to a path with a
+compatible command structure, then visually verify the animated shape.
 
-## Updating the logo
+## Platform colors and launcher behavior
 
-1. Keep `branding/songmeld-logo.svg` as the approved full logo source.
-2. If changing the note shape, sync its path into `songmeld-mark.svg`
-   and the four Android drawable resources.
-3. Do **not** add `logo-star` to the launcher foreground or monochrome mark.
-4. Preview on both circular and rounded-square launchers and test themed icons.
+- **Android 8–11:** orange `#FFA069` badge/background and dark brown `#57331E` note.
+- **Android 12+:** launcher and splash colors use wallpaper-derived system palettes;
+  supported devices and launchers may vary.
+- **Android 13+ themed icons:** the monochrome adaptive layer is tinted by the
+  launcher where supported and enabled.
+- **GitHub README:** uses a separate static orange/brown SVG because GitHub
+  cannot access Android's wallpaper color system.
 
-> Design note: The approved full logo currently reuses the perimeter path of
-> the TikTok You reference SVG that inspired it. Before a wider branding
-> release, replace that perimeter with an original outline to avoid undue
-> similarity. The standalone launcher mark does not contain that perimeter.
+> Design note: The current approved full badge was inspired by a reference
+> that has a notably similar exterior outline. Before wide public branding,
+> consider redrawing the exterior badge to be distinct. The standalone note
+> is a separate symbol.
