@@ -11,6 +11,10 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +23,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -27,6 +32,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.coroutines.CancellationException
 import moe.ktandth.songmeld.data.local.MediaStoreSongRepository
 import moe.ktandth.songmeld.data.model.Song
+import moe.ktandth.songmeld.ui.components.SongMeldHeader
 import moe.ktandth.songmeld.ui.songs.MusicPermissionScreen
 import moe.ktandth.songmeld.ui.songs.SongsScreen
 
@@ -91,51 +97,67 @@ fun SongMeldApp() {
         }
     }
 
-    if (!permissionGranted) {
-        val showSettingsAction = permissionRequestedBefore &&
-            activity != null &&
-            !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+    // Keep the header composed even when the audio permission state changes.
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = { SongMeldHeader() },
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
+            if (!permissionGranted) {
+                val showSettingsAction = permissionRequestedBefore &&
+                    activity != null &&
+                    !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
 
-        MusicPermissionScreen(
-            showSettingsAction = showSettingsAction,
-            onRequestPermission = {
-                permissionRequestedBefore = true
-                permissionPreferences.edit()
-                    .putBoolean("audio_permission_requested", true)
-                    .apply()
-                permissionLauncher.launch(permission)
-            },
-            onOpenSettings = {
-                context.startActivity(
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", context.packageName, null)
-                    }
+                MusicPermissionScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    showSettingsAction = showSettingsAction,
+                    onRequestPermission = {
+                        permissionRequestedBefore = true
+                        permissionPreferences.edit()
+                            .putBoolean("audio_permission_requested", true)
+                            .apply()
+                        permissionLauncher.launch(permission)
+                    },
+                    onOpenSettings = {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", context.packageName, null)
+                            }
+                        )
+                    },
                 )
-            },
-        )
-    } else {
-        when (val state = libraryState) {
-            LibraryState.Idle,
-            LibraryState.Loading -> SongsScreen(
-                songs = emptyList(),
-                isLoading = true,
-                errorMessage = null,
-                onRetry = { refreshKey++ },
-            )
+            } else {
+                when (val state = libraryState) {
+                    LibraryState.Idle,
+                    LibraryState.Loading -> SongsScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        songs = emptyList(),
+                        isLoading = true,
+                        errorMessage = null,
+                        onRetry = { refreshKey++ },
+                    )
 
-            is LibraryState.Loaded -> SongsScreen(
-                songs = state.songs,
-                isLoading = false,
-                errorMessage = null,
-                onRetry = { refreshKey++ },
-            )
+                    is LibraryState.Loaded -> SongsScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        songs = state.songs,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRetry = { refreshKey++ },
+                    )
 
-            LibraryState.Error -> SongsScreen(
-                songs = emptyList(),
-                isLoading = false,
-                errorMessage = "load_error",
-                onRetry = { refreshKey++ },
-            )
+                    LibraryState.Error -> SongsScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        songs = emptyList(),
+                        isLoading = false,
+                        errorMessage = "load_error",
+                        onRetry = { refreshKey++ },
+                    )
+                }
+            }
         }
     }
 }

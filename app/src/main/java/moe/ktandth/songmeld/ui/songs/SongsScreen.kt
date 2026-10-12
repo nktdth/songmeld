@@ -1,10 +1,5 @@
 package moe.ktandth.songmeld.ui.songs
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
@@ -39,13 +32,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,26 +45,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.data.model.Song
 import java.util.Locale
-import kotlinx.coroutines.launch
 
 @Composable
 fun SongsScreen(
@@ -98,144 +79,29 @@ fun SongsScreen(
         }
     }
 
-    Scaffold(modifier = modifier) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            SongsHeader(songCount = songs.size)
-            SongSearchBar(
-                query = query,
-                onQueryChange = { query = it },
-                focusManager = focusManager,
-                modifier = Modifier.padding(horizontal = 20.dp),
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            when {
-                isLoading -> LoadingState()
-                errorMessage != null -> ErrorState(onRetry = onRetry)
-                songs.isEmpty() -> EmptyLibraryState()
-                filteredSongs.isEmpty() -> EmptySearchState(query = query)
-                else -> SongList(songs = filteredSongs)
-            }
-        }
-    }
-}
-
-@Composable
-private fun SongsHeader(songCount: Int?) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 20.dp, end = 12.dp, top = 20.dp, bottom = 16.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SongMeldWordmark()
-
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Rounded.MoreVert,
-                    contentDescription = null,
-                )
-            }
-        }
-
-        if (songCount != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = pluralStringResource(R.plurals.song_count, songCount, songCount),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SongMeldWordmark(modifier: Modifier = Modifier) {
-    val textOffsetX = remember { Animatable(-36f) }
-    val textAlpha = remember { Animatable(0f) }
-    val badgeAlpha = remember { Animatable(0f) }
-    val badgeScale = remember { Animatable(0.82f) }
-
-    LaunchedEffect(Unit) {
-        launch {
-            textOffsetX.animateTo(
-                targetValue = 0f,
-                animationSpec = tween(durationMillis = 620, easing = FastOutSlowInEasing),
-            )
-        }
-        launch {
-            textAlpha.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing),
-            )
-        }
-        launch {
-            kotlinx.coroutines.delay(160)
-            badgeAlpha.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing),
-            )
-        }
-        launch {
-            kotlinx.coroutines.delay(160)
-            badgeScale.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 420, easing = FastOutSlowInEasing),
-            )
-        }
-    }
-
-    Row(
-        modifier = modifier
-            .offset { IntOffset(textOffsetX.value.dp.roundToPx(), 0) }
-            .alpha(textAlpha.value),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Column(modifier = modifier.fillMaxSize()) {
         Text(
-            text = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                ) {
-                    append("Song")
-                }
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                ) {
-                    append("Meld")
-                }
-            },
-            style = MaterialTheme.typography.headlineMedium,
-            maxLines = 1,
+            text = pluralStringResource(R.plurals.song_count, songs.size, songs.size),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Image(
-            painter = painterResource(R.drawable.songmeld_logo),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .size(28.dp)
-                .alpha(badgeAlpha.value)
-                .graphicsLayer {
-                    scaleX = badgeScale.value
-                    scaleY = badgeScale.value
-                },
+        SongSearchBar(
+            query = query,
+            onQueryChange = { query = it },
+            focusManager = focusManager,
+            modifier = Modifier.padding(horizontal = 20.dp),
         )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        when {
+            isLoading -> LoadingState()
+            errorMessage != null -> ErrorState(onRetry = onRetry)
+            songs.isEmpty() -> EmptyLibraryState()
+            filteredSongs.isEmpty() -> EmptySearchState(query = query)
+            else -> SongList(songs = filteredSongs)
+        }
     }
 }
 
