@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.SongMeld" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
+    <!-- Android 8-11 cannot animate the system splash icon. Keep it invisible so
+         users do not see a static logo followed by one that suddenly rotates. -->
+    <style name="Theme.SongMeld.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/songmeld_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/songmeld_splash_placeholder</item>
+        <item name="postSplashScreenTheme">@style/Theme.SongMeld</item>
+    </style>
 </resources>

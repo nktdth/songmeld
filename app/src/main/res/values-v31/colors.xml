@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+: reference the system's wallpaper-derived Material You palette. -->
+    <!-- The badge and note use the exact same dynamic resources as the launcher. -->
     <color name="songmeld_launcher_background">@android:color/system_accent1_100</color>
     <color name="songmeld_launcher_foreground">@android:color/system_accent1_900</color>
+    <color name="songmeld_splash_background">@android:color/system_neutral1_10</color>
 </resources>

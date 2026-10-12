@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/songmeld_splash_vector">
+    <target android:name="splash_badge_rotation"
+        android:animation="@animator/songmeld_badge_rotation" />
+    <target android:name="splash_badge_outline"
+        android:animation="@animator/songmeld_badge_morph" />
+</animated-vector>
