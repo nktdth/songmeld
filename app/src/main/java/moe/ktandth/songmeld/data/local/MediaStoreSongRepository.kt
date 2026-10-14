@@ -18,6 +18,8 @@ class MediaStoreSongRepository(
             MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.DATE_ADDED,
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.DATE_MODIFIED,
         )
 
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
@@ -37,6 +39,8 @@ class MediaStoreSongRepository(
             val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+            val dateModifiedColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
 
             buildList {
                 while (cursor.moveToNext()) {
@@ -53,6 +57,8 @@ class MediaStoreSongRepository(
                         .orEmpty()
                     val duration = cursor.getLong(durationColumn).coerceAtLeast(0L)
                     val dateAdded = cursor.getLong(dateAddedColumn).coerceAtLeast(0L)
+                    val albumId = cursor.getLong(albumIdColumn).takeIf { it > 0L }
+                    val dateModified = cursor.getLong(dateModifiedColumn).coerceAtLeast(0L)
 
                     add(
                         Song(
@@ -63,6 +69,8 @@ class MediaStoreSongRepository(
                             album = album,
                             durationMs = duration,
                             dateAddedSeconds = dateAdded,
+                            albumId = albumId,
+                            dateModifiedSeconds = dateModified,
                         )
                     )
                 }

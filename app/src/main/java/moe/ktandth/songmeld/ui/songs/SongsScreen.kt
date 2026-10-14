@@ -1,5 +1,8 @@
 package moe.ktandth.songmeld.ui.songs
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,7 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,7 +31,6 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,12 +41,17 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -54,6 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.data.model.Song
+import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
 import java.util.Locale
 
 @Composable
@@ -66,6 +74,10 @@ fun SongsScreen(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    val artworkLoader = remember(context.applicationContext) {
+        LocalSongArtworkLoader(context.applicationContext)
+    }
     val filteredSongs = remember(songs, query) {
         if (query.isBlank()) {
             songs
@@ -100,7 +112,7 @@ fun SongsScreen(
             errorMessage != null -> ErrorState(onRetry = onRetry)
             songs.isEmpty() -> EmptyLibraryState()
             filteredSongs.isEmpty() -> EmptySearchState(query = query)
-            else -> SongList(songs = filteredSongs)
+            else -> SongList(songs = filteredSongs, artworkLoader = artworkLoader)
         }
     }
 }
@@ -153,48 +165,65 @@ private fun SongSearchBar(
 }
 
 @Composable
-private fun SongList(songs: List<Song>) {
+private fun SongList(
+    songs: List<Song>,
+    artworkLoader: LocalSongArtworkLoader,
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 24.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        items(
+        itemsIndexed(
             items = songs,
-            key = { it.id },
-        ) { song ->
-            SongRow(song = song)
-            HorizontalDivider(
-                modifier = Modifier.padding(start = 92.dp, end = 20.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+            key = { _, song -> song.id },
+            contentType = { _, _ -> "song" },
+        ) { index, song ->
+            SongRow(
+                song = song,
+                artworkLoader = artworkLoader,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(songItemShape(index, songs.size))
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
             )
         }
     }
 }
 
+/** One connected group; only its first and last items have outer rounded corners. */
+private fun songItemShape(index: Int, count: Int): RoundedCornerShape = when {
+    count == 1 -> RoundedCornerShape(24.dp)
+    index == 0 -> RoundedCornerShape(
+        topStart = 24.dp,
+        topEnd = 24.dp,
+        bottomStart = 0.dp,
+        bottomEnd = 0.dp,
+    )
+    index == count - 1 -> RoundedCornerShape(
+        topStart = 0.dp,
+        topEnd = 0.dp,
+        bottomStart = 24.dp,
+        bottomEnd = 24.dp,
+    )
+    else -> RoundedCornerShape(0.dp)
+}
+
 @Composable
-private fun SongRow(song: Song) {
+private fun SongRow(
+    song: Song,
+    artworkLoader: LocalSongArtworkLoader,
+    modifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+        modifier = modifier
+            .heightIn(min = 76.dp)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Surface(
-            modifier = Modifier.size(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Rounded.MusicNote,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                )
-            }
-        }
+        SongArtwork(song = song, artworkLoader = artworkLoader)
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -205,21 +234,62 @@ private fun SongRow(song: Song) {
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(modifier = Modifier.height(3.dp))
-            Text(
-                text = song.secondaryText(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = song.artist,
+                    modifier = Modifier.weight(1f, fill = false),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = "  ·  ${formatDuration(song.durationMs)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SongArtwork(
+    song: Song,
+    artworkLoader: LocalSongArtworkLoader,
+) {
+    val artwork by produceState<android.graphics.Bitmap?>(
+        initialValue = null,
+        key1 = song.id,
+        key2 = song.dateModifiedSeconds,
+        key3 = song.albumId,
+    ) {
+        value = artworkLoader.load(song)
+    }
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        val cover = artwork
+        if (cover != null) {
+            Image(
+                bitmap = cover.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Rounded.MusicNote,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(28.dp),
             )
         }
-
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = formatDuration(song.durationMs),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
@@ -371,14 +441,6 @@ private fun LibraryMessage(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-    }
-}
-
-private fun Song.secondaryText(): String = buildString {
-    append(artist)
-    if (album.isNotBlank()) {
-        append(" • ")
-        append(album)
     }
 }
 

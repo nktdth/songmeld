@@ -10,4 +10,6 @@ data class Song(
     val album: String,
     val durationMs: Long,
     val dateAddedSeconds: Long,
+    val albumId: Long? = null,
+    val dateModifiedSeconds: Long = 0L,
 )
