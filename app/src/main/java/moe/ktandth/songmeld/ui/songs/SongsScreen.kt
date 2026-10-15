@@ -217,7 +217,7 @@ private fun SongRow(
 ) {
     Row(
         modifier = modifier
-            .heightIn(min = 64.dp)
+            .heightIn(min = 72.dp)
             .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
