@@ -244,8 +244,15 @@ private fun SongRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "  ·  ${formatDuration(song.durationMs)}",
+                    text = "·",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = formatDuration(song.durationMs),
                     style = SongMeldCodeStyle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
