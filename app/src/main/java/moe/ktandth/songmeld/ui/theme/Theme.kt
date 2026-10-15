@@ -85,6 +85,7 @@ fun SongMeldTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
+        typography = SongMeldTypography,
         content = content,
     )
 }

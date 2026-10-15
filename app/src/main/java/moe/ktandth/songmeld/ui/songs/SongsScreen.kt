@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
+import moe.ktandth.songmeld.ui.theme.SongMeldCodeStyle
 import java.util.Locale
 
 @Composable
@@ -245,7 +246,7 @@ private fun SongRow(
                 )
                 Text(
                     text = "  ·  ${formatDuration(song.durationMs)}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = SongMeldCodeStyle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                 )

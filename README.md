@@ -19,3 +19,10 @@ The README uses the [orange and dark brown logo](branding/songmeld-logo-orange.s
 ## License
 
 SongMeld is licensed under the GNU General Public License v3.0.
+
+## Typography
+
+SongMeld uses Google Sans Flex for Material 3 UI text and Google Sans Code for
+timecodes and future editors. This source archive omits the binary font files.
+Before building, copy **google_sans_flex.ttf** and **google_sans_code.ttf** from
+SongMeld v1 into `app/src/main/res/font/`. See [font instructions](docs/fonts.md).
