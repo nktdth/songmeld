@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -52,7 +53,7 @@ fun SongMeldHeader(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(start = 20.dp, end = 12.dp, top = 20.dp, bottom = 16.dp),
+            .padding(start = 20.dp, end = 12.dp, top = 8.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -73,6 +74,8 @@ fun SongMeldHeader(modifier: Modifier = Modifier) {
 
 @Composable
 private fun SongMeldWordmark(modifier: Modifier = Modifier) {
+    // Match the wordmark accent to the actual badge (including wallpaper colors).
+    val badgeColor = colorResource(R.color.songmeld_launcher_background)
     val animationsEnabled = remember { ValueAnimator.areAnimatorsEnabled() }
     val textOffsetX = remember { Animatable(if (animationsEnabled) -36f else 0f) }
     val textAlpha = remember { Animatable(if (animationsEnabled) 0f else 1f) }
@@ -133,7 +136,7 @@ private fun SongMeldWordmark(modifier: Modifier = Modifier) {
                 }
                 withStyle(
                     style = SpanStyle(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = badgeColor,
                         fontWeight = FontWeight.SemiBold,
                     )
                 ) {
@@ -144,14 +147,14 @@ private fun SongMeldWordmark(modifier: Modifier = Modifier) {
             maxLines = 1,
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(7.dp))
 
         Image(
             painter = painterResource(R.drawable.songmeld_logo),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .size(28.dp)
+                .size(24.dp)
                 .alpha(badgeAlpha.value)
                 .graphicsLayer {
                     scaleX = badgeScale.value

@@ -191,22 +191,22 @@ private fun SongList(
     }
 }
 
-/** One connected group; only its first and last items have outer rounded corners. */
+/** Keep the outer 24dp corners while gently rounding the seams between songs. */
 private fun songItemShape(index: Int, count: Int): RoundedCornerShape = when {
     count == 1 -> RoundedCornerShape(24.dp)
     index == 0 -> RoundedCornerShape(
         topStart = 24.dp,
         topEnd = 24.dp,
-        bottomStart = 0.dp,
-        bottomEnd = 0.dp,
+        bottomStart = 6.dp,
+        bottomEnd = 6.dp,
     )
     index == count - 1 -> RoundedCornerShape(
-        topStart = 0.dp,
-        topEnd = 0.dp,
+        topStart = 6.dp,
+        topEnd = 6.dp,
         bottomStart = 24.dp,
         bottomEnd = 24.dp,
     )
-    else -> RoundedCornerShape(0.dp)
+    else -> RoundedCornerShape(6.dp)
 }
 
 @Composable
@@ -217,35 +217,35 @@ private fun SongRow(
 ) {
     Row(
         modifier = modifier
-            .heightIn(min = 76.dp)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .heightIn(min = 64.dp)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SongArtwork(song = song, artworkLoader = artworkLoader)
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = song.title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = song.artist,
                     modifier = Modifier.weight(1f, fill = false),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = "  ·  ${formatDuration(song.durationMs)}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                 )
@@ -269,8 +269,8 @@ private fun SongArtwork(
     }
     Box(
         modifier = Modifier
-            .size(56.dp)
-            .clip(RoundedCornerShape(14.dp))
+            .size(48.dp)
+            .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center,
     ) {
@@ -287,7 +287,7 @@ private fun SongArtwork(
                 imageVector = Icons.Rounded.MusicNote,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
     }
