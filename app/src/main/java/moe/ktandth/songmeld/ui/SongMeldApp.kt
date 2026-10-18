@@ -14,8 +14,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -79,21 +79,12 @@ fun SongMeldApp(
         mutableStateOf(permissionPreferences.getBoolean("audio_permission_requested", false))
     }
     var refreshKey by remember { mutableIntStateOf(0) }
-    var showingSettings by rememberSaveable { mutableStateOf(false) }
-    var showingAppearance by rememberSaveable { mutableStateOf(false) }
-    var showingAbout by rememberSaveable { mutableStateOf(false) }
-    var showingIconAppearance by rememberSaveable { mutableStateOf(false) }
-    var showingIconPicker by rememberSaveable { mutableStateOf(false) }
+    // One saveable destination prevents conflicting combinations of page flags.
+    var currentPage by rememberSaveable { mutableStateOf(SongMeldPage.LIBRARY) }
     fun navigateBack() {
-        when {
-            showingIconPicker -> showingIconPicker = false
-            showingIconAppearance -> showingIconAppearance = false
-            showingAppearance -> showingAppearance = false
-            showingAbout -> showingAbout = false
-            else -> showingSettings = false
-        }
+        currentPage = currentPage.parent
     }
-    BackHandler(enabled = showingSettings) { navigateBack() }
+    BackHandler(enabled = currentPage != SongMeldPage.LIBRARY) { navigateBack() }
     var libraryState by remember { mutableStateOf<LibraryState>(LibraryState.Idle) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -138,11 +129,11 @@ fun SongMeldApp(
         }
     }
 
-    if (showingSettings) {
+    if (currentPage != SongMeldPage.LIBRARY) {
         // Own Scaffold per destination: collapsing app bars must receive nested scroll directly
         // from their content. Keeping the library screen out of this branch avoids double insets.
-        when {
-            showingIconPicker -> key("icon_picker") {
+        when (currentPage) {
+            SongMeldPage.ICON_PICKER -> key("icon_picker") {
                 SettingsPageScaffold(
                     title = R.string.icon_browse_title,
                     onBack = { navigateBack() },
@@ -158,7 +149,7 @@ fun SongMeldApp(
                 }
             }
 
-            showingIconAppearance -> key("icon_appearance") {
+            SongMeldPage.ICON_APPEARANCE -> key("icon_appearance") {
                 SettingsPageScaffold(
                     title = R.string.settings_icon_appearance,
                     onBack = { navigateBack() },
@@ -171,40 +162,42 @@ fun SongMeldApp(
                         iconShape = iconShape,
                         onAppearanceChanged = onSymbolsChanged,
                         onIconShapeChanged = onIconShapeChanged,
-                        onBrowseIcons = { showingIconPicker = true },
+                        onBrowseIcons = { currentPage = SongMeldPage.ICON_PICKER },
                         selectedCatalogIcon = selectedIcon,
                     )
                 }
             }
 
-            showingAppearance -> key("appearance") {
+            SongMeldPage.APPEARANCE -> key("appearance") {
                 AppearanceSettingsScreen(
                     theme = theme,
                     dynamicColorEnabled = dynamicColorEnabled,
                     onThemeChanged = onThemeChanged,
                     onDynamicColorChanged = onDynamicColorChanged,
-                    onOpenIconAppearance = { showingIconAppearance = true },
+                    onOpenIconAppearance = { currentPage = SongMeldPage.ICON_APPEARANCE },
                     onBack = { navigateBack() },
                 )
             }
 
-            showingAbout -> key("about") {
+            SongMeldPage.ABOUT -> key("about") {
                 AboutSettingsScreen(onBack = { navigateBack() })
             }
 
-            else -> key("settings") {
+            SongMeldPage.SETTINGS -> key("settings") {
                 SettingsScreen(
                     onBack = { navigateBack() },
-                    onOpenAppearance = { showingAppearance = true },
-                    onOpenAbout = { showingAbout = true },
+                    onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
+                    onOpenAbout = { currentPage = SongMeldPage.ABOUT },
                 )
             }
+
+            SongMeldPage.LIBRARY -> Unit // Handled by the outer branch.
         }
     } else {
         // The branded header stays composed while the audio permission/library state changes.
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            topBar = { SongMeldHeader(onOpenSettings = { showingSettings = true }) },
+            topBar = { SongMeldHeader(onOpenSettings = { currentPage = SongMeldPage.SETTINGS }) },
         ) { innerPadding ->
             Box(
                 modifier = Modifier
@@ -265,6 +258,19 @@ fun SongMeldApp(
             }
         }
     }
+}
+
+/** Parent destinations for the Settings flow; saved/restored as one enum value. */
+private enum class SongMeldPage {
+    LIBRARY, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER;
+
+    val parent: SongMeldPage
+        get() = when (this) {
+            LIBRARY, SETTINGS -> LIBRARY
+            APPEARANCE, ABOUT -> SETTINGS
+            ICON_APPEARANCE -> APPEARANCE
+            ICON_PICKER -> ICON_APPEARANCE
+        }
 }
 
 private sealed interface LibraryState {

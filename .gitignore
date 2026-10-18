@@ -34,4 +34,12 @@ google-services.json
 # Android Profiling
 *.hprof
 
+# Local Python tooling (icon-font sync)
 .venv-icons/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Temporary patch files downloaded for local testing
+*.patch
