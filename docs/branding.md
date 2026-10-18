@@ -22,8 +22,8 @@ splash uses a `+6,+6` **canvas placement** to center the complete logo in a
 | Canonical full SVG | [`branding/songmeld-logo.svg`](../branding/songmeld-logo.svg) | Master badge + note geometry, original purple/white presentation |
 | README default icon | [`branding/songmeld-logo-orange.svg`](../branding/songmeld-logo-orange.svg) | Static orange (`#FFA069`) + brown (`#57331E`) logo for GitHub |
 | Standalone SVG mark | [`branding/songmeld-mark.svg`](../branding/songmeld-mark.svg) | Note only, matching the canonical geometry |
-| In-app full logo | `res/drawable/songmeld_logo.xml` | Brand-colored badge and note |
-| In-app mark | `res/drawable/songmeld_mark.xml` | Note without the badge |
+| In-app full logo | `res/drawable/songmeld_logo.xml` | Launcher palette badge and note, including wallpaper colors on Android 12+ |
+| In-app mark | `res/drawable/songmeld_mark.xml` | Note without the badge, tinted with the launcher foreground palette |
 | Adaptive foreground | `res/drawable/ic_launcher_foreground.xml` | Launcher note, scaled to fit the safe zone |
 | Monochrome launcher | `res/drawable/ic_launcher_monochrome.xml` | Themed icon using the same note geometry |
 | Compose splash note | `res/drawable/songmeld_splash_note.xml` | Stationary note over a rotating badge |

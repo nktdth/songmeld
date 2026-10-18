@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.SongMeld" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowActionModeOverlay">true</item>
     </style>
 
-    <!-- Android 8-11 cannot animate the system splash icon. Keep it invisible so
-         users do not see a static logo followed by one that suddenly rotates. -->
+    <!-- Android 8-11: show the badge via Compose rather than a static
+         system icon followed by a suddenly rotating duplicate. -->
     <style name="Theme.SongMeld.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/songmeld_splash_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/songmeld_splash_placeholder</item>
