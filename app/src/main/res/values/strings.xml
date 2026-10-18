@@ -80,4 +80,26 @@
     <string name="settings_icon_shape_star">Ngôi sao</string>
     <string name="settings_icon_shape_flower">Bông hoa</string>
     <string name="settings_icon_shape_clover">Cỏ bốn lá</string>
+    <string name="about_description">Chăm chút từng bản nhạc.\nBộ công cụ chỉnh sửa thông tin, lời bài hát và tải nhạc.</string>
+    <string name="about_development">Đang phát triển</string>
+    <string name="about_app_section">Ứng dụng</string>
+    <string name="about_license">Giấy phép</string>
+    <string name="about_license_name">GNU General Public License v3.0</string>
+    <string name="about_source">Mã nguồn</string>
+    <string name="about_source_summary">Khám phá SongMeld trên GitHub</string>
+    <string name="about_primary_developers">Nhà phát triển chính</string>
+    <string name="about_secondary_developers">Nhà phát triển phụ</string>
+    <string name="about_contributors">Người đóng góp</string>
+    <string name="about_secondary_empty">Chưa có nhà phát triển phụ.</string>
+    <string name="about_contributors_empty">Chưa có người đóng góp được ghi nhận.</string>
+    <string name="about_contributors_summary">Cảm ơn những đóng góp về ý tưởng, báo lỗi và pull request cho SongMeld.</string>
+    <string name="about_primary_detail">Khởi tạo, thiết kế và phát triển SongMeld</string>
+    <string name="about_github">GitHub</string>
+    <string name="about_contact">Liên hệ</string>
+    <string name="about_contribute">Đóng góp cho SongMeld</string>
+    <string name="about_contribute_summary">Gửi ý tưởng, báo lỗi hoặc tạo pull request</string>
+    <string name="about_footer">Metadata · Editing · Lyrics · Download\nCảm ơn bạn đã đồng hành cùng SongMeld ♡</string>
+    <string name="about_close">Đóng</string>
+    <string name="about_link_unavailable">Không tìm thấy ứng dụng để mở liên kết này.</string>
+    <string name="about_avatar">Ảnh đại diện của %1$s</string>
 </resources>

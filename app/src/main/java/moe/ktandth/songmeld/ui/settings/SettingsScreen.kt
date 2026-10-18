@@ -29,13 +29,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -251,66 +249,6 @@ fun AppearanceSettingsScreen(
                 onClick = onOpenIconAppearance,
             )
             Spacer(Modifier.height(16.dp))
-        }
-    }
-}
-
-@Suppress("DEPRECATION")
-@Composable
-fun AboutSettingsScreen(
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val context = LocalContext.current
-    val version = remember(context) {
-        runCatching {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty()
-        }.getOrDefault("")
-    }
-    SettingsPageScaffold(
-        title = R.string.settings_about,
-        onBack = onBack,
-        modifier = modifier,
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-        ) {
-            Surface(
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    SettingsIconCircle(SongMeldIconId.Info, settingsAccent(1))
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            text = stringResource(R.string.app_name),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            text = stringResource(R.string.settings_about_description),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (version.isNotEmpty()) {
-                            Text(
-                                text = stringResource(R.string.settings_version, version),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 }

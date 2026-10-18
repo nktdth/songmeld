@@ -63,6 +63,7 @@ data class MaterialSymbolAppearance(
  * User-selected icon references use IconReference, rather than extending this enum.
  */
 enum class SongMeldIconId(val codepoint: Int) {
+    License(0xE90E), Code(0xE86F), Volunteer(0xEA70),
     ArrowBack(0xE5C4), ChevronRight(0xE5CC), Close(0xE5CD),
     FolderOpen(0xE2C8), Info(0xE88E), LibraryMusic(0xE030),
     Lock(0xE897), MoreVert(0xE5D4), MusicNote(0xE405),
