@@ -3,6 +3,8 @@ package moe.ktandth.songmeld.ui.settings
 import android.content.Context
 import moe.ktandth.songmeld.ui.icons.AppIconShape
 import moe.ktandth.songmeld.ui.icons.AppIconStyle
+import moe.ktandth.songmeld.ui.icons.IconPack
+import moe.ktandth.songmeld.ui.icons.IconReference
 import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
 
 /** Theme selection is kept independent from the device theme. */
@@ -49,6 +51,23 @@ class AppearancePreferences(context: Context) {
     val iconShape: AppIconShape
         get() = AppIconShape.fromPreference(preferences.getString(KEY_ICON_SHAPE, null))
 
+    val iconPickerSelection: IconReference?
+        get() {
+            val codepoint = preferences.getInt(KEY_SELECTED_ICON_CODEPOINT, -1)
+            if (codepoint < 0xE000) return null
+            return IconReference(
+                pack = IconPack.fromStorage(preferences.getString(KEY_SELECTED_ICON_PACK, null)),
+                codepoint = codepoint,
+            )
+        }
+
+    fun setIconPickerSelection(reference: IconReference) {
+        preferences.edit()
+            .putString(KEY_SELECTED_ICON_PACK, reference.pack.storageName)
+            .putInt(KEY_SELECTED_ICON_CODEPOINT, reference.codepoint)
+            .apply()
+    }
+
     fun setSymbols(appearance: MaterialSymbolAppearance) {
         val config = appearance.validated()
         preferences.edit()
@@ -73,6 +92,8 @@ class AppearancePreferences(context: Context) {
     }
 
     private companion object {
+        const val KEY_SELECTED_ICON_PACK = "selected_icon_pack"
+        const val KEY_SELECTED_ICON_CODEPOINT = "selected_icon_codepoint"
         const val KEY_THEME = "theme"
         const val KEY_DYNAMIC_COLOR = "dynamic_color"
         const val KEY_ICON_STYLE = "icon_style"

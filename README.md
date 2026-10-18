@@ -29,3 +29,7 @@ SongMeld uses Google Sans Flex for Material 3 UI text and Google Sans Code for
 timecodes and future editors. The project keeps the fonts in
 `app/src/main/res/font/` and their OFL 1.1 license in
 `app/src/main/assets/licenses/`. See [font details](docs/fonts.md).
+
+## Icon catalog experiment
+
+Settings → Appearance → Icon appearance → Browse icons contains a full offline Material Symbols / MDI / Flutter Material Icons picker (install the five complete font files locally first with `python3 tools/install_full_icon_fonts.py --paisa /path/to/Paisa_2026.09.1210_antisplit.apk`). See [`docs/icon-system.md`](docs/icon-system.md) for font provenance, licenses, size, and limitations.

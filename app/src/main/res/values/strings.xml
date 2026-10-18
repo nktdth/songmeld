@@ -37,6 +37,16 @@
     <string name="settings_icon_shape_square">Soft square</string>
     <string name="settings_icon_reset">Reset icon appearance</string>
     <string name="settings_icon_font_note">Powered by Material Symbols Variable Font. SongMeld branding and album art are not affected.</string>
+    <string name="icon_browse_title">Browse icons</string>
+    <string name="icon_pack_symbols">Symbols</string>
+    <string name="icon_search_hint">Search icons by name</string>
+    <string name="icon_selected_preview">Selected icon</string>
+    <string name="icon_nothing_selected">Tap an icon to save a test selection</string>
+    <string name="icon_saved_selection">Test selection saved for future Tags/Playlists.</string>
+    <string name="icon_results">%1$d icons</string>
+    <string name="icon_loading">Loading icon catalog…</string>
+    <string name="icon_load_error">Unable to load the icon catalog.</string>
+    <string name="icon_no_results">No matching icons.</string>
     <string name="settings_about">About</string>
     <string name="settings_version">Version %1$s</string>
     <string name="settings_about_description">A music toolbox built with Kotlin, Jetpack Compose and Material 3.</string>

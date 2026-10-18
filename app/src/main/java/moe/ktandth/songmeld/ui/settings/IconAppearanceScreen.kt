@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.AppIconShape
+import moe.ktandth.songmeld.ui.icons.CatalogIcon
+import moe.ktandth.songmeld.ui.icons.IconReference
 import moe.ktandth.songmeld.ui.icons.AppIconStyle
 import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
@@ -47,6 +50,8 @@ fun IconAppearanceScreen(
     iconShape: AppIconShape,
     onAppearanceChanged: (MaterialSymbolAppearance) -> Unit,
     onIconShapeChanged: (AppIconShape) -> Unit,
+    onBrowseIcons: () -> Unit,
+    selectedCatalogIcon: IconReference?,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -96,6 +101,32 @@ fun IconAppearanceScreen(
                         }
                     }
                 }
+            }
+        }
+
+        Button(
+            onClick = onBrowseIcons,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.icon_browse_title))
+        }
+        if (selectedCatalogIcon != null) {
+            Row(
+                modifier = Modifier.padding(start = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                CatalogIcon(
+                    reference = selectedCatalogIcon,
+                    contentDescription = null,
+                    appearance = appearance,
+                    size = 30.dp,
+                )
+                Text(
+                    text = stringResource(R.string.icon_saved_selection),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
 

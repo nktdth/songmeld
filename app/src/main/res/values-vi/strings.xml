@@ -35,6 +35,16 @@
     <string name="settings_icon_shape_square">Vuông bo nhẹ</string>
     <string name="settings_icon_reset">Khôi phục biểu tượng mặc định</string>
     <string name="settings_icon_font_note">Sử dụng Material Symbols Variable Font. Logo SongMeld và ảnh bìa không bị ảnh hưởng.</string>
+    <string name="icon_browse_title">Khám phá biểu tượng</string>
+    <string name="icon_pack_symbols">Symbols</string>
+    <string name="icon_search_hint">Tìm biểu tượng theo tên</string>
+    <string name="icon_selected_preview">Biểu tượng đã chọn</string>
+    <string name="icon_nothing_selected">Chạm vào một biểu tượng để lưu mẫu thử</string>
+    <string name="icon_saved_selection">Đã lưu lựa chọn dùng thử cho Tags/Playlists tương lai.</string>
+    <string name="icon_results">%1$d biểu tượng</string>
+    <string name="icon_loading">Đang tải danh mục…</string>
+    <string name="icon_load_error">Không thể đọc danh mục biểu tượng.</string>
+    <string name="icon_no_results">Không tìm thấy biểu tượng phù hợp.</string>
     <string name="settings_about">Giới thiệu</string>
     <string name="settings_version">Phiên bản %1$s</string>
     <string name="settings_about_description">Bộ công cụ âm nhạc xây dựng với Kotlin, Jetpack Compose và Material 3.</string>

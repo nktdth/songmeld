@@ -1,31 +1,15 @@
 package moe.ktandth.songmeld.ui.icons
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import moe.ktandth.songmeld.R
 
 /** Material Symbols font families, rather than the legacy Filled Material Icons set. */
 enum class AppIconStyle(val preferenceValue: String) {
@@ -66,9 +50,8 @@ data class MaterialSymbolAppearance(
 }
 
 /**
- * These Unicode codepoints come from Google's Material Symbols mappings.
- * The bundled variable fonts intentionally contain ONLY these glyphs; update the font subsets
- * when adding a new SongMeldIconId. No Android R.drawable integer goes into preferences.
+ * Stable interface icon identifiers backed by the complete Material Symbols fonts.
+ * User-selected icon references use IconReference, rather than extending this enum.
  */
 enum class SongMeldIconId(val codepoint: Int) {
     ArrowBack(0xE5C4), ChevronRight(0xE5CC), Close(0xE5CD),
@@ -91,50 +74,15 @@ fun SongMeldIcon(
     size: Dp = 24.dp,
     appearance: MaterialSymbolAppearance = LocalMaterialSymbolAppearance.current,
 ) {
-    val config = appearance.validated()
-    val family = remember(config) {
-        val fontId = when (config.style) {
-            AppIconStyle.ROUNDED -> R.font.material_symbols_rounded
-            AppIconStyle.OUTLINED -> R.font.material_symbols_outlined
-            AppIconStyle.SHARP -> R.font.material_symbols_sharp
-        }
-        FontFamily(
-            Font(
-                resId = fontId,
-                variationSettings = FontVariation.Settings(
-                    FontVariation.Setting("FILL", config.fill),
-                    FontVariation.Setting("wght", config.weight.toFloat()),
-                    FontVariation.Setting("GRAD", config.grade.toFloat()),
-                    FontVariation.Setting("opsz", config.opticalSize.toFloat()),
-                ),
-            ),
-        )
-    }
-    // Icons retain their dp size even when the user's system font scale is enlarged.
-    val density = LocalDensity.current
-    val iconTextSize = (size.value / density.fontScale).sp
-    val iconSemantics = Modifier.clearAndSetSemantics {
-        if (contentDescription != null) this.contentDescription = contentDescription
-    }
-    Box(
-        modifier = modifier.size(size).then(iconSemantics),
-        contentAlignment = Alignment.Center,
-    ) {
-        BasicText(
-            text = String(Character.toChars(id.codepoint)),
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Clip,
-            style = TextStyle(
-                color = tint,
-                fontFamily = family,
-                fontSize = iconTextSize,
-                lineHeight = iconTextSize,
-                textAlign = TextAlign.Center,
-                letterSpacing = 0.sp,
-            ),
-        )
-    }
+    SongMeldIconGlyph(
+        codepoint = id.codepoint,
+        pack = IconPack.SYMBOLS,
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint,
+        size = size,
+        appearance = appearance,
+    )
 }
 
 /** Background only: does not modify icon font axes or SongMeld logos. */

@@ -40,7 +40,9 @@ import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.ui.components.SongMeldHeader
 import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
 import moe.ktandth.songmeld.ui.icons.AppIconShape
+import moe.ktandth.songmeld.ui.icons.IconReference
 import moe.ktandth.songmeld.ui.settings.IconAppearanceScreen
+import moe.ktandth.songmeld.ui.settings.IconPickerScreen
 import moe.ktandth.songmeld.ui.settings.AppTheme
 import moe.ktandth.songmeld.ui.settings.SettingsPageScaffold
 import moe.ktandth.songmeld.ui.settings.AppearanceSettingsScreen
@@ -55,6 +57,8 @@ fun SongMeldApp(
     dynamicColorEnabled: Boolean,
     symbols: MaterialSymbolAppearance,
     iconShape: AppIconShape,
+    selectedIcon: IconReference?,
+    onSelectedIconChanged: (IconReference) -> Unit,
     onSymbolsChanged: (MaterialSymbolAppearance) -> Unit,
     onIconShapeChanged: (AppIconShape) -> Unit,
     onThemeChanged: (AppTheme) -> Unit,
@@ -79,8 +83,10 @@ fun SongMeldApp(
     var showingAppearance by rememberSaveable { mutableStateOf(false) }
     var showingAbout by rememberSaveable { mutableStateOf(false) }
     var showingIconAppearance by rememberSaveable { mutableStateOf(false) }
+    var showingIconPicker by rememberSaveable { mutableStateOf(false) }
     fun navigateBack() {
         when {
+            showingIconPicker -> showingIconPicker = false
             showingIconAppearance -> showingIconAppearance = false
             showingAppearance -> showingAppearance = false
             showingAbout -> showingAbout = false
@@ -136,6 +142,22 @@ fun SongMeldApp(
         // Own Scaffold per destination: collapsing app bars must receive nested scroll directly
         // from their content. Keeping the library screen out of this branch avoids double insets.
         when {
+            showingIconPicker -> key("icon_picker") {
+                SettingsPageScaffold(
+                    title = R.string.icon_browse_title,
+                    onBack = { navigateBack() },
+                ) { innerPadding ->
+                    IconPickerScreen(
+                        modifier = Modifier.fillMaxSize()
+                            .padding(innerPadding)
+                            .consumeWindowInsets(innerPadding),
+                        appearance = symbols,
+                        selected = selectedIcon,
+                        onSelected = onSelectedIconChanged,
+                    )
+                }
+            }
+
             showingIconAppearance -> key("icon_appearance") {
                 SettingsPageScaffold(
                     title = R.string.settings_icon_appearance,
@@ -149,6 +171,8 @@ fun SongMeldApp(
                         iconShape = iconShape,
                         onAppearanceChanged = onSymbolsChanged,
                         onIconShapeChanged = onIconShapeChanged,
+                        onBrowseIcons = { showingIconPicker = true },
+                        selectedCatalogIcon = selectedIcon,
                     )
                 }
             }
