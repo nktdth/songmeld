@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -42,6 +41,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
@@ -67,6 +67,12 @@ fun SettingsPageScaffold(
                 title = {
                     Text(
                         text = stringResource(title),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = if (title == R.string.settings_title) {
+                            (30f - 8f * scrollBehavior.state.collapsedFraction).sp
+                        } else {
+                            (26f - 5f * scrollBehavior.state.collapsedFraction).sp
+                        },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -106,7 +112,7 @@ fun SettingsScreen(
                 .consumeWindowInsets(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             // Rounded grouped surfaces and bright circular icon containers are inspired by v1.
             ColorfulSettingsEntry(
@@ -161,22 +167,38 @@ fun AppearanceSettingsScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             SettingsSectionTitle(stringResource(R.string.settings_theme))
-            Surface(
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column {
-                    ThemeChoice(R.string.settings_theme_system, theme == AppTheme.SYSTEM) {
-                        onThemeChanged(AppTheme.SYSTEM)
-                    }
-                    ThemeChoice(R.string.settings_theme_light, theme == AppTheme.LIGHT) {
-                        onThemeChanged(AppTheme.LIGHT)
-                    }
-                    ThemeChoice(R.string.settings_theme_dark, theme == AppTheme.DARK) {
-                        onThemeChanged(AppTheme.DARK)
-                    }
-                }
+                ThemeTile(
+                    title = stringResource(R.string.settings_theme_system),
+                    icon = SongMeldIconId.SettingsBrightness,
+                    selected = theme == AppTheme.SYSTEM,
+                    onClick = { onThemeChanged(AppTheme.SYSTEM) },
+                    modifier = Modifier.weight(1f),
+                )
+                ThemeTile(
+                    title = stringResource(R.string.settings_theme_light),
+                    icon = SongMeldIconId.LightMode,
+                    selected = theme == AppTheme.LIGHT,
+                    onClick = { onThemeChanged(AppTheme.LIGHT) },
+                    modifier = Modifier.weight(1f),
+                )
+                ThemeTile(
+                    title = stringResource(R.string.settings_theme_dark),
+                    icon = SongMeldIconId.DarkMode,
+                    selected = theme == AppTheme.DARK,
+                    onClick = { onThemeChanged(AppTheme.DARK) },
+                    modifier = Modifier.weight(1f),
+                )
             }
+            Text(
+                text = stringResource(R.string.settings_theme_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 10.dp, bottom = 4.dp),
+            )
 
             val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
             Surface(
@@ -195,7 +217,7 @@ fun AppearanceSettingsScreen(
                         )
                         .padding(horizontal = 20.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -265,7 +287,7 @@ fun AboutSettingsScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     SettingsIconCircle(SongMeldIconId.Info, settingsAccent(1))
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -312,13 +334,13 @@ private fun settingsAccent(index: Int): SettingsAccent {
 @Composable
 private fun SettingsIconCircle(icon: SongMeldIconId, accent: SettingsAccent) {
     Surface(
-        modifier = Modifier.size(50.dp),
+        modifier = Modifier.size(40.dp),
         shape = CircleShape,
         color = accent.background,
         contentColor = accent.foreground,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            SongMeldIcon(id = icon, contentDescription = null, size = 26.dp)
+            SongMeldIcon(id = icon, contentDescription = null, size = 22.dp)
         }
     }
 }
@@ -339,9 +361,9 @@ private fun ColorfulSettingsEntry(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SettingsIconCircle(icon, accent)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -352,7 +374,7 @@ private fun ColorfulSettingsEntry(
                 )
                 Text(
                     text = description,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -379,20 +401,44 @@ private fun SettingsSectionTitle(title: String) {
     )
 }
 
+/** Compact, fully clickable M3 theme tile inspired by SongMeld v1. */
 @Composable
-private fun ThemeChoice(title: Int, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .padding(start = 24.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+private fun ThemeTile(
+    title: String,
+    icon: SongMeldIconId,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        modifier = modifier.selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
+        shape = RoundedCornerShape(22.dp),
+        color = if (selected) colors.primaryContainer else colors.surfaceContainerLow,
+        border = androidx.compose.foundation.BorderStroke(
+            if (selected) 1.5.dp else 0.dp,
+            if (selected) colors.primary else Color.Transparent,
+        ),
     ) {
-        Text(
-            text = stringResource(title),
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-        )
-        RadioButton(selected = selected, onClick = null)
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            SongMeldIcon(
+                id = icon,
+                contentDescription = null,
+                size = 29.dp,
+                tint = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
+            )
+            Text(
+                title,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = if (selected) colors.onPrimaryContainer else colors.onSurface,
+            )
+        }
     }
 }

@@ -2,6 +2,7 @@ package moe.ktandth.songmeld.ui.icons
 
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
@@ -10,6 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.geometry.Size
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.min
 
 /** Material Symbols font families, rather than the legacy Filled Material Icons set. */
 enum class AppIconStyle(val preferenceValue: String) {
@@ -22,7 +29,9 @@ enum class AppIconStyle(val preferenceValue: String) {
 }
 
 enum class AppIconShape(val preferenceValue: String) {
-    CIRCLE("circle"), ROUNDED_SQUARE("rounded_square"), SQUARE("square");
+    CIRCLE("circle"), ROUNDED_SQUARE("rounded_square"), SQUARE("square"),
+    SQUIRCLE("squircle"), PILL("pill"), HEXAGON("hexagon"), PENTAGON("pentagon"),
+    TRIANGLE("triangle"), DIAMOND("diamond"), STAR("star"), FLOWER("flower"), CLOVER("clover");
 
     companion object {
         fun fromPreference(value: String?): AppIconShape =
@@ -42,10 +51,10 @@ data class MaterialSymbolAppearance(
     val opticalSize: Int = 24,
 ) {
     fun validated() = copy(
-        fill = fill.coerceIn(0f, 1f),
-        weight = weight.coerceIn(100, 700),
-        grade = grade.coerceIn(-50, 200),
-        opticalSize = opticalSize.coerceIn(20, 48),
+        fill = if (fill >= 0.5f) 1f else 0f,
+        weight = weight.coerceIn(300, 600),
+        grade = grade.coerceIn(-25, 75),
+        opticalSize = opticalSize.coerceIn(20, 40),
     )
 }
 
@@ -59,6 +68,7 @@ enum class SongMeldIconId(val codepoint: Int) {
     Lock(0xE897), MoreVert(0xE5D4), MusicNote(0xE405),
     Palette(0xE40A), Refresh(0xE5D5), Search(0xE8B6),
     SearchOff(0xEA76), Settings(0xE8B8),
+    LightMode(0xE518), DarkMode(0xE51C), SettingsBrightness(0xE8BD),
 }
 
 val LocalMaterialSymbolAppearance = compositionLocalOf { MaterialSymbolAppearance() }
@@ -93,4 +103,52 @@ fun iconBackgroundShape(shape: AppIconShape): Shape = when (shape) {
     AppIconShape.CIRCLE -> CircleShape
     AppIconShape.ROUNDED_SQUARE -> RoundedCornerShape(24.dp)
     AppIconShape.SQUARE -> RoundedCornerShape(8.dp)
+    AppIconShape.SQUIRCLE -> RoundedCornerShape(percent = 38)
+    AppIconShape.PILL -> RoundedCornerShape(percent = 50)
+    else -> GenericShape { size, _ -> addPath(expressiveShapePath(size, shape)) }
+}
+
+/** Small reusable geometric shapes without a dependency on experimental MaterialShapes APIs. */
+private fun expressiveShapePath(size: Size, shape: AppIconShape): Path {
+    val cx = size.width / 2f
+    val cy = size.height / 2f
+    val radius = min(size.width, size.height) * 0.47f
+    val segments = when (shape) {
+        AppIconShape.HEXAGON -> 6
+        AppIconShape.PENTAGON -> 5
+        AppIconShape.TRIANGLE -> 3
+        AppIconShape.DIAMOND -> 4
+        AppIconShape.STAR -> 10
+        AppIconShape.FLOWER -> 16
+        AppIconShape.CLOVER -> 8
+        else -> 8
+    }
+    val points = (0 until segments).map { index ->
+        val angle = (2.0 * PI * index / segments) - PI / 2.0 +
+            if (shape == AppIconShape.DIAMOND) PI / 4.0 else 0.0
+        val r = when (shape) {
+            AppIconShape.STAR -> if (index % 2 == 0) radius else radius * 0.52f
+            AppIconShape.FLOWER -> if (index % 2 == 0) radius else radius * 0.8f
+            AppIconShape.CLOVER -> if (index % 2 == 0) radius else radius * 0.59f
+            else -> radius
+        }
+        Pair(cx + r * cos(angle).toFloat(), cy + r * sin(angle).toFloat())
+    }
+    return Path().apply {
+        // Smooth most shapes with quadratic corners; star keeps its pronounced points.
+        if (shape == AppIconShape.STAR) {
+            moveTo(points.first().first, points.first().second)
+            points.drop(1).forEach { lineTo(it.first, it.second) }
+        } else {
+            val previous = points.last()
+            val first = points.first()
+            moveTo((previous.first + first.first) / 2f, (previous.second + first.second) / 2f)
+            points.forEachIndexed { index, current ->
+                val next = points[(index + 1) % points.size]
+                quadraticBezierTo(current.first, current.second,
+                    (current.first + next.first) / 2f, (current.second + next.second) / 2f)
+            }
+        }
+        close()
+    }
 }
