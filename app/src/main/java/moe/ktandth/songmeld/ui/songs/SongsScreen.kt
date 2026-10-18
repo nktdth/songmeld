@@ -21,14 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.LibraryMusic
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -60,6 +52,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
+import moe.ktandth.songmeld.ui.icons.SongMeldIconId
+import moe.ktandth.songmeld.ui.icons.songMeldIcon
+import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
 import moe.ktandth.songmeld.ui.theme.SongMeldCodeStyle
@@ -136,7 +131,7 @@ private fun SongSearchBar(
         placeholder = { Text(stringResource(R.string.search_songs_hint)) },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Rounded.Search,
+                imageVector = songMeldIcon(SongMeldIconId.Search),
                 contentDescription = null,
             )
         },
@@ -144,7 +139,7 @@ private fun SongSearchBar(
             {
                 IconButton(onClick = { onQueryChange("") }) {
                     Icon(
-                        imageVector = Icons.Rounded.Close,
+                        imageVector = songMeldIcon(SongMeldIconId.Close),
                         contentDescription = stringResource(R.string.clear_search),
                     )
                 }
@@ -292,7 +287,7 @@ private fun SongArtwork(
             )
         } else {
             Icon(
-                imageVector = Icons.Rounded.MusicNote,
+                imageVector = songMeldIcon(SongMeldIconId.MusicNote),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(24.dp),
@@ -315,7 +310,7 @@ private fun PermissionArtwork() {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Rounded.LibraryMusic,
+                    imageVector = songMeldIcon(SongMeldIconId.LibraryMusic),
                     contentDescription = null,
                     modifier = Modifier.size(54.dp),
                 )
@@ -333,7 +328,7 @@ private fun PermissionArtwork() {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Rounded.Lock,
+                    imageVector = songMeldIcon(SongMeldIconId.Lock),
                     contentDescription = null,
                     modifier = Modifier.size(22.dp),
                 )
@@ -362,7 +357,7 @@ private fun LoadingState() {
 @Composable
 private fun EmptyLibraryState() {
     LibraryMessage(
-        icon = Icons.Rounded.LibraryMusic,
+        icon = songMeldIcon(SongMeldIconId.LibraryMusic),
         title = stringResource(R.string.empty_library_title),
         body = stringResource(R.string.empty_library_body),
     )
@@ -371,7 +366,7 @@ private fun EmptyLibraryState() {
 @Composable
 private fun EmptySearchState(query: String) {
     LibraryMessage(
-        icon = Icons.Rounded.SearchOff,
+        icon = songMeldIcon(SongMeldIconId.SearchOff),
         title = stringResource(R.string.empty_search_title),
         body = stringResource(R.string.empty_search_body, query),
     )
@@ -400,7 +395,7 @@ private fun ErrorState(onRetry: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(20.dp))
             FilledTonalButton(onClick = onRetry) {
-                Icon(Icons.Rounded.Refresh, contentDescription = null)
+                Icon(songMeldIcon(SongMeldIconId.Refresh), contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.retry))
             }
@@ -424,7 +419,7 @@ private fun LibraryMessage(
         ) {
             Surface(
                 modifier = Modifier.size(80.dp),
-                shape = CircleShape,
+                shape = songMeldIconShape(),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ) {

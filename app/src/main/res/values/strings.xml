@@ -2,6 +2,36 @@
 <resources>
     <string name="app_name">SongMeld</string>
 
+    <string name="menu_more_options">More options</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_description">Choose how SongMeld looks.</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Dynamic color</string>
+    <string name="settings_dynamic_color_description">Use colors from your wallpaper.</string>
+    <string name="settings_dynamic_color_unavailable">Available on Android 12 and newer.</string>
+    <string name="settings_icons">Icons</string>
+    <string name="settings_icon_appearance">Icon appearance</string>
+    <string name="settings_icon_appearance_summary">Choose icon style and background shape</string>
+    <string name="settings_icon_preview">Preview</string>
+    <string name="settings_icon_style">Icon style</string>
+    <string name="settings_icon_style_description">Applies to icons across SongMeld.</string>
+    <string name="settings_icon_style_rounded">Rounded</string>
+    <string name="settings_icon_style_outlined">Outlined</string>
+    <string name="settings_icon_style_filled">Filled</string>
+    <string name="settings_icon_shape">Background shape</string>
+    <string name="settings_icon_shape_description">Applies to icon illustrations and placeholders, not album covers.</string>
+    <string name="settings_icon_shape_circle">Circle</string>
+    <string name="settings_icon_shape_rounded">Rounded square</string>
+    <string name="settings_icon_shape_square">Soft square</string>
+    <string name="settings_icon_future_note">Fine-grained weight, fill and grade controls will require Material Symbols Variable Font. These options will be added in a future update.</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_description">A music toolbox built with Kotlin, Jetpack Compose and Material 3.</string>
+
     <string name="songs_title">Songs</string>
     <plurals name="song_count">
         <item quantity="one">%d song on this device</item>

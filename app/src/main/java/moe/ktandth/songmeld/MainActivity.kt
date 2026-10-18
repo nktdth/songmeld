@@ -14,16 +14,26 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import kotlinx.coroutines.delay
 import moe.ktandth.songmeld.ui.SongMeldApp
+import moe.ktandth.songmeld.ui.icons.AppIconStyle
+import moe.ktandth.songmeld.ui.icons.AppIconShape
+import moe.ktandth.songmeld.ui.icons.LocalSongMeldIconStyle
+import moe.ktandth.songmeld.ui.icons.LocalSongMeldIconShape
+import moe.ktandth.songmeld.ui.settings.AppTheme
+import moe.ktandth.songmeld.ui.settings.AppearancePreferences
 import moe.ktandth.songmeld.ui.splash.SongMeldSplashIntro
 import moe.ktandth.songmeld.ui.theme.SongMeldTheme
 
@@ -71,12 +81,52 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val appearancePreferences = AppearancePreferences(applicationContext)
         setContent {
-            SongMeldTheme {
-                // The feature branch's real Songs Library remains the app root.
-                // Legacy devices render the animated badge over that screen.
+            var theme by remember { mutableStateOf(appearancePreferences.theme) }
+            var dynamicColorEnabled by remember {
+                mutableStateOf(appearancePreferences.dynamicColorEnabled)
+            }
+            var iconStyle by remember { mutableStateOf(appearancePreferences.iconStyle) }
+            var iconShape by remember { mutableStateOf(appearancePreferences.iconShape) }
+            val systemDark = isSystemInDarkTheme()
+            val darkTheme = when (theme) {
+                AppTheme.SYSTEM -> systemDark
+                AppTheme.LIGHT -> false
+                AppTheme.DARK -> true
+            }
+
+            // A theme override also needs matching status/navigation-bar icon contrast.
+            SideEffect {
+                WindowCompat.getInsetsController(window, window.decorView).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            }
+
+            SongMeldTheme(darkTheme = darkTheme, dynamicColor = dynamicColorEnabled) {
                 SongMeldRoot(
-                    playComposeIntro = animate && Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                    playComposeIntro = animate && Build.VERSION.SDK_INT < Build.VERSION_CODES.S,
+                    theme = theme,
+                    dynamicColorEnabled = dynamicColorEnabled,
+                    iconStyle = iconStyle,
+                    iconShape = iconShape,
+                    onIconStyleChanged = { selected ->
+                        iconStyle = selected
+                        appearancePreferences.setIconStyle(selected)
+                    },
+                    onIconShapeChanged = { selected ->
+                        iconShape = selected
+                        appearancePreferences.setIconShape(selected)
+                    },
+                    onThemeChanged = { selected ->
+                        theme = selected
+                        appearancePreferences.setTheme(selected)
+                    },
+                    onDynamicColorChanged = { enabled ->
+                        dynamicColorEnabled = enabled
+                        appearancePreferences.setDynamicColorEnabled(enabled)
+                    },
                 )
             }
         }
@@ -84,7 +134,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun SongMeldRoot(playComposeIntro: Boolean) {
+private fun SongMeldRoot(
+    playComposeIntro: Boolean,
+    theme: AppTheme,
+    dynamicColorEnabled: Boolean,
+    iconStyle: AppIconStyle,
+    iconShape: AppIconShape,
+    onIconStyleChanged: (AppIconStyle) -> Unit,
+    onIconShapeChanged: (AppIconShape) -> Unit,
+    onThemeChanged: (AppTheme) -> Unit,
+    onDynamicColorChanged: (Boolean) -> Unit,
+) {
     var showIntro by remember { mutableStateOf(playComposeIntro) }
 
     LaunchedEffect(showIntro) {
@@ -94,15 +154,29 @@ private fun SongMeldRoot(playComposeIntro: Boolean) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        SongMeldApp()
+    CompositionLocalProvider(
+        LocalSongMeldIconStyle provides iconStyle,
+        LocalSongMeldIconShape provides iconShape,
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            SongMeldApp(
+                theme = theme,
+                dynamicColorEnabled = dynamicColorEnabled,
+                iconStyle = iconStyle,
+                iconShape = iconShape,
+                onIconStyleChanged = onIconStyleChanged,
+                onIconShapeChanged = onIconShapeChanged,
+                onThemeChanged = onThemeChanged,
+                onDynamicColorChanged = onDynamicColorChanged,
+            )
 
-        AnimatedVisibility(
-            visible = showIntro,
-            enter = EnterTransition.None,
-            exit = fadeOut(animationSpec = tween(INTRO_FADE_MS))
-        ) {
-            SongMeldSplashIntro()
+            AnimatedVisibility(
+                visible = showIntro,
+                enter = EnterTransition.None,
+                exit = fadeOut(animationSpec = tween(INTRO_FADE_MS))
+            ) {
+                SongMeldSplashIntro()
+            }
         }
     }
 }

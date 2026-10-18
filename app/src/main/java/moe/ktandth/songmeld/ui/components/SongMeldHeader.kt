@@ -15,15 +15,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,6 +34,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.ktandth.songmeld.R
+import moe.ktandth.songmeld.ui.icons.SongMeldIconId
+import moe.ktandth.songmeld.ui.icons.songMeldIcon
 
 /**
  * Persistent app header, shared by the permission and Songs Library states.
@@ -48,7 +54,9 @@ import moe.ktandth.songmeld.R
  * prevents the branded entrance animation from restarting after permission changes.
  */
 @Composable
-fun SongMeldHeader(modifier: Modifier = Modifier) {
+fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -59,15 +67,31 @@ fun SongMeldHeader(modifier: Modifier = Modifier) {
     ) {
         SongMeldWordmark()
 
-        // Reserved for a future overflow menu; no actions exist yet.
-        Box(
-            modifier = Modifier.size(48.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.MoreVert,
-                contentDescription = null,
-            )
+        Box {
+            IconButton(
+                onClick = { menuExpanded = true },
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    imageVector = songMeldIcon(SongMeldIconId.MoreVert),
+                    contentDescription = stringResource(R.string.menu_more_options),
+                )
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.settings_title)) },
+                    leadingIcon = {
+                        Icon(imageVector = songMeldIcon(SongMeldIconId.Settings), contentDescription = null)
+                    },
+                    onClick = {
+                        menuExpanded = false
+                        onOpenSettings()
+                    },
+                )
+            }
         }
     }
 }

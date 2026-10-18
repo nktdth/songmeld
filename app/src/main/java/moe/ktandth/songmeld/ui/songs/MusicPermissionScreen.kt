@@ -11,12 +11,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FolderOpen
-import androidx.compose.material.icons.rounded.LibraryMusic
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
+import moe.ktandth.songmeld.ui.icons.SongMeldIconId
+import moe.ktandth.songmeld.ui.icons.songMeldIcon
+import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 
 @Composable
 fun MusicPermissionScreen(
@@ -70,7 +67,7 @@ fun MusicPermissionScreen(
                 .heightIn(min = 52.dp),
         ) {
             Icon(
-                imageVector = if (showSettingsAction) Icons.Rounded.Settings else Icons.Rounded.FolderOpen,
+                imageVector = if (showSettingsAction) songMeldIcon(SongMeldIconId.Settings) else songMeldIcon(SongMeldIconId.FolderOpen),
                 contentDescription = null,
             )
             Spacer(modifier = Modifier.width(10.dp))
@@ -100,13 +97,13 @@ private fun PermissionArtwork() {
     ) {
         Surface(
             modifier = Modifier.size(112.dp),
-            shape = CircleShape,
+            shape = songMeldIconShape(),
             color = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Rounded.LibraryMusic,
+                    imageVector = songMeldIcon(SongMeldIconId.LibraryMusic),
                     contentDescription = null,
                     modifier = Modifier.size(54.dp),
                 )
@@ -117,14 +114,14 @@ private fun PermissionArtwork() {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .size(44.dp),
-            shape = CircleShape,
+            shape = songMeldIconShape(),
             color = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
             shadowElevation = 4.dp,
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Rounded.Lock,
+                    imageVector = songMeldIcon(SongMeldIconId.Lock),
                     contentDescription = null,
                     modifier = Modifier.size(22.dp),
                 )

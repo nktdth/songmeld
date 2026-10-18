@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,14 +32,30 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.coroutines.CancellationException
+import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.data.local.MediaStoreSongRepository
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.ui.components.SongMeldHeader
+import moe.ktandth.songmeld.ui.icons.AppIconStyle
+import moe.ktandth.songmeld.ui.icons.AppIconShape
+import moe.ktandth.songmeld.ui.settings.IconAppearanceScreen
+import moe.ktandth.songmeld.ui.settings.AppTheme
+import moe.ktandth.songmeld.ui.settings.SettingsHeader
+import moe.ktandth.songmeld.ui.settings.SettingsScreen
 import moe.ktandth.songmeld.ui.songs.MusicPermissionScreen
 import moe.ktandth.songmeld.ui.songs.SongsScreen
 
 @Composable
-fun SongMeldApp() {
+fun SongMeldApp(
+    theme: AppTheme,
+    dynamicColorEnabled: Boolean,
+    iconStyle: AppIconStyle,
+    iconShape: AppIconShape,
+    onIconStyleChanged: (AppIconStyle) -> Unit,
+    onIconShapeChanged: (AppIconShape) -> Unit,
+    onThemeChanged: (AppTheme) -> Unit,
+    onDynamicColorChanged: (Boolean) -> Unit,
+) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
     val permission = remember { requiredAudioPermission() }
@@ -53,6 +71,13 @@ fun SongMeldApp() {
         mutableStateOf(permissionPreferences.getBoolean("audio_permission_requested", false))
     }
     var refreshKey by remember { mutableIntStateOf(0) }
+    var showingSettings by rememberSaveable { mutableStateOf(false) }
+    var showingIconAppearance by rememberSaveable { mutableStateOf(false) }
+    fun navigateBack() {
+        if (showingIconAppearance) showingIconAppearance = false
+        else showingSettings = false
+    }
+    BackHandler(enabled = showingSettings) { navigateBack() }
     var libraryState by remember { mutableStateOf<LibraryState>(LibraryState.Idle) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -100,14 +125,41 @@ fun SongMeldApp() {
     // Keep the header composed even when the audio permission state changes.
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { SongMeldHeader() },
+        topBar = {
+            if (showingSettings) {
+                SettingsHeader(
+                    onBack = { navigateBack() },
+                    title = if (showingIconAppearance) R.string.settings_icon_appearance
+                        else R.string.settings_title,
+                )
+            } else {
+                SongMeldHeader(onOpenSettings = { showingSettings = true })
+            }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            if (!permissionGranted) {
+            if (showingIconAppearance) {
+                IconAppearanceScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    iconStyle = iconStyle,
+                    iconShape = iconShape,
+                    onIconStyleChanged = onIconStyleChanged,
+                    onIconShapeChanged = onIconShapeChanged,
+                )
+            } else if (showingSettings) {
+                SettingsScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    theme = theme,
+                    dynamicColorEnabled = dynamicColorEnabled,
+                    onThemeChanged = onThemeChanged,
+                    onDynamicColorChanged = onDynamicColorChanged,
+                    onOpenIconAppearance = { showingIconAppearance = true },
+                )
+            } else if (!permissionGranted) {
                 val showSettingsAction = permissionRequestedBefore &&
                     activity != null &&
                     !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
