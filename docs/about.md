@@ -22,8 +22,10 @@ Each entry supports a bundled avatar, display name, contribution text, GitHub
 profile and optional email. Missing avatars use an initial. Profile buttons wrap
 at large font scales. Use locally bundled images to keep credits available offline.
 
-The owner currently uses an initial as the avatar. Add a bundled profile image
-only after the owner authorizes publishing it as part of the app source.
+The owner has authorized publishing their GitHub avatar.
+`developer_ktandth.jpg` is bundled from the public profile image at
+https://github.com/nktdth.png?size=192 (retrieved on 2026-10-19, Vietnam time).
+The image remains available offline; no avatar request is made by the app.
 
 ## Validation
 

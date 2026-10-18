@@ -19,6 +19,7 @@ internal object AboutCredits {
         AboutPerson(
             name = "ktandth",
             contribution = R.string.about_primary_detail,
+            avatar = R.drawable.developer_ktandth,
             githubUrl = "https://github.com/nktdth",
         ),
     )
