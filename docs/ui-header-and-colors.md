@@ -3,7 +3,7 @@
 ## Persistent header
 
 `ui/components/SongMeldHeader.kt` renders the SongMeld wordmark, animated
-scalloped logo, and the reserved overflow icon. It lives in the root
+scalloped logo, and an overflow button that opens the Settings menu. It lives in the root
 `SongMeldApp()` Scaffold's `topBar`, **outside** the permission and library
 screen branches. Permission requests and `ON_RESUME` permission refreshes do
 not detach the header or restart the entrance animation.

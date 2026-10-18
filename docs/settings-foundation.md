@@ -1,40 +1,25 @@
-# Settings foundation
+# Settings — current screen structure
 
-SongMeld's top-right **More options** button is an accessible `IconButton` with a
-Material 3 `DropdownMenu`. The **Settings** item navigates to a Compose settings
-page. Android's system Back and the settings back arrow return to the Songs
-Library. Settings are available even before the user grants audio access.
+The top-right **More options** button in SongMeld's library header opens a Material 3 `DropdownMenu` containing **Settings**. The header stays accessible even when the app has no audio-library permission.
 
-## Working preferences
+The Settings overview is intentionally minimal: **Appearance** and **About**. Both rows use pastel circular icon backgrounds inspired by SongMeld v1. Child pages use a collapsing `MediumTopAppBar` with `exitUntilCollapsedScrollBehavior()`; the currently configured Compose Material 3 version does not expose `MediumFlexibleTopAppBar` as a public API.
 
-- **Theme:** Follow system (default), Light, or Dark. Updates the Material 3
-  theme and system-bar icon contrast immediately.
-- **Dynamic color:** Enabled by default on Android 12+. The switch is disabled
-  with an explanation on Android 8–11, which retain SongMeld's orange palette.
-- Changes persist in the private `songmeld_appearance` SharedPreferences file.
+## Destination and Back behavior
 
-`AppearancePreferences` isolates persistence from the Compose UI. This is a
-small starting point; DataStore can replace it as preferences become more
-numerous or need asynchronous persistence.
+`SongMeldApp.kt` stores one `SongMeldPage` destination (rather than several overlapping Boolean page flags). The Android Back button and app-bar Back icon share the same parent chain:
 
-## Later: configurable icon system
+```text
+Library → Settings → Appearance → Icon appearance → Browse icons
+                   ↘ About
+```
 
-Settings contains a clearly labeled *informational* Icons section. No nonfunctional
-icon controls are exposed. When the Material Symbols Variable Font engine exists,
-add real fill/weight/grade/optical-size controls here and decide whether the
-settings apply globally or only to user-created Tags / Playlists. Keep branding
-resources separate and avoid bundling thousands of unused icons upfront.
+Back proceeds to the direct parent page, and the selected destination is saved across ordinary Compose activity recreation. Each settings destination owns its Scaffold, preventing duplicate insets. The Settings overview is intentionally short; the app bar only visibly collapses when the page has enough content to scroll (for example, Icon appearance).
 
-## QA checklist
+## Active preferences
 
-1. With and without audio permission, open More options → Settings; use both
-   the toolbar arrow and device Back.
-2. Toggle Light, Dark and Follow system. Check surfaces, text contrast and
-   status/navigation bar icon visibility.
-3. On Android 12+, toggle Dynamic color; wallpaper colors should be used when
-   enabled, SongMeld orange/brown colors when disabled.
-4. On Android 8–11, verify the dynamic-color switch is disabled and the custom
-   palette remains usable.
-5. Relaunch the app and rotate the device; preferences should persist.
-6. Return to Songs and ensure search, refresh, the music-permission prompt and
-   library listing still work.
+- **Theme:** Follow system (default), Light, or Dark, applied to Material 3 and system bars.
+- **Dynamic color:** Android 12+ (API 31+) when enabled. Otherwise SongMeld's warm fallback palette.
+- **Icon appearance:** Rounded/Outlined/Sharp, variable axes FILL/wght/GRAD/opsz, and preview background shape.
+- **Browse icons:** Search the offline Symbols/MDI/Flutter icon catalogs and save a test selection (not yet linked to Tags/Playlists).
+
+`AppearancePreferences.kt` stores these settings in private `songmeld_appearance` SharedPreferences and preserves the earlier `filled` preference migration. See [icon system](icon-system.md) for font provenance and update tooling.

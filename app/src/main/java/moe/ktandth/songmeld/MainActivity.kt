@@ -28,9 +28,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import kotlinx.coroutines.delay
 import moe.ktandth.songmeld.ui.SongMeldApp
-import moe.ktandth.songmeld.ui.icons.AppIconStyle
+import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
 import moe.ktandth.songmeld.ui.icons.AppIconShape
-import moe.ktandth.songmeld.ui.icons.LocalSongMeldIconStyle
+import moe.ktandth.songmeld.ui.icons.IconReference
+import moe.ktandth.songmeld.ui.icons.LocalMaterialSymbolAppearance
 import moe.ktandth.songmeld.ui.icons.LocalSongMeldIconShape
 import moe.ktandth.songmeld.ui.settings.AppTheme
 import moe.ktandth.songmeld.ui.settings.AppearancePreferences
@@ -87,8 +88,9 @@ class MainActivity : ComponentActivity() {
             var dynamicColorEnabled by remember {
                 mutableStateOf(appearancePreferences.dynamicColorEnabled)
             }
-            var iconStyle by remember { mutableStateOf(appearancePreferences.iconStyle) }
+            var symbols by remember { mutableStateOf(appearancePreferences.symbols) }
             var iconShape by remember { mutableStateOf(appearancePreferences.iconShape) }
+            var selectedIcon by remember { mutableStateOf(appearancePreferences.iconPickerSelection) }
             val systemDark = isSystemInDarkTheme()
             val darkTheme = when (theme) {
                 AppTheme.SYSTEM -> systemDark
@@ -109,11 +111,16 @@ class MainActivity : ComponentActivity() {
                     playComposeIntro = animate && Build.VERSION.SDK_INT < Build.VERSION_CODES.S,
                     theme = theme,
                     dynamicColorEnabled = dynamicColorEnabled,
-                    iconStyle = iconStyle,
+                    symbols = symbols,
                     iconShape = iconShape,
-                    onIconStyleChanged = { selected ->
-                        iconStyle = selected
-                        appearancePreferences.setIconStyle(selected)
+                    selectedIcon = selectedIcon,
+                    onSelectedIconChanged = { selected ->
+                        selectedIcon = selected
+                        appearancePreferences.setIconPickerSelection(selected)
+                    },
+                    onSymbolsChanged = { selected ->
+                        symbols = selected.validated()
+                        appearancePreferences.setSymbols(symbols)
                     },
                     onIconShapeChanged = { selected ->
                         iconShape = selected
@@ -138,9 +145,11 @@ private fun SongMeldRoot(
     playComposeIntro: Boolean,
     theme: AppTheme,
     dynamicColorEnabled: Boolean,
-    iconStyle: AppIconStyle,
+    symbols: MaterialSymbolAppearance,
     iconShape: AppIconShape,
-    onIconStyleChanged: (AppIconStyle) -> Unit,
+    selectedIcon: IconReference?,
+    onSelectedIconChanged: (IconReference) -> Unit,
+    onSymbolsChanged: (MaterialSymbolAppearance) -> Unit,
     onIconShapeChanged: (AppIconShape) -> Unit,
     onThemeChanged: (AppTheme) -> Unit,
     onDynamicColorChanged: (Boolean) -> Unit,
@@ -155,16 +164,18 @@ private fun SongMeldRoot(
     }
 
     CompositionLocalProvider(
-        LocalSongMeldIconStyle provides iconStyle,
+        LocalMaterialSymbolAppearance provides symbols,
         LocalSongMeldIconShape provides iconShape,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             SongMeldApp(
                 theme = theme,
                 dynamicColorEnabled = dynamicColorEnabled,
-                iconStyle = iconStyle,
+                symbols = symbols,
                 iconShape = iconShape,
-                onIconStyleChanged = onIconStyleChanged,
+                selectedIcon = selectedIcon,
+                onSelectedIconChanged = onSelectedIconChanged,
+                onSymbolsChanged = onSymbolsChanged,
                 onIconShapeChanged = onIconShapeChanged,
                 onThemeChanged = onThemeChanged,
                 onDynamicColorChanged = onDynamicColorChanged,

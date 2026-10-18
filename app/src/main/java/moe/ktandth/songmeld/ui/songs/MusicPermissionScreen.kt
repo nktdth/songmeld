@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
-import moe.ktandth.songmeld.ui.icons.songMeldIcon
+import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 
 @Composable
@@ -66,8 +65,8 @@ fun MusicPermissionScreen(
                 .fillMaxWidth()
                 .heightIn(min = 52.dp),
         ) {
-            Icon(
-                imageVector = if (showSettingsAction) songMeldIcon(SongMeldIconId.Settings) else songMeldIcon(SongMeldIconId.FolderOpen),
+            SongMeldIcon(
+                id = if (showSettingsAction) SongMeldIconId.Settings else SongMeldIconId.FolderOpen,
                 contentDescription = null,
             )
             Spacer(modifier = Modifier.width(10.dp))
@@ -102,10 +101,10 @@ private fun PermissionArtwork() {
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = songMeldIcon(SongMeldIconId.LibraryMusic),
+                SongMeldIcon(
+                    id = SongMeldIconId.LibraryMusic,
                     contentDescription = null,
-                    modifier = Modifier.size(54.dp),
+                    size = 54.dp,
                 )
             }
         }
@@ -120,10 +119,10 @@ private fun PermissionArtwork() {
             shadowElevation = 4.dp,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = songMeldIcon(SongMeldIconId.Lock),
+                SongMeldIcon(
+                    id = SongMeldIconId.Lock,
                     contentDescription = null,
-                    modifier = Modifier.size(22.dp),
+                    size = 22.dp,
                 )
             }
         }

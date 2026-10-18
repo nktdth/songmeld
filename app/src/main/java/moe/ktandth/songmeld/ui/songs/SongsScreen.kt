@@ -23,7 +23,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -53,7 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
-import moe.ktandth.songmeld.ui.icons.songMeldIcon
+import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
@@ -130,16 +129,16 @@ private fun SongSearchBar(
         shape = RoundedCornerShape(28.dp),
         placeholder = { Text(stringResource(R.string.search_songs_hint)) },
         leadingIcon = {
-            Icon(
-                imageVector = songMeldIcon(SongMeldIconId.Search),
+            SongMeldIcon(
+                id = SongMeldIconId.Search,
                 contentDescription = null,
             )
         },
         trailingIcon = if (query.isNotEmpty()) {
             {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(
-                        imageVector = songMeldIcon(SongMeldIconId.Close),
+                    SongMeldIcon(
+                        id = SongMeldIconId.Close,
                         contentDescription = stringResource(R.string.clear_search),
                     )
                 }
@@ -286,11 +285,11 @@ private fun SongArtwork(
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
-            Icon(
-                imageVector = songMeldIcon(SongMeldIconId.MusicNote),
+            SongMeldIcon(
+                id = SongMeldIconId.MusicNote,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.size(24.dp),
+                size = 24.dp,
             )
         }
     }
@@ -309,10 +308,10 @@ private fun PermissionArtwork() {
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = songMeldIcon(SongMeldIconId.LibraryMusic),
+                SongMeldIcon(
+                    id = SongMeldIconId.LibraryMusic,
                     contentDescription = null,
-                    modifier = Modifier.size(54.dp),
+                    size = 54.dp,
                 )
             }
         }
@@ -327,10 +326,10 @@ private fun PermissionArtwork() {
             shadowElevation = 4.dp,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = songMeldIcon(SongMeldIconId.Lock),
+                SongMeldIcon(
+                    id = SongMeldIconId.Lock,
                     contentDescription = null,
-                    modifier = Modifier.size(22.dp),
+                    size = 22.dp,
                 )
             }
         }
@@ -357,7 +356,7 @@ private fun LoadingState() {
 @Composable
 private fun EmptyLibraryState() {
     LibraryMessage(
-        icon = songMeldIcon(SongMeldIconId.LibraryMusic),
+        icon = SongMeldIconId.LibraryMusic,
         title = stringResource(R.string.empty_library_title),
         body = stringResource(R.string.empty_library_body),
     )
@@ -366,7 +365,7 @@ private fun EmptyLibraryState() {
 @Composable
 private fun EmptySearchState(query: String) {
     LibraryMessage(
-        icon = songMeldIcon(SongMeldIconId.SearchOff),
+        icon = SongMeldIconId.SearchOff,
         title = stringResource(R.string.empty_search_title),
         body = stringResource(R.string.empty_search_body, query),
     )
@@ -395,7 +394,7 @@ private fun ErrorState(onRetry: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(20.dp))
             FilledTonalButton(onClick = onRetry) {
-                Icon(songMeldIcon(SongMeldIconId.Refresh), contentDescription = null)
+                SongMeldIcon(SongMeldIconId.Refresh, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.retry))
             }
@@ -405,7 +404,7 @@ private fun ErrorState(onRetry: () -> Unit) {
 
 @Composable
 private fun LibraryMessage(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: SongMeldIconId,
     title: String,
     body: String,
 ) {
@@ -424,10 +423,10 @@ private fun LibraryMessage(
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
+                    SongMeldIcon(
+                        id = icon,
                         contentDescription = null,
-                        modifier = Modifier.size(36.dp),
+                        size = 36.dp,
                     )
                 }
             }
