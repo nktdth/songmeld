@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="menu_more_options">Tùy chọn khác</string>
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_back">Quay lại</string>
+    <string name="settings_appearance">Giao diện</string>
+    <string name="settings_appearance_summary">Chủ đề, màu sắc và biểu tượng</string>
+    <string name="settings_theme">Chủ đề</string>
+    <string name="settings_theme_description">Tùy chỉnh giao diện SongMeld.</string>
+    <string name="settings_theme_system">Theo hệ thống</string>
+    <string name="settings_theme_light">Sáng</string>
+    <string name="settings_theme_dark">Tối</string>
+    <string name="settings_dynamic_color">Màu động</string>
+    <string name="settings_dynamic_color_description">Sử dụng màu từ hình nền thiết bị.</string>
+    <string name="settings_dynamic_color_unavailable">Chỉ hỗ trợ Android 12 trở lên.</string>
+    <string name="settings_icons">Biểu tượng</string>
+    <string name="settings_icon_appearance">Kiểu biểu tượng</string>
+    <string name="settings_icon_appearance_summary">Tùy chỉnh Material Symbols và hình nền biểu tượng</string>
+    <string name="settings_icon_preview">Xem trước</string>
+    <string name="settings_icon_style">Phong cách biểu tượng</string>
+    <string name="settings_icon_style_description">Áp dụng cho biểu tượng trong SongMeld.</string>
+    <string name="settings_icon_style_rounded">Bo tròn</string>
+    <string name="settings_icon_style_outlined">Nét viền</string>
+    <string name="settings_icon_style_sharp">Góc sắc</string>
+    <string name="settings_icon_variable_axes">Chi tiết biểu tượng</string>
+    <string name="settings_icon_variable_axes_summary">Thay đổi được áp dụng ngay cho biểu tượng SongMeld.</string>
+    <string name="settings_icon_fill">Tô kín</string>
+    <string name="settings_icon_weight">Độ đậm</string>
+    <string name="settings_icon_grade">Cấp độ nét</string>
+    <string name="settings_icon_optical_size">Kích thước quang học</string>
+    <string name="settings_icon_shape">Hình nền biểu tượng</string>
+    <string name="settings_icon_shape_description">Chỉ áp dụng cho nền minh họa, không thay đổi ảnh bìa.</string>
+    <string name="settings_icon_shape_circle">Hình tròn</string>
+    <string name="settings_icon_shape_rounded">Vuông bo tròn</string>
+    <string name="settings_icon_shape_square">Vuông bo nhẹ</string>
+    <string name="settings_icon_reset">Khôi phục biểu tượng mặc định</string>
+    <string name="settings_icon_font_note">Sử dụng Material Symbols Variable Font. Logo SongMeld và ảnh bìa không bị ảnh hưởng.</string>
+    <string name="settings_about">Giới thiệu</string>
+    <string name="settings_version">Phiên bản %1$s</string>
+    <string name="settings_about_description">Bộ công cụ âm nhạc xây dựng với Kotlin, Jetpack Compose và Material 3.</string>
+</resources>

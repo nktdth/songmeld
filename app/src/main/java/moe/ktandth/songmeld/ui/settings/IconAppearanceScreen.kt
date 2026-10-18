@@ -17,13 +17,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,20 +31,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.AppIconShape
 import moe.ktandth.songmeld.ui.icons.AppIconStyle
-import moe.ktandth.songmeld.ui.icons.LocalSongMeldIconStyle
+import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
+import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
 import moe.ktandth.songmeld.ui.icons.iconBackgroundShape
-import moe.ktandth.songmeld.ui.icons.songMeldIcon
 
-/** First usable appearance page. These are real static icon presets, not variable-font sliders. */
+/** Material Symbols Variable Font settings: the live preview uses the same renderer as the app. */
 @Composable
 fun IconAppearanceScreen(
-    iconStyle: AppIconStyle,
+    appearance: MaterialSymbolAppearance,
     iconShape: AppIconShape,
-    onIconStyleChanged: (AppIconStyle) -> Unit,
+    onAppearanceChanged: (MaterialSymbolAppearance) -> Unit,
     onIconShapeChanged: (AppIconShape) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -86,10 +87,11 @@ fun IconAppearanceScreen(
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = songMeldIcon(icon),
+                            SongMeldIcon(
+                                id = icon,
                                 contentDescription = null,
-                                modifier = Modifier.size(27.dp),
+                                size = 28.dp,
+                                appearance = appearance,
                             )
                         }
                     }
@@ -114,22 +116,78 @@ fun IconAppearanceScreen(
                             when (style) {
                                 AppIconStyle.ROUNDED -> R.string.settings_icon_style_rounded
                                 AppIconStyle.OUTLINED -> R.string.settings_icon_style_outlined
-                                AppIconStyle.FILLED -> R.string.settings_icon_style_filled
-                            }
+                                AppIconStyle.SHARP -> R.string.settings_icon_style_sharp
+                            },
                         ),
-                        selected = iconStyle == style,
-                        onClick = { onIconStyleChanged(style) },
+                        selected = appearance.style == style,
+                        onClick = { onAppearanceChanged(appearance.copy(style = style)) },
                     ) {
-                        CompositionLocalProvider(LocalSongMeldIconStyle provides style) {
-                            Icon(
-                                imageVector = songMeldIcon(SongMeldIconId.MusicNote),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(28.dp),
-                            )
-                        }
+                        SongMeldIcon(
+                            id = SongMeldIconId.MusicNote,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            size = 28.dp,
+                            appearance = appearance.copy(style = style),
+                        )
                     }
                 }
+            }
+        }
+
+        GroupHeader(
+            title = stringResource(R.string.settings_icon_variable_axes),
+            description = stringResource(R.string.settings_icon_variable_axes_summary),
+        )
+        Card(
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 18.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
+            ) {
+                IconAxisSlider(
+                    label = stringResource(R.string.settings_icon_fill),
+                    valueLabel = "${(appearance.fill * 100).roundToInt()}%",
+                    value = appearance.fill,
+                    range = 0f..1f,
+                    onChange = { onAppearanceChanged(appearance.copy(fill = it)) },
+                )
+                IconAxisSlider(
+                    label = stringResource(R.string.settings_icon_weight),
+                    valueLabel = appearance.weight.toString(),
+                    value = appearance.weight.toFloat(),
+                    range = 100f..700f,
+                    onChange = { onAppearanceChanged(appearance.copy(weight = it.roundToInt())) },
+                )
+                IconAxisSlider(
+                    label = stringResource(R.string.settings_icon_grade),
+                    valueLabel = appearance.grade.toString(),
+                    value = appearance.grade.toFloat(),
+                    range = -50f..200f,
+                    onChange = { onAppearanceChanged(appearance.copy(grade = it.roundToInt())) },
+                )
+                IconAxisSlider(
+                    label = stringResource(R.string.settings_icon_optical_size),
+                    valueLabel = appearance.opticalSize.toString(),
+                    value = appearance.opticalSize.toFloat(),
+                    range = 20f..48f,
+                    onChange = { onAppearanceChanged(appearance.copy(opticalSize = it.roundToInt())) },
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            TextButton(onClick = {
+                onAppearanceChanged(MaterialSymbolAppearance())
+                onIconShapeChanged(AppIconShape.CIRCLE)
+            }) {
+                Text(stringResource(R.string.settings_icon_reset))
             }
         }
 
@@ -163,11 +221,12 @@ fun IconAppearanceScreen(
                                 .background(MaterialTheme.colorScheme.primaryContainer),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Icon(
-                                imageVector = songMeldIcon(SongMeldIconId.MusicNote),
+                            SongMeldIcon(
+                                id = SongMeldIconId.MusicNote,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(22.dp),
+                                size = 22.dp,
+                                appearance = appearance,
                             )
                         }
                     }
@@ -175,12 +234,30 @@ fun IconAppearanceScreen(
             }
         }
         Text(
-            text = stringResource(R.string.settings_icon_future_note),
+            text = stringResource(R.string.settings_icon_font_note),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(horizontal = 18.dp),
         )
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun IconAxisSlider(
+    label: String,
+    valueLabel: String,
+    value: Float,
+    range: ClosedFloatingPointRange<Float>,
+    onChange: (Float) -> Unit,
+) {
+    Column {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = label, style = MaterialTheme.typography.titleSmall)
+            Text(text = valueLabel, color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelLarge)
+        }
+        Slider(value = value, onValueChange = onChange, valueRange = range)
     }
 }
 
@@ -217,14 +294,9 @@ private fun IconChoiceRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
-            preview()
-        }
-        Text(
-            text = title,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+        Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) { preview() }
+        Text(text = title, modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyLarge)
         RadioButton(selected = selected, onClick = onClick)
     }
 }

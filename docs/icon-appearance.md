@@ -1,22 +1,14 @@
-# Icon appearance foundation
+# Icon appearance
 
-Settings > Icon appearance now opens a functional page. The app currently offers
-three *static Compose Material Icon* styles: Rounded (default), Outlined, Filled.
-These are not the adjustable Material Symbols variable-font axes.
+Settings → Icon appearance is now powered by **Google Material Symbols Variable Font** (not the legacy Compose Material Icons Extended dependency).
 
-The central `SongMeldIconId` mapping in `ui/icons/SongMeldIcons.kt` resolves
-screen icons using `LocalSongMeldIconStyle`. New screen icons should use
-`songMeldIcon(SongMeldIconId.SomeName)`, and add each new name for all presets.
-Do not persist `R.drawable` IDs or raw numeric icon codepoints.
+- Choose the Rounded, Outlined, or Sharp variable font family.
+- Adjust the genuine font axes Fill (`FILL`), Weight (`wght`), Grade (`GRAD`) and Optical size (`opsz`) with live preview.
+- Choose Circle / Rounded square / Soft square as a separate background shape preference.
+- Changes apply to SongMeld's UI icons across the header, Songs, permission screen and Settings, and are saved in `AppearancePreferences` using SharedPreferences.
+- A stored legacy `icon_style=filled` setting migrates to Rounded and `FILL=1`.
+- Device Back and the header Back button navigate Icon appearance → Settings → Songs.
 
-The optional icon background shape is a separate setting; it changes the
-illustrative icon containers in the music-permission and empty-state screens.
-It deliberately does **not** change album covers, the splash logo or launcher.
+New call sites should use `SongMeldIcon(SongMeldIconId.YourName, contentDescription = ...)`. See [Icon system](icon-system.md) for font sourcing, attribution, extension instructions, and licensing.
 
-Both settings are persisted in `AppearancePreferences` (SharedPreferences)
-and state is hosted in `MainActivity`. Device Back and the header Back button
-navigate Icon appearance -> Settings -> music library.
-
-Future plans: Material Symbols Variable Font with FILL, wght, GRAD and opsz;
-additional providers for user-selected tag/playlist icons. Keep that engine
-separate from static icon presets to avoid pseudo-sliders.
+The launcher icon, splash logo, branding vector XMLs, and actual song album art never change based on these settings. Future Tag/Playlist custom-icon selection will require a larger font subset or independent icon catalog.

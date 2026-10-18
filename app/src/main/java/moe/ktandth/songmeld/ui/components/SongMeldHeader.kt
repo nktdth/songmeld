@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,7 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
-import moe.ktandth.songmeld.ui.icons.songMeldIcon
+import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 
 /**
  * Persistent app header, shared by the permission and Songs Library states.
@@ -72,8 +71,8 @@ fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
                 onClick = { menuExpanded = true },
                 modifier = Modifier.size(48.dp),
             ) {
-                Icon(
-                    imageVector = songMeldIcon(SongMeldIconId.MoreVert),
+                SongMeldIcon(
+                    id = SongMeldIconId.MoreVert,
                     contentDescription = stringResource(R.string.menu_more_options),
                 )
             }
@@ -84,7 +83,7 @@ fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.settings_title)) },
                     leadingIcon = {
-                        Icon(imageVector = songMeldIcon(SongMeldIconId.Settings), contentDescription = null)
+                        SongMeldIcon(id = SongMeldIconId.Settings, contentDescription = null)
                     },
                     onClick = {
                         menuExpanded = false
