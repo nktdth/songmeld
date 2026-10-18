@@ -21,6 +21,7 @@ internal object AboutCredits {
             contribution = R.string.about_primary_detail,
             avatar = R.drawable.developer_ktandth,
             githubUrl = "https://github.com/nktdth",
+            email = "nkt@ktandth.moe",
         ),
     )
     // Add people here only after their ongoing developer role has been confirmed.
