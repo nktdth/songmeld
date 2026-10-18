@@ -5,6 +5,9 @@
 SongMeld is a modern open-source Android music toolbox built with
 Kotlin, Jetpack Compose, and Material 3.
 
+**MELD** stands for **Metadata, Editing, Lyrics, Download** — the four core areas
+SongMeld aims to bring together.
+
 > SongMeld is currently under active development.
 
 ## Status
@@ -23,6 +26,6 @@ SongMeld is licensed under the GNU General Public License v3.0.
 ## Typography
 
 SongMeld uses Google Sans Flex for Material 3 UI text and Google Sans Code for
-timecodes and future editors. This source archive omits the binary font files.
-Before building, copy **google_sans_flex.ttf** and **google_sans_code.ttf** from
-SongMeld v1 into `app/src/main/res/font/`. See [font instructions](docs/fonts.md).
+timecodes and future editors. The project keeps the fonts in
+`app/src/main/res/font/` and their OFL 1.1 license in
+`app/src/main/assets/licenses/`. See [font details](docs/fonts.md).

@@ -30,19 +30,6 @@ val SongMeldTypography =
     labelSmall = MaterialTypography.labelSmall.copy(fontFamily = GoogleSansFlexRounded),
   )
 
-/**
- * Page-title variant of Google Sans Flex using stylistic set 02.
- *
- * This mirrors the OpenType feature used by Google web UIs:
- * `font-feature-settings: "ss02" on;`
- * Only screen-level titles opt into this style; the rest of SongMeld keeps
- * the regular rounded Google Sans Flex typography.
- */
-val SongMeldPageTitleStyle: TextStyle =
-  SongMeldTypography.titleLarge.copy(
-    fontFeatureSettings = "\"ss02\" on",
-  )
-
 /** Consistent monospaced style for timecodes, technical values and LRC editing. */
 val SongMeldCodeStyle: TextStyle =
   SongMeldTypography.bodySmall.copy(fontFamily = GoogleSansCode)

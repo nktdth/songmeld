@@ -57,13 +57,6 @@ private fun googleSansFlexFontFamily(
 }
 
 /**
- * Primary SongMeld UI family.
- *
- * One Google Sans Flex variable font file provides all registered weights.
- */
-val GoogleSansFlex = googleSansFlexFontFamily()
-
-/**
  * Fully rounded Google Sans Flex variant, ready for expressive accents.
  */
 val GoogleSansFlexRounded = googleSansFlexFontFamily(roundness = 100f)

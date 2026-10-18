@@ -4,9 +4,9 @@ This change is intentionally limited to the local Songs screen. No playback, sor
 
 ## UI
 
-- One connected list of song rows: 24dp top corners on the first result, square intermediate rows, 24dp bottom corners on the last result, 24dp all-round for a single result.
+- One connected list of song rows: 24dp outer corners at the first and last results, gently rounded 6dp seams between rows, and 24dp all-round for a single result.
 - Each row uses `surfaceContainer`, separated from neighbors by 2dp, with 16dp outer horizontal margins.
-- 56dp rounded cover thumbnail, one-line ellipsized title, then `artist · duration` on the same second line. Album is still indexed for search and held in the song model, but is not shown on the row.
+- 72dp minimum row height with 48dp rounded cover thumbnail, compact one-line ellipsized title, then `artist · duration` on the second line. The separator has fixed 6dp Compose spacers rather than font-dependent whitespace; the duration uses Google Sans Code. Album is still indexed for search and held in the song model, but is not shown on the row.
 - `LazyColumn.itemsIndexed` uses the MediaStore `_ID` as stable key. Filtering recomputes first/last boundaries.
 
 ## Local artwork
