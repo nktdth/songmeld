@@ -61,7 +61,9 @@ configuration recreation. See AndroidX `core-splashscreen` platform limitations.
 ## Brand ownership
 
 The source SVG contains the already-corrected note geometry; no splash-only
-translation is applied. When editing `branding/songmeld-logo.svg`, run
-`python3 tools/sync_branding.py` to update all vector paths, the Compose
-outer shape, and the animated-vector morph start shape. Changing the outer
-badge also requires manually regenerating a compatible morph target (`valueTo`).
+translation is applied. Assets are now static and **no Python synchronization
+script is required**. If the logo ever changes, update the matching Android
+vectors and `BADGE_PATH` in `SongMeldSplashIntro.kt` manually. Also update
+`android:valueFrom` in `songmeld_badge_morph.xml`; a modified outer contour
+requires a compatible `valueTo` path for the morph. See [branding](branding.md)
+for the complete checklist.

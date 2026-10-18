@@ -1,66 +1,47 @@
-# SongMeld branding
+# SongMeld branding assets
 
-## Canonical icon geometry
+SongMeld uses a **fixed set of vector assets** for its approved music-note/wrench symbol. There is no asset-generation step, Python dependency, or branding build task. Normal Gradle builds consume the Android resources directly.
 
-**`branding/songmeld-logo.svg` is the single source of truth** for the outer
-scalloped badge (`logo-star`) and the inner wrench/music note (`logo-note`).
-The note's optical adjustment is baked into the path coordinates:
-**left by 0.42 and down by 0.38** in the 24 × 24 SVG viewport, relative to the
-original design. This balances the elongated upper flag without an individual
-`translateX` / `translateY` in the launcher, splash, or in-app logo.
+## Three logo forms
 
-Do not repeat this adjustment in code or when embedding the logo elsewhere.
-The Android launcher foreground and monochrome icon keep only a centered
-`0.80` **scale** to respect adaptive-icon safe areas. The animated Android
-splash uses a `+6,+6` **canvas placement** to center the complete logo in a
-36 × 36 viewport; this is not an optical correction to the note.
+| Form | Source asset | Android resource | Where to use it |
+| --- | --- | --- | --- |
+| **Full badge** (wavy/scalloped outline + note) | [`branding/songmeld-logo.svg`](../branding/songmeld-logo.svg) | `res/drawable/songmeld_logo.xml` | In-app header, branded surfaces, splash artwork |
+| **Standalone mark** (note/wrench without badge) | [`branding/songmeld-mark.svg`](../branding/songmeld-mark.svg) | `res/drawable/songmeld_mark.xml` | Minimal icon placements, future actions or branding |
+| **Android adaptive/themed icon** (note only) | — | `res/mipmap-anydpi-v26/ic_launcher.xml`, `ic_launcher_round.xml`, plus `res/drawable/ic_launcher_foreground.xml` and `ic_launcher_monochrome.xml` | Device launcher; system applies the launcher mask and themed-icon tint |
 
-## Asset inventory
+The GitHub README uses [`branding/songmeld-logo-orange.svg`](../branding/songmeld-logo-orange.svg), a static full-badge export in orange (`#FFA069`) and brown (`#57331E`) because GitHub cannot resolve Android system color resources. The source SVG contains the approved badge and note geometry; the standalone SVG reuses its note path.
 
-| Asset | File | Purpose |
+All `res/` paths above are relative to `app/src/main/`. Keep vector XMLs in the Android app: an SVG file under `branding/` is documentation/design artwork, not a directly consumable Android resource.
+
+## Geometry and spacing
+
+The standalone music/wrench note has its optical centering correction **already included in its path data** (relative to the first design: left by 0.42 and down by 0.38 in the 24×24 viewBox). Avoid adding another note-only translation in the header, splash, or launcher.
+
+- In-app full badge: 24×24 vector with both shapes and runtime colors.
+- Adaptive launcher foreground/monochrome layers: 108dp resources; the note is uniformly scaled to 0.80 around its center to respect launcher safe areas. The system, **not the SVG outline**, creates the final launcher mask.
+- Animated system splash: 36×36 vector viewBox, with badge and note placed at +6,+6 and centered around (18,18). Only the badge rotates and morphs; the note stays still.
+- Pre-Android-12 Compose splash: the same approved badge contour is stored in `ui/splash/SongMeldSplashIntro.kt` to animate it without starting another animation on Android 12+.
+
+## Colors
+
+| Version | Badge/background | Note/foreground |
 | --- | --- | --- |
-| Canonical full SVG | [`branding/songmeld-logo.svg`](../branding/songmeld-logo.svg) | Master badge + note geometry, original purple/white presentation |
-| README default icon | [`branding/songmeld-logo-orange.svg`](../branding/songmeld-logo-orange.svg) | Static orange (`#FFA069`) + brown (`#57331E`) logo for GitHub |
-| Standalone SVG mark | [`branding/songmeld-mark.svg`](../branding/songmeld-mark.svg) | Note only, matching the canonical geometry |
-| In-app full logo | `res/drawable/songmeld_logo.xml` | Launcher palette badge and note, including wallpaper colors on Android 12+ |
-| In-app mark | `res/drawable/songmeld_mark.xml` | Note without the badge, tinted with the launcher foreground palette |
-| Adaptive foreground | `res/drawable/ic_launcher_foreground.xml` | Launcher note, scaled to fit the safe zone |
-| Monochrome launcher | `res/drawable/ic_launcher_monochrome.xml` | Themed icon using the same note geometry |
-| Compose splash note | `res/drawable/songmeld_splash_note.xml` | Stationary note over a rotating badge |
-| System splash | `res/drawable/songmeld_splash_vector.xml` | Badge and note, center placed for animated vector splash |
+| Android 8–11 | `#FFA069` | `#57331E` |
+| Android 12+ | `@android:color/system_accent1_100` (light) / `_700` (dark) | `@android:color/system_accent1_900` (light) / `_100` (dark) |
+| Android 13+ themed icons | The launcher controls the monochrome icon tint | The one-color mark is provided by `ic_launcher_monochrome.xml` |
 
-Paths under `res/` are relative to `app/src/main`.
+The actual wallpaper-derived palette depends on the device and launcher. The main application continues to use Material 3 Dynamic Color on Android 12+, with warm fallback colors on older versions. See [UI colors](ui-header-and-colors.md) and [splash](splash-screen.md).
 
-## Updating or reusing the logo
+## If the logo is changed in the future
 
-After editing the canonical `branding/songmeld-logo.svg`, run from the repo root:
+The branding has been finalized for now, so assets are maintained **manually**. Only perform these steps if changing the SVG silhouette:
 
-```bash
-python3 tools/sync_branding.py
-python3 tools/sync_branding.py --check
-```
+1. Edit `branding/songmeld-logo.svg`, then update the orange full-badge SVG and standalone SVG to use the approved final path shapes.
+2. Copy the matching path data into `songmeld_logo.xml`, `songmeld_mark.xml`, the launcher foreground/monochrome vectors, and the splash note/vector resources. Preserve each resource's **color references, group placement, scale and animation target names**.
+3. Update `BADGE_PATH` in `SongMeldSplashIntro.kt` and `android:valueFrom` in `animator/songmeld_badge_morph.xml`. If the outer silhouette changes, update `android:valueTo` with path commands compatible with `valueFrom` and visually check the morph.
+4. Preview regular and themed icons on Android 8–11, 12+, and 13+, in light and dark modes; build with `./gradlew assembleDebug`.
 
-The script uses only Python's standard library. It updates the README variant,
-standalone mark, Android VectorDrawables, and the source badge used by the
-Android/Compose splash. `--check` fails when generated assets are out of sync,
-which makes it suitable for CI.
+**Do not** change the vector geometry just to reduce file count: some distinct Android resources are required to preserve different masks, palettes and animations.
 
-The badge morph animation contains an intentionally hand-tuned target path:
-`app/src/main/res/animator/songmeld_badge_morph.xml` (`valueTo`). If changing
-the **outer badge geometry**, update that morph target to a path with a
-compatible command structure, then visually verify the animated shape.
-
-## Platform colors and launcher behavior
-
-- **Android 8–11:** orange `#FFA069` badge/background and dark brown `#57331E` note.
-- **Android 12+:** launcher and splash colors use wallpaper-derived system palettes;
-  supported devices and launchers may vary.
-- **Android 13+ themed icons:** the monochrome adaptive layer is tinted by the
-  launcher where supported and enabled.
-- **GitHub README:** uses a separate static orange/brown SVG because GitHub
-  cannot access Android's wallpaper color system.
-
-> Design note: The current approved full badge was inspired by a reference
-> that has a notably similar exterior outline. Before wide public branding,
-> consider redrawing the exterior badge to be distinct. The standalone note
-> is a separate symbol.
+> Branding note: The current scalloped badge outline resembles an earlier visual reference. Before a wide public branding release, consider whether a more distinct exterior outline is desirable. The standalone note is a separate mark.
