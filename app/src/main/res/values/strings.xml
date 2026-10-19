@@ -133,4 +133,5 @@
     <string name="terms_third_party_body">Khi mở liên kết hoặc sử dụng dịch vụ bên thứ ba, hãy xem điều khoản và chính sách của dịch vụ đó. Khả năng truy cập có thể thay đổi theo nhà cung cấp.</string>
     <string name="terms_warranty_title">Giấy phép và bảo đảm</string>
     <string name="terms_warranty_body">Các quyền sử dụng, sửa đổi, phân phối và điều kiện bảo đảm của SongMeld được quy định trong GNU GPL v3.0. Xem toàn văn tại Giới thiệu → Giấy phép → SongMeld.</string>
+    <string name="info_last_updated">Cập nhật cuối: %1$s</string>
 </resources>

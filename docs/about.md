@@ -57,3 +57,10 @@ services or file-editing features are implemented.
 
 Document reads run on Dispatchers.IO. Missing/unreadable assets show a retry
 button. A malformed changelog shows a readable error instead of crashing.
+
+Each changelog release can set `lastUpdated` to an ISO calendar date (`yyyy-MM-dd`),
+for example `"lastUpdated": "2026-10-19"`. Set it to the date that specific
+version's entry was last updated, not the build date or the device's current date.
+The Vietnamese UI displays it as `Cập nhật cuối: 19/10/2026` under the status.
+Older entries without the field, or with an invalid date, still display their
+changes and omit the date line. Keep valid dates on all new entries.

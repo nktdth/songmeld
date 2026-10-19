@@ -22,6 +22,8 @@ import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /** Only notices actually bundled in this project; not an inferred dependency audit. */
 enum class LicenseDocument(
@@ -126,7 +128,14 @@ private fun AssetContent(path: String, content: @Composable (String) -> Unit) {
     }
 }
 
-private data class ChangelogRelease(val version: String, val status: String, val changes: List<String>)
+private data class ChangelogRelease(
+    val version: String,
+    val status: String,
+    val lastUpdated: LocalDate?,
+    val changes: List<String>,
+)
+
+private val changelogDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
 private fun parseChangelog(text: String): List<ChangelogRelease> {
     val array = JSONObject(text).getJSONArray("releases")
@@ -139,6 +148,10 @@ private fun parseChangelog(text: String): List<ChangelogRelease> {
         require(changes.length() > 0)
         ChangelogRelease(
             release.getString("version").also { require(it.isNotBlank()) }, status,
+            // Older entries may omit this field; malformed metadata must not hide their changes.
+            release.optString("lastUpdated").takeIf { it.isNotBlank() }?.let {
+                runCatching { LocalDate.parse(it) }.getOrNull()
+            },
             List(changes.length()) { changes.getString(it).also { change -> require(change.isNotBlank()) } },
         )
     }
@@ -162,6 +175,13 @@ fun ChangelogScreen(onBack: () -> Unit) {
                                 Text(stringResource(if (release.status == "development") R.string.about_development else R.string.info_released),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                     style = MaterialTheme.typography.labelMedium)
+                            }
+                            release.lastUpdated?.let { date ->
+                                Text(
+                                    stringResource(R.string.info_last_updated, date.format(changelogDateFormat)),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                             release.changes.forEach { change ->
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

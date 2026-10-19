@@ -3,6 +3,7 @@
     {
       "version": "0.1.0",
       "status": "development",
+      "lastUpdated": "2026-10-19",
       "changes": [
         "Xây dựng thư viện bài hát trên thiết bị và tìm kiếm nhạc.",
         "Thêm tùy chọn giao diện sáng, tối, theo hệ thống và màu động trên Android 12 trở lên.",
