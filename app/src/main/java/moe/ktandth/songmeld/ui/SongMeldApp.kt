@@ -47,6 +47,11 @@ import moe.ktandth.songmeld.ui.settings.AppTheme
 import moe.ktandth.songmeld.ui.settings.SettingsPageScaffold
 import moe.ktandth.songmeld.ui.settings.AppearanceSettingsScreen
 import moe.ktandth.songmeld.ui.settings.AboutSettingsScreen
+import moe.ktandth.songmeld.ui.settings.LicensesScreen
+import moe.ktandth.songmeld.ui.settings.LicenseDetailScreen
+import moe.ktandth.songmeld.ui.settings.LicenseDocument
+import moe.ktandth.songmeld.ui.settings.ChangelogScreen
+import moe.ktandth.songmeld.ui.settings.TermsScreen
 import moe.ktandth.songmeld.ui.settings.SettingsScreen
 import moe.ktandth.songmeld.ui.songs.MusicPermissionScreen
 import moe.ktandth.songmeld.ui.songs.SongsScreen
@@ -81,6 +86,7 @@ fun SongMeldApp(
     var refreshKey by remember { mutableIntStateOf(0) }
     // One saveable destination prevents conflicting combinations of page flags.
     var currentPage by rememberSaveable { mutableStateOf(SongMeldPage.LIBRARY) }
+    var selectedLicense by rememberSaveable { mutableStateOf(LicenseDocument.SONGMELD) }
     fun navigateBack() {
         currentPage = currentPage.parent
     }
@@ -180,9 +186,29 @@ fun SongMeldApp(
             }
 
             SongMeldPage.ABOUT -> key("about") {
-                AboutSettingsScreen(onBack = { navigateBack() })
+                AboutSettingsScreen(
+                    onBack = { navigateBack() },
+                    onOpenLicenses = { currentPage = SongMeldPage.LICENSES },
+                    onOpenChangelog = { currentPage = SongMeldPage.CHANGELOG },
+                    onOpenTerms = { currentPage = SongMeldPage.TERMS },
+                )
             }
 
+            SongMeldPage.LICENSES -> key("licenses") {
+                LicensesScreen(onBack = { navigateBack() }, onOpenLicense = {
+                    selectedLicense = it
+                    currentPage = SongMeldPage.LICENSE_DETAIL
+                })
+            }
+            SongMeldPage.LICENSE_DETAIL -> key(selectedLicense) {
+                LicenseDetailScreen(document = selectedLicense, onBack = { navigateBack() })
+            }
+            SongMeldPage.CHANGELOG -> key("changelog") {
+                ChangelogScreen(onBack = { navigateBack() })
+            }
+            SongMeldPage.TERMS -> key("terms") {
+                TermsScreen(onBack = { navigateBack() })
+            }
             SongMeldPage.SETTINGS -> key("settings") {
                 SettingsScreen(
                     onBack = { navigateBack() },
@@ -262,12 +288,15 @@ fun SongMeldApp(
 
 /** Parent destinations for the Settings flow; saved/restored as one enum value. */
 private enum class SongMeldPage {
-    LIBRARY, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER;
+    LIBRARY, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER,
+    LICENSES, LICENSE_DETAIL, CHANGELOG, TERMS;
 
     val parent: SongMeldPage
         get() = when (this) {
             LIBRARY, SETTINGS -> LIBRARY
             APPEARANCE, ABOUT -> SETTINGS
+            LICENSES, CHANGELOG, TERMS -> ABOUT
+            LICENSE_DETAIL -> LICENSES
             ICON_APPEARANCE -> APPEARANCE
             ICON_PICKER -> ICON_APPEARANCE
         }

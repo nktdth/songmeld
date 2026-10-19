@@ -30,6 +30,30 @@ The image remains available offline; no avatar request is made by the app.
 ## Validation
 
 Check the About page in light/dark themes, with dynamic colors on/off, large
-system text, and offline. Check back navigation, the scrollable license dialog,
+system text, and offline. Check back navigation, the license list and full-page document reader,
 GitHub/email actions, and empty/listed people in each role. Version comes from
 PackageManager and should match the installed build.
+
+## Information pages
+
+About links to Licenses, Changelog, and Terms. Each page uses the existing
+collapsing settings toolbar and app theme. Android Back and toolbar Back return
+to About; a license document returns to the license list. Selected document and
+current destination survive activity recreation.
+
+Licenses lists the four notices currently packaged in `assets/licenses/`.
+This is a catalog of bundled notices, not a complete dependency license audit.
+Before a release, review dependency attributions and the font provenance noted
+in `docs/icon-system.md`. Original license documents are displayed unchanged.
+
+Changelog reads `assets/changelog/vi.json` offline. Newest entries go first;
+use `development` or `released` for `status`. The initial 0.1.0 entry describes
+the development build, without claiming a release date. Add actual changes per
+version; do not automatically label historical entries with the installed version.
+
+Terms are localized in `values/strings.xml`. They provide usage information and
+preserve GPLv3 rights without adding an acceptance gate. Update content when new
+services or file-editing features are implemented.
+
+Document reads run on Dispatchers.IO. Missing/unreadable assets show a retry
+button. A malformed changelog shows a readable error instead of crashing.

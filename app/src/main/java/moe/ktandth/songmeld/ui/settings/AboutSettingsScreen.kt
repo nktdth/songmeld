@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,12 +34,17 @@ private const val REPOSITORY = "https://github.com/nktdth/songmeld"
 
 @Suppress("DEPRECATION")
 @Composable
-fun AboutSettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun AboutSettingsScreen(
+    onBack: () -> Unit,
+    onOpenLicenses: () -> Unit,
+    onOpenChangelog: () -> Unit,
+    onOpenTerms: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val version = remember(context) {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty()
     }
-    var licenseOpen by rememberSaveable { mutableStateOf(false) }
     SettingsPageScaffold(title = R.string.settings_about, onBack = onBack, modifier = modifier) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
@@ -52,10 +56,10 @@ fun AboutSettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 AboutLinkRow(
                     title = stringResource(R.string.about_license),
-                    summary = stringResource(R.string.about_license_name),
+                    summary = stringResource(R.string.info_licenses_summary),
                     icon = SongMeldIconId.License,
                     shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 6.dp, bottomEnd = 6.dp),
-                    onClick = { licenseOpen = true },
+                    onClick = onOpenLicenses,
                 )
                 AboutLinkRow(
                     title = stringResource(R.string.about_source),
@@ -65,6 +69,18 @@ fun AboutSettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     onClick = { openAboutLink(context, REPOSITORY) },
                 )
             }
+            AboutLinkRow(
+                title = stringResource(R.string.info_changelog),
+                summary = stringResource(R.string.info_changelog_summary),
+                icon = SongMeldIconId.History,
+                onClick = onOpenChangelog,
+            )
+            AboutLinkRow(
+                title = stringResource(R.string.info_terms),
+                summary = stringResource(R.string.info_terms_summary),
+                icon = SongMeldIconId.Description,
+                onClick = onOpenTerms,
+            )
             AboutPeopleSection(stringResource(R.string.about_primary_developers), AboutCredits.primaryDevelopers)
             AboutPeopleSection(
                 stringResource(R.string.about_secondary_developers), AboutCredits.secondaryDevelopers,
@@ -87,22 +103,6 @@ fun AboutSettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-    }
-    if (licenseOpen) {
-        val license = remember(context) {
-            context.assets.open("licenses/songmeld-gpl-3.0.txt").bufferedReader().use { it.readText() }
-        }
-        AlertDialog(
-            onDismissRequest = { licenseOpen = false },
-            title = { Text(stringResource(R.string.about_license_name)) },
-            text = {
-                Text(license, modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
-                    style = MaterialTheme.typography.bodySmall)
-            },
-            confirmButton = {
-                TextButton(onClick = { licenseOpen = false }) { Text(stringResource(R.string.about_close)) }
-            },
-        )
     }
 }
 

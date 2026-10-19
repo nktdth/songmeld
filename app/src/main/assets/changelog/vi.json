@@ -1,0 +1,15 @@
+{
+  "releases": [
+    {
+      "version": "0.1.0",
+      "status": "development",
+      "changes": [
+        "Xây dựng thư viện bài hát trên thiết bị và tìm kiếm nhạc.",
+        "Thêm tùy chọn giao diện sáng, tối, theo hệ thống và màu động trên Android 12 trở lên.",
+        "Tùy chỉnh kiểu biểu tượng và khám phá danh mục biểu tượng ngoại tuyến.",
+        "Thiết kế trang Giới thiệu với logo, phiên bản và thông tin nhà phát triển; ghi nhận người đóng góp riêng.",
+        "Bổ sung trang giấy phép, lịch sử thay đổi và điều khoản sử dụng."
+      ]
+    }
+  ]
+}
