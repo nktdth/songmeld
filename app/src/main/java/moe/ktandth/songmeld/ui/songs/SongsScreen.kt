@@ -1,5 +1,12 @@
 package moe.ktandth.songmeld.ui.songs
 
+import android.content.Context
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,18 +24,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +57,9 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
@@ -57,7 +69,10 @@ import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
 import moe.ktandth.songmeld.ui.theme.SongMeldCodeStyle
+import moe.ktandth.songmeld.ui.settings.LocalInterfaceOptions
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SongsScreen(
@@ -66,34 +81,72 @@ fun SongsScreen(
     errorMessage: String?,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    isRefreshing: Boolean = false,
+    refreshFailed: Boolean = false,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+    val preferences = remember(context) {
+        context.applicationContext.getSharedPreferences("songmeld_library", Context.MODE_PRIVATE)
+    }
+    var sort by rememberSaveable {
+        mutableStateOf(SongSort.entries.firstOrNull {
+            it.name == preferences.getString("sort", null)
+        } ?: SongSort.TITLE)
+    }
+    var sortOpen by rememberSaveable { mutableStateOf(false) }
+    var selectedSongId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val listState = rememberLazyListState()
+    var previousView by rememberSaveable { mutableStateOf(query + "\u0000" + sort.name) }
+    LaunchedEffect(query, sort) {
+        val view = query + "\u0000" + sort.name
+        if (previousView != view) {
+            listState.scrollToItem(0)
+            previousView = view
+        }
+    }
     val artworkLoader = remember(context.applicationContext) {
         LocalSongArtworkLoader(context.applicationContext)
     }
-    val filteredSongs = remember(songs, query) {
-        if (query.isBlank()) {
-            songs
-        } else {
-            val needle = query.trim()
-            songs.filter { song ->
-                song.title.contains(needle, ignoreCase = true) ||
-                    song.artist.contains(needle, ignoreCase = true) ||
-                    song.album.contains(needle, ignoreCase = true)
+    // Preserve the same view during a rescan, but never display another query's results.
+    val queryResult by produceState<LibraryQueryResult?>(null, songs, query, sort) {
+        val found = withContext(Dispatchers.Default) { querySongs(songs, query, sort) }
+        value = LibraryQueryResult(query, sort, found)
+    }
+    val results = queryResult?.takeIf { it.query == query && it.sort == sort }?.songs
+
+    Column(modifier = modifier.fillMaxSize().imePadding()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.songs_title),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            IconButton(onClick = onRetry, enabled = !isLoading && !isRefreshing) {
+                SongMeldIcon(SongMeldIconId.Refresh, stringResource(R.string.library_refresh))
+            }
+            IconButton(onClick = { focusManager.clearFocus(); sortOpen = true },
+                enabled = !isLoading && errorMessage == null && songs.isNotEmpty()) {
+                SongMeldIcon(SongMeldIconId.Sort, stringResource(R.string.library_sort))
             }
         }
-    }
-
-    Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            text = pluralStringResource(R.plurals.song_count, songs.size, songs.size),
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
+        val summary = when {
+            isLoading -> stringResource(R.string.loading_music)
+            isRefreshing -> stringResource(R.string.library_refreshing)
+            errorMessage != null -> stringResource(R.string.load_error_title)
+            query.isNotBlank() && results != null -> stringResource(R.string.library_result_count, results.size, songs.size)
+            else -> pluralStringResource(R.plurals.song_count, songs.size, songs.size)
+        }
+        val summaryWithSort = if (!isLoading && errorMessage == null && songs.isNotEmpty()) {
+            stringResource(R.string.library_summary_sort, summary, stringResource(sort.label()))
+        } else summary
+        Text(summaryWithSort, modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         SongSearchBar(
             query = query,
             onQueryChange = { query = it },
@@ -101,14 +154,41 @@ fun SongsScreen(
             modifier = Modifier.padding(horizontal = 20.dp),
         )
         Spacer(modifier = Modifier.height(12.dp))
-
+        if (isRefreshing) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
+            Spacer(Modifier.height(8.dp))
+        }
+        if (refreshFailed) {
+            Surface(shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                Column(Modifier.fillMaxWidth().padding(14.dp)) {
+                    Text(stringResource(R.string.library_refresh_error), style = MaterialTheme.typography.bodySmall)
+                    TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                }
+            }
+        }
         when {
             isLoading -> LoadingState()
             errorMessage != null -> ErrorState(onRetry = onRetry)
-            songs.isEmpty() -> EmptyLibraryState()
-            filteredSongs.isEmpty() -> EmptySearchState(query = query)
-            else -> SongList(songs = filteredSongs, artworkLoader = artworkLoader)
+            songs.isEmpty() -> EmptyLibraryState(onRefresh = onRetry, refreshing = isRefreshing)
+            results == null -> LoadingState()
+            results.isEmpty() -> EmptySearchState(query = query, onClear = { query = ""; focusManager.clearFocus() })
+            else -> SongList(songs = results, artworkLoader = artworkLoader, state = listState,
+                onSongClick = { focusManager.clearFocus(); selectedSongId = it.id })
         }
+    }
+    if (sortOpen) {
+        SongSortDialog(selected = sort, onDismiss = { sortOpen = false }, onSelected = {
+            sort = it
+            preferences.edit().putString("sort", it.name).apply()
+            sortOpen = false
+        })
+    }
+    val selectedSong = songs.firstOrNull { it.id == selectedSongId }
+    if (selectedSong != null && !isLoading && errorMessage == null) {
+        SongDetailsSheet(song = selectedSong, onDismiss = { selectedSongId = null })
     }
 }
 
@@ -119,12 +199,14 @@ private fun SongSearchBar(
     focusManager: FocusManager,
     modifier: Modifier = Modifier,
 ) {
+    val contextSearchLabel = stringResource(R.string.search_songs_hint)
     TextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp),
+            .heightIn(min = 56.dp)
+            .semantics { contentDescription = contextSearchLabel },
         singleLine = true,
         shape = RoundedCornerShape(28.dp),
         placeholder = { Text(stringResource(R.string.search_songs_hint)) },
@@ -163,9 +245,12 @@ private fun SongSearchBar(
 private fun SongList(
     songs: List<Song>,
     artworkLoader: LocalSongArtworkLoader,
+    state: LazyListState,
+    onSongClick: (Song) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        state = state,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
@@ -177,6 +262,7 @@ private fun SongList(
             SongRow(
                 song = song,
                 artworkLoader = artworkLoader,
+                onClick = { onSongClick(song) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(songItemShape(index, songs.size))
@@ -208,12 +294,16 @@ private fun songItemShape(index: Int, count: Int): RoundedCornerShape = when {
 private fun SongRow(
     song: Song,
     artworkLoader: LocalSongArtworkLoader,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val detailsLabel = stringResource(R.string.song_details)
+    val compact = LocalInterfaceOptions.current.compactLibrary
     Row(
         modifier = modifier
-            .heightIn(min = 72.dp)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+            .clickable(onClickLabel = detailsLabel, onClick = onClick)
+            .heightIn(min = if (compact) 60.dp else 72.dp)
+            .padding(horizontal = 10.dp, vertical = if (compact) 6.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SongArtwork(song = song, artworkLoader = artworkLoader)
@@ -271,7 +361,7 @@ private fun SongArtwork(
     }
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(if (LocalInterfaceOptions.current.compactLibrary) 40.dp else 48.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center,
@@ -296,47 +386,6 @@ private fun SongArtwork(
 }
 
 @Composable
-private fun PermissionArtwork() {
-    Box(
-        modifier = Modifier.size(128.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Surface(
-            modifier = Modifier.size(112.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                SongMeldIcon(
-                    id = SongMeldIconId.LibraryMusic,
-                    contentDescription = null,
-                    size = 54.dp,
-                )
-            }
-        }
-
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(44.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            shadowElevation = 4.dp,
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                SongMeldIcon(
-                    id = SongMeldIconId.Lock,
-                    contentDescription = null,
-                    size = 22.dp,
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun LoadingState() {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -354,20 +403,22 @@ private fun LoadingState() {
 }
 
 @Composable
-private fun EmptyLibraryState() {
+private fun EmptyLibraryState(onRefresh: () -> Unit, refreshing: Boolean) {
     LibraryMessage(
         icon = SongMeldIconId.LibraryMusic,
         title = stringResource(R.string.empty_library_title),
         body = stringResource(R.string.empty_library_body),
+        action = { FilledTonalButton(onClick = onRefresh, enabled = !refreshing) { Text(stringResource(R.string.library_refresh)) } },
     )
 }
 
 @Composable
-private fun EmptySearchState(query: String) {
+private fun EmptySearchState(query: String, onClear: () -> Unit) {
     LibraryMessage(
         icon = SongMeldIconId.SearchOff,
         title = stringResource(R.string.empty_search_title),
         body = stringResource(R.string.empty_search_body, query),
+        action = { FilledTonalButton(onClick = onClear) { Text(stringResource(R.string.clear_search)) } },
     )
 }
 
@@ -378,7 +429,7 @@ private fun ErrorState(onRetry: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 32.dp),
+            modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -407,13 +458,14 @@ private fun LibraryMessage(
     icon: SongMeldIconId,
     title: String,
     body: String,
+    action: @Composable () -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 32.dp),
+            modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Surface(
@@ -433,20 +485,24 @@ private fun LibraryMessage(
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = title,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = body,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Spacer(modifier = Modifier.height(20.dp))
+            action()
         }
     }
 }
 
-private fun formatDuration(durationMs: Long): String {
+internal fun formatDuration(durationMs: Long): String {
     val totalSeconds = (durationMs / 1000L).coerceAtLeast(0L)
     val hours = totalSeconds / 3600L
     val minutes = (totalSeconds % 3600L) / 60L

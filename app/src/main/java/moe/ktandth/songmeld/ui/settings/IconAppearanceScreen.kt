@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -133,12 +134,10 @@ fun IconAppearanceScreen(
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().selectable(
-                        selected = appearance.fill >= 0.5f,
+                    modifier = Modifier.fillMaxWidth().toggleable(
+                        value = appearance.fill >= 0.5f,
                         role = Role.Switch,
-                        onClick = {
-                            onAppearanceChanged(appearance.copy(fill = if (appearance.fill >= 0.5f) 0f else 1f))
-                        },
+                        onValueChange = { onAppearanceChanged(appearance.copy(fill = if (it) 1f else 0f)) },
                     ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -181,6 +180,10 @@ fun IconAppearanceScreen(
         )
 
         SettingsIconGroupTitle(stringResource(R.string.settings_icon_shape))
+        Text(stringResource(R.string.settings_icon_selected_shape, stringResource(shapeLabel(iconShape))),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 12.dp))
         Card(
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),

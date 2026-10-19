@@ -5,6 +5,7 @@ import moe.ktandth.songmeld.ui.icons.AppIconShape
 import moe.ktandth.songmeld.ui.icons.AppIconStyle
 import moe.ktandth.songmeld.ui.icons.IconPack
 import moe.ktandth.songmeld.ui.icons.IconReference
+import moe.ktandth.songmeld.ui.icons.isSupportedIconCodepoint
 import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
 
 /** Theme selection is kept independent from the device theme. */
@@ -25,6 +26,29 @@ class AppearancePreferences(context: Context) {
         "songmeld_appearance",
         Context.MODE_PRIVATE,
     )
+
+    val interfaceOptions: InterfaceOptions
+        get() = InterfaceOptions(
+            reduceMotion = preferences.getBoolean(KEY_REDUCE_MOTION, false),
+            compactLibrary = preferences.getBoolean(KEY_COMPACT_LIBRARY, false),
+        )
+
+    fun setInterfaceOptions(options: InterfaceOptions) {
+        preferences.edit()
+            .putBoolean(KEY_REDUCE_MOTION, options.reduceMotion)
+            .putBoolean(KEY_COMPACT_LIBRARY, options.compactLibrary)
+            .apply()
+    }
+
+    /** Preserve motion accessibility preference and the separate catalog test selection. */
+    fun resetVisualAppearance() {
+        preferences.edit()
+            .remove(KEY_THEME).remove(KEY_DYNAMIC_COLOR)
+            .remove(KEY_ICON_STYLE).remove(KEY_ICON_FILL).remove(KEY_ICON_WEIGHT)
+            .remove(KEY_ICON_GRADE).remove(KEY_ICON_OPTICAL_SIZE).remove(KEY_ICON_SHAPE)
+            .remove(KEY_COMPACT_LIBRARY)
+            .apply()
+    }
 
     val theme: AppTheme
         get() = AppTheme.fromPreference(preferences.getString(KEY_THEME, null))
@@ -54,7 +78,7 @@ class AppearancePreferences(context: Context) {
     val iconPickerSelection: IconReference?
         get() {
             val codepoint = preferences.getInt(KEY_SELECTED_ICON_CODEPOINT, -1)
-            if (codepoint < 0xE000) return null
+            if (!isSupportedIconCodepoint(codepoint)) return null
             return IconReference(
                 pack = IconPack.fromStorage(preferences.getString(KEY_SELECTED_ICON_PACK, null)),
                 codepoint = codepoint,
@@ -92,6 +116,8 @@ class AppearancePreferences(context: Context) {
     }
 
     private companion object {
+        const val KEY_REDUCE_MOTION = "reduce_motion"
+        const val KEY_COMPACT_LIBRARY = "compact_library"
         const val KEY_SELECTED_ICON_PACK = "selected_icon_pack"
         const val KEY_SELECTED_ICON_CODEPOINT = "selected_icon_codepoint"
         const val KEY_THEME = "theme"

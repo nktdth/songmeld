@@ -63,6 +63,8 @@ data class MaterialSymbolAppearance(
  * User-selected icon references use IconReference, rather than extending this enum.
  */
 enum class SongMeldIconId(val codepoint: Int) {
+    Sort(0xE164), History(0xE889), Description(0xE873),
+    License(0xE90E), Code(0xE86F), Volunteer(0xEA70),
     ArrowBack(0xE5C4), ChevronRight(0xE5CC), Close(0xE5CD),
     FolderOpen(0xE2C8), Info(0xE88E), LibraryMusic(0xE030),
     Lock(0xE897), MoreVert(0xE5D4), MusicNote(0xE405),
@@ -145,7 +147,7 @@ private fun expressiveShapePath(size: Size, shape: AppIconShape): Path {
             moveTo((previous.first + first.first) / 2f, (previous.second + first.second) / 2f)
             points.forEachIndexed { index, current ->
                 val next = points[(index + 1) % points.size]
-                quadraticBezierTo(current.first, current.second,
+                quadraticTo(current.first, current.second,
                     (current.first + next.first) / 2f, (current.second + next.second) / 2f)
             }
         }

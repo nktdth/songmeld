@@ -1,53 +1,47 @@
 package moe.ktandth.songmeld.ui.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import moe.ktandth.songmeld.R
-import moe.ktandth.songmeld.ui.icons.CatalogIcon
-import moe.ktandth.songmeld.ui.icons.CatalogIconEntry
-import moe.ktandth.songmeld.ui.icons.IconPack
-import moe.ktandth.songmeld.ui.icons.IconReference
-import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
-import moe.ktandth.songmeld.ui.icons.SongMeldIconCatalog
+import moe.ktandth.songmeld.ui.icons.*
 
-/** Full offline icon browser. Only visible grid items are composed. */
+private data class LoadedIconCatalog(
+    val pack: IconPack,
+    val entries: List<CatalogIconEntry> = emptyList(),
+    val failed: Boolean = false,
+)
+
+private data class IconSearchResult(val pack: IconPack, val query: String, val entries: List<CatalogIconEntry>)
+
+/** One lazy grid lets search, preview and recovery actions remain reachable at large font scales. */
 @Composable
 fun IconPickerScreen(
     appearance: MaterialSymbolAppearance,
@@ -56,164 +50,171 @@ fun IconPickerScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    var pack by rememberSaveable { mutableStateOf(IconPack.SYMBOLS) }
+    val focus = LocalFocusManager.current
+    var pack by rememberSaveable { mutableStateOf(selected?.pack ?: IconPack.SYMBOLS) }
     var query by rememberSaveable { mutableStateOf("") }
-    var entries by remember { mutableStateOf<List<CatalogIconEntry>>(emptyList()) }
-    var filtered by remember { mutableStateOf<List<CatalogIconEntry>>(emptyList()) }
-    var error by remember { mutableStateOf(false) }
-    var loading by remember { mutableStateOf(true) }
+    var retry by remember { mutableIntStateOf(0) }
+    val gridState = rememberLazyGridState()
+    var previousView by rememberSaveable { mutableStateOf("${pack.name}\u0000$query") }
+    LaunchedEffect(pack, query) {
+        val view = "${pack.name}\u0000$query"
+        if (view != previousView) {
+            gridState.scrollToItem(0)
+            previousView = view
+        }
+    }
 
-    LaunchedEffect(pack) {
-        loading = true
-        error = false
-        entries = emptyList()
-        try {
-            entries = SongMeldIconCatalog.load(context, pack)
+    val loaded by produceState<LoadedIconCatalog?>(null, context, pack, retry) {
+        value = null
+        value = try {
+            LoadedIconCatalog(pack, SongMeldIconCatalog.load(context, pack))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (_: Exception) {
-            error = true
-        } finally {
-            loading = false
+            LoadedIconCatalog(pack, failed = true)
         }
     }
-    LaunchedEffect(entries, query) {
-        if (query.isNotBlank()) delay(130) // Avoid filtering thousands of entries per key press.
-        val search = query.trim()
-        filtered = withContext(Dispatchers.Default) {
-            if (search.isEmpty()) entries else entries.filter {
-                it.name.contains(search, ignoreCase = true)
-            }
+    // Keys travel with each result, so old rows cannot be selected under a new pack/query label.
+    val catalog = loaded?.takeIf { it.pack == pack }
+    val searchResult by produceState<IconSearchResult?>(null, catalog, query) {
+        value = null
+        if (catalog != null && !catalog.failed) {
+            if (query.isNotBlank()) delay(130)
+            value = IconSearchResult(catalog.pack, query, withContext(Dispatchers.Default) {
+                filterIconCatalog(catalog.entries, query)
+            })
         }
     }
+    val filtered = searchResult?.takeIf { it.pack == pack && it.query == query }?.entries
+    val loading = catalog == null || (!catalog.failed && filtered == null)
+    val failed = catalog?.failed == true
+    val selectedName = remember(selected, catalog) {
+        catalog?.entries?.firstOrNull { it.reference == selected }?.name
+    }
 
-    Column(modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            IconPack.entries.forEach { option ->
-                FilterChip(
-                    selected = pack == option,
-                    onClick = { pack = option; query = "" },
-                    label = { Text(
-                        when (option) {
-                            IconPack.SYMBOLS -> stringResource(R.string.icon_pack_symbols)
-                            IconPack.MDI -> "MDI"
-                            IconPack.FLUTTER -> "Flutter"
-                        }
-                    ) },
-                )
-            }
-        }
-
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            label = { Text(stringResource(R.string.icon_search_hint)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-        )
-        Spacer(Modifier.height(10.dp))
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                Box(
-                    modifier = Modifier.size(58.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(18.dp)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (selected != null) CatalogIcon(
-                        reference = selected,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        size = 32.dp,
-                        appearance = appearance,
-                    ) else Text("♪", style = MaterialTheme.typography.headlineMedium)
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        stringResource(R.string.icon_selected_preview),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Text(
-                        selected?.let { ref ->
-                            val name = if (ref.pack == pack) entries.firstOrNull {
-                                it.reference == ref
-                            }?.name else null
-                            "${ref.pack.storageName}: ${name ?: "U+${ref.codepoint.toString(16).uppercase()}"}"
-                        } ?: stringResource(R.string.icon_nothing_selected),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(80.dp),
+        state = gridState,
+        modifier = modifier.fillMaxSize().imePadding(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
+    ) {
+        item(key = "packs", span = { GridItemSpan(maxLineSpan) }) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconPack.entries.forEach { option ->
+                    FilterChip(selected = pack == option, onClick = { pack = option },
+                        label = { Text(stringResource(packLabel(option))) })
                 }
             }
         }
-        Spacer(Modifier.height(10.dp))
-        Text(
-            if (loading) stringResource(R.string.icon_loading)
-            else stringResource(R.string.icon_results, filtered.size),
-            modifier = Modifier.padding(horizontal = 5.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelMedium,
-        )
-        Spacer(Modifier.height(6.dp))
+        item(key = "search", span = { GridItemSpan(maxLineSpan) }) {
+            OutlinedTextField(
+                value = query, onValueChange = { query = it },
+                label = { Text(stringResource(R.string.icon_search_hint)) },
+                singleLine = true, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp),
+                leadingIcon = { SongMeldIcon(SongMeldIconId.Search, null) },
+                trailingIcon = if (query.isNotEmpty()) { {
+                    IconButton(onClick = { query = "" }) {
+                        SongMeldIcon(SongMeldIconId.Close, stringResource(R.string.clear_search))
+                    }
+                } } else null,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
+            )
+        }
+        item(key = "hint", span = { GridItemSpan(maxLineSpan) }) {
+            Text(stringResource(R.string.icon_search_help), style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 6.dp))
+        }
+        item(key = "selected", span = { GridItemSpan(maxLineSpan) }) {
+            SelectedIconPreview(selected, selectedName, appearance)
+        }
+        if (pack != IconPack.SYMBOLS) {
+            item(key = "static-font", span = { GridItemSpan(maxLineSpan) }) {
+                Text(stringResource(R.string.icon_static_font_note), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 6.dp))
+            }
+        }
+        item(key = "count", span = { GridItemSpan(maxLineSpan) }) {
+            Text(when {
+                failed -> stringResource(R.string.icon_load_error)
+                loading -> stringResource(R.string.icon_loading)
+                else -> stringResource(R.string.icon_results, filtered.orEmpty().size)
+            }, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp))
+        }
         when {
-            loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            loading -> item(key = "loading", span = { GridItemSpan(maxLineSpan) }) {
+                Box(Modifier.fillMaxWidth().padding(28.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-            error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.icon_load_error))
+            failed -> item(key = "error", span = { GridItemSpan(maxLineSpan) }) {
+                TextButton(onClick = { retry++ }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.retry)) }
             }
-            filtered.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.icon_no_results))
-            }
-            else -> LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 72.dp),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp),
-            ) {
-                items(filtered, key = { it.reference.codepoint }) { entry ->
-                    val active = selected == entry.reference
-                    val surface = if (active) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceContainerLow
-                    Column(
-                        modifier = Modifier
-                            .background(surface, RoundedCornerShape(16.dp))
-                            .clickable(role = Role.RadioButton) { onSelected(entry.reference) }
-                            .padding(horizontal = 4.dp, vertical = 10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        CatalogIcon(
-                            reference = entry.reference,
-                            contentDescription = entry.name.replace('_', ' ').replace('-', ' '),
-                            size = 28.dp,
-                            tint = if (active) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurface,
-                            appearance = appearance,
-                        )
-                        Text(
-                            entry.name.replace("_", " ").replace("-", " "),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (active) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+            filtered.isNullOrEmpty() -> item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
+                Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(R.string.icon_no_results))
+                    if (query.isNotEmpty()) TextButton(onClick = { query = ""; focus.clearFocus() }) {
+                        Text(stringResource(R.string.clear_search))
                     }
                 }
             }
+            else -> items(filtered, key = { "${it.reference.pack.name}:${it.reference.codepoint}" },
+                contentType = { "icon" }) { entry ->
+                IconChoice(entry, selected == entry.reference, appearance) {
+                    focus.clearFocus()
+                    onSelected(entry.reference)
+                }
+            }
         }
     }
+}
+
+@Composable
+private fun SelectedIconPreview(selected: IconReference?, name: String?, appearance: MaterialSymbolAppearance) {
+    Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
+        Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
+                Box(Modifier.size(58.dp), contentAlignment = Alignment.Center) {
+                    if (selected != null) CatalogIcon(selected, null, size = 32.dp, appearance = appearance)
+                    else SongMeldIcon(SongMeldIconId.MusicNote, null, size = 32.dp)
+                }
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(R.string.icon_selected_preview), style = MaterialTheme.typography.titleSmall)
+                Text(if (selected == null) stringResource(R.string.icon_nothing_selected) else {
+                    "${stringResource(packLabel(selected.pack))}: ${name ?: "U+${selected.codepoint.toString(16).uppercase()}"}"
+                }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun IconChoice(entry: CatalogIconEntry, active: Boolean, appearance: MaterialSymbolAppearance, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Column(
+        Modifier.clip(RoundedCornerShape(16.dp))
+            .background(if (active) colors.primaryContainer else colors.surfaceContainerLow)
+            .selectable(selected = active, role = Role.RadioButton, onClick = onClick)
+            .heightIn(min = 80.dp).padding(horizontal = 4.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        CatalogIcon(entry.reference, null, size = 28.dp, appearance = appearance,
+            tint = if (active) colors.onPrimaryContainer else colors.onSurface)
+        Text(entry.name.replace('_', ' ').replace('-', ' '), maxLines = 2, overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (active) colors.onPrimaryContainer else colors.onSurfaceVariant)
+    }
+}
+
+private fun packLabel(pack: IconPack): Int = when (pack) {
+    IconPack.SYMBOLS -> R.string.icon_pack_symbols
+    IconPack.MDI -> R.string.icon_pack_mdi
+    IconPack.FLUTTER -> R.string.icon_pack_flutter
 }

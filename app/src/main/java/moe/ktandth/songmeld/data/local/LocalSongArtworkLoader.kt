@@ -7,6 +7,10 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.LruCache
+import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import moe.ktandth.songmeld.data.model.Song
@@ -28,6 +32,7 @@ internal class LocalSongArtworkLoader(context: Context) {
             (value.byteCount / 1024).coerceAtLeast(1)
     }
     private val missingCovers = LruCache<String, Boolean>(256)
+    private val decodeSlots = Semaphore(3)
 
     suspend fun load(song: Song): Bitmap? = withContext(Dispatchers.IO) {
         val key = "${song.id}:${song.dateModifiedSeconds}:${song.albumId}"
@@ -36,16 +41,24 @@ internal class LocalSongArtworkLoader(context: Context) {
             if (missingCovers.get(key) == true) return@withContext null
         }
 
-        val bitmap = embeddedArtwork(song.uri) ?: albumArtwork(song.albumId)
-        synchronized(covers) {
-            if (bitmap != null) {
-                missingCovers.remove(key)
-                covers.put(key, bitmap)
-            } else {
-                missingCovers.put(key, true)
+        decodeSlots.withPermit {
+            coroutineContext.ensureActive()
+            synchronized(covers) {
+                covers.get(key)?.let { return@withPermit it }
+                if (missingCovers.get(key) == true) return@withPermit null
             }
+            val bitmap = embeddedArtwork(song.uri) ?: albumArtwork(song.albumId)
+            coroutineContext.ensureActive()
+            synchronized(covers) {
+                if (bitmap != null) {
+                    missingCovers.remove(key)
+                    covers.put(key, bitmap)
+                } else {
+                    missingCovers.put(key, true)
+                }
+            }
+            bitmap
         }
-        bitmap
     }
 
     private fun embeddedArtwork(uri: Uri): Bitmap? {
@@ -73,7 +86,7 @@ internal class LocalSongArtworkLoader(context: Context) {
             resolver.openInputStream(albumUri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
             if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
             val options = BitmapFactory.Options().apply {
-                inSampleSize = sampleSize(bounds.outWidth, bounds.outHeight)
+                inSampleSize = artworkSampleSize(bounds.outWidth, bounds.outHeight)
             }
             resolver.openInputStream(albumUri)?.use { BitmapFactory.decodeStream(it, null, options) }
         } catch (_: Exception) {
@@ -87,21 +100,12 @@ internal class LocalSongArtworkLoader(context: Context) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
         val options = BitmapFactory.Options().apply {
-            inSampleSize = sampleSize(bounds.outWidth, bounds.outHeight)
+            inSampleSize = artworkSampleSize(bounds.outWidth, bounds.outHeight)
         }
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
     }
 
-    private fun sampleSize(width: Int, height: Int): Int {
-        var sample = 1
-        while (width / (sample * 2) >= COVER_SIZE_PX && height / (sample * 2) >= COVER_SIZE_PX) {
-            sample *= 2
-        }
-        return sample
-    }
-
     private companion object {
-        const val COVER_SIZE_PX = 256
         val ALBUM_ART_URI: Uri = Uri.parse("content://media/external/audio/albumart")
     }
 }
