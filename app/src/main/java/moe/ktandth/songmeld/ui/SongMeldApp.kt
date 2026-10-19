@@ -44,6 +44,7 @@ import moe.ktandth.songmeld.ui.icons.AppIconShape
 import moe.ktandth.songmeld.ui.icons.IconReference
 import moe.ktandth.songmeld.ui.settings.IconAppearanceScreen
 import moe.ktandth.songmeld.ui.settings.IconPickerScreen
+import moe.ktandth.songmeld.ui.settings.InterfaceOptions
 import moe.ktandth.songmeld.ui.settings.AppTheme
 import moe.ktandth.songmeld.ui.settings.SettingsPageScaffold
 import moe.ktandth.songmeld.ui.settings.AppearanceSettingsScreen
@@ -60,6 +61,8 @@ import moe.ktandth.songmeld.ui.songs.SongsScreen
 @Composable
 fun SongMeldApp(
     theme: AppTheme,
+    onInterfaceOptionsChanged: (InterfaceOptions) -> Unit,
+    onResetAppearance: () -> Unit,
     dynamicColorEnabled: Boolean,
     symbols: MaterialSymbolAppearance,
     iconShape: AppIconShape,
@@ -183,6 +186,8 @@ fun SongMeldApp(
                 SongMeldPage.APPEARANCE -> key("appearance") {
                     AppearanceSettingsScreen(
                         theme = theme,
+                        onInterfaceOptionsChanged = onInterfaceOptionsChanged,
+                        onResetAppearance = onResetAppearance,
                         dynamicColorEnabled = dynamicColorEnabled,
                         onThemeChanged = onThemeChanged,
                         onDynamicColorChanged = onDynamicColorChanged,
@@ -217,6 +222,8 @@ fun SongMeldApp(
                 }
                 SongMeldPage.SETTINGS -> key("settings") {
                     SettingsScreen(
+                        theme = theme,
+                        dynamicColorEnabled = dynamicColorEnabled,
                         onBack = { navigateBack() },
                         onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
                         onOpenAbout = { currentPage = SongMeldPage.ABOUT },

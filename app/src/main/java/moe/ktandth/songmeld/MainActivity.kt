@@ -35,6 +35,10 @@ import moe.ktandth.songmeld.ui.icons.LocalMaterialSymbolAppearance
 import moe.ktandth.songmeld.ui.icons.LocalSongMeldIconShape
 import moe.ktandth.songmeld.ui.settings.AppTheme
 import moe.ktandth.songmeld.ui.settings.AppearancePreferences
+import moe.ktandth.songmeld.ui.settings.InterfaceOptions
+import moe.ktandth.songmeld.ui.settings.LocalInterfaceOptions
+import moe.ktandth.songmeld.ui.settings.LocalDecorativeMotionEnabled
+import moe.ktandth.songmeld.ui.settings.decorativeMotionEnabled
 import moe.ktandth.songmeld.ui.splash.SongMeldSplashIntro
 import moe.ktandth.songmeld.ui.theme.SongMeldTheme
 
@@ -61,7 +65,10 @@ class MainActivity : ComponentActivity() {
             window.isNavigationBarContrastEnforced = false
         }
 
-        val animate = savedInstanceState == null && ValueAnimator.areAnimatorsEnabled()
+        val appearancePreferences = AppearancePreferences(applicationContext)
+        val animate = savedInstanceState == null && decorativeMotionEnabled(
+            appearancePreferences.interfaceOptions.reduceMotion, ValueAnimator.areAnimatorsEnabled(),
+        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && animate) {
             // Android 12+: animate the badge in the platform splash; do not
             // restart it in Compose or the rotation will visibly jump.
@@ -82,8 +89,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val appearancePreferences = AppearancePreferences(applicationContext)
         setContent {
+            var interfaceOptions by remember { mutableStateOf(appearancePreferences.interfaceOptions) }
             var theme by remember { mutableStateOf(appearancePreferences.theme) }
             var dynamicColorEnabled by remember {
                 mutableStateOf(appearancePreferences.dynamicColorEnabled)
@@ -110,6 +117,19 @@ class MainActivity : ComponentActivity() {
                 SongMeldRoot(
                     playComposeIntro = animate && Build.VERSION.SDK_INT < Build.VERSION_CODES.S,
                     theme = theme,
+                    interfaceOptions = interfaceOptions,
+                    onInterfaceOptionsChanged = { options ->
+                        interfaceOptions = options
+                        appearancePreferences.setInterfaceOptions(options)
+                    },
+                    onResetAppearance = {
+                        appearancePreferences.resetVisualAppearance()
+                        theme = appearancePreferences.theme
+                        dynamicColorEnabled = appearancePreferences.dynamicColorEnabled
+                        symbols = appearancePreferences.symbols
+                        iconShape = appearancePreferences.iconShape
+                        interfaceOptions = appearancePreferences.interfaceOptions
+                    },
                     dynamicColorEnabled = dynamicColorEnabled,
                     symbols = symbols,
                     iconShape = iconShape,
@@ -144,6 +164,9 @@ class MainActivity : ComponentActivity() {
 private fun SongMeldRoot(
     playComposeIntro: Boolean,
     theme: AppTheme,
+    interfaceOptions: InterfaceOptions,
+    onInterfaceOptionsChanged: (InterfaceOptions) -> Unit,
+    onResetAppearance: () -> Unit,
     dynamicColorEnabled: Boolean,
     symbols: MaterialSymbolAppearance,
     iconShape: AppIconShape,
@@ -164,12 +187,18 @@ private fun SongMeldRoot(
     }
 
     CompositionLocalProvider(
+        LocalInterfaceOptions provides interfaceOptions,
+        LocalDecorativeMotionEnabled provides decorativeMotionEnabled(
+            interfaceOptions.reduceMotion, ValueAnimator.areAnimatorsEnabled(),
+        ),
         LocalMaterialSymbolAppearance provides symbols,
         LocalSongMeldIconShape provides iconShape,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             SongMeldApp(
                 theme = theme,
+                onInterfaceOptionsChanged = onInterfaceOptionsChanged,
+                onResetAppearance = onResetAppearance,
                 dynamicColorEnabled = dynamicColorEnabled,
                 symbols = symbols,
                 iconShape = iconShape,

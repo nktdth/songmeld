@@ -1,6 +1,5 @@
 package moe.ktandth.songmeld.ui.components
 
-import android.animation.ValueAnimator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.ktandth.songmeld.R
+import moe.ktandth.songmeld.ui.settings.LocalDecorativeMotionEnabled
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 
@@ -99,7 +99,7 @@ fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
 private fun SongMeldWordmark(modifier: Modifier = Modifier) {
     // Match the wordmark accent to the actual badge (including wallpaper colors).
     val badgeColor = colorResource(R.color.songmeld_launcher_background)
-    val animationsEnabled = remember { ValueAnimator.areAnimatorsEnabled() }
+    val animationsEnabled = LocalDecorativeMotionEnabled.current
     val textOffsetX = remember { Animatable(if (animationsEnabled) -36f else 0f) }
     val textAlpha = remember { Animatable(if (animationsEnabled) 0f else 1f) }
     val badgeAlpha = remember { Animatable(if (animationsEnabled) 0f else 1f) }
