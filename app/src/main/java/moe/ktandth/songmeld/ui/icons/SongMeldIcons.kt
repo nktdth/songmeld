@@ -147,7 +147,7 @@ private fun expressiveShapePath(size: Size, shape: AppIconShape): Path {
             moveTo((previous.first + first.first) / 2f, (previous.second + first.second) / 2f)
             points.forEachIndexed { index, current ->
                 val next = points[(index + 1) % points.size]
-                quadraticBezierTo(current.first, current.second,
+                quadraticTo(current.first, current.second,
                     (current.first + next.first) / 2f, (current.second + next.second) / 2f)
             }
         }

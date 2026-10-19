@@ -53,7 +53,7 @@ import moe.ktandth.songmeld.ui.icons.SongMeldIcon
  * prevents the branded entrance animation from restarting after permission changes.
  */
 @Composable
-fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier, animateEntrance: Boolean = true) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     Row(
@@ -64,7 +64,7 @@ fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SongMeldWordmark()
+        SongMeldWordmark(animateEntrance = animateEntrance)
 
         Box {
             IconButton(
@@ -96,10 +96,10 @@ fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun SongMeldWordmark(modifier: Modifier = Modifier) {
+private fun SongMeldWordmark(modifier: Modifier = Modifier, animateEntrance: Boolean) {
     // Match the wordmark accent to the actual badge (including wallpaper colors).
     val badgeColor = colorResource(R.color.songmeld_launcher_background)
-    val animationsEnabled = LocalDecorativeMotionEnabled.current
+    val animationsEnabled = LocalDecorativeMotionEnabled.current && animateEntrance
     val textOffsetX = remember { Animatable(if (animationsEnabled) -36f else 0f) }
     val textAlpha = remember { Animatable(if (animationsEnabled) 0f else 1f) }
     val badgeAlpha = remember { Animatable(if (animationsEnabled) 0f else 1f) }

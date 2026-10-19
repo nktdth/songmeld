@@ -38,8 +38,8 @@ source-list preservation and cancellation. The opaque Android Uri type is stubbe
 only in this standalone JVM harness. It does not test Android APIs or Compose.
 
 A Kotlin PSI syntax parse of app sources and XML/resource/asset checks were also
-performed. Full Android compilation and UI verification remain outstanding: this
-environment lacks the Android SDK and cannot fetch the project's Gradle distribution.
+performed. See `docs/build-verification.md` for the latest Android build status.
+On-device UI verification is still required.
 
 Before merging, build and check on a device:
 
@@ -54,5 +54,5 @@ Before merging, build and check on a device:
 
 ## Next priorities
 
-Validate on-device first. Then improve the icon picker's search and loading feedback,
-and consider library filters only after the current search/sort controls are tested.
+Validate the existing flows on-device first, including the icon browser and library
+refresh behavior. Consider additional library filters after these controls are tested.

@@ -1,6 +1,7 @@
 package moe.ktandth.songmeld.ui.songs
 
 import android.net.Uri
+import moe.ktandth.songmeld.data.local.artworkSampleSize
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -39,5 +40,25 @@ fun main() = runBlocking {
     }
     job.join()
     check(cancelled)
+    val loading = LibraryLoadState()
+    check(loading.loading && !loading.hasLoaded)
+    check(loading.failed().error && !loading.failed().loading)
+    val loaded = loading.loaded(songs)
+    val refreshing = loaded.refreshing()
+    check(refreshing.songs === songs && refreshing.loading && refreshing.hasLoaded)
+    val failedRefresh = refreshing.failed()
+    check(failedRefresh.songs === songs && failedRefresh.error && !failedRefresh.loading)
+    val emptySuccess = failedRefresh.loaded(emptyList())
+    check(emptySuccess.hasLoaded && emptySuccess.songs.isEmpty() && !emptySuccess.error)
+    val emptyRefresh = emptySuccess.refreshing().failed()
+    check(emptyRefresh.hasLoaded && emptyRefresh.error)
+    for ((width, height) in listOf(100 to 100, 512 to 512, 513 to 20,
+        20000 to 200, 200 to 20000, 5000 to 5000, Int.MAX_VALUE to 1)) {
+        val sample = artworkSampleSize(width, height)
+        check(sample > 0 && sample and (sample - 1) == 0)
+        check(maxOf(width, height) / sample <= 512)
+    }
+    check(artworkSampleSize(-1, 0) == 1)
+    println("Library refresh preservation and artwork sampling checks passed.")
     println("Library query checks passed: Vietnamese, token search, sort order, ties, empty input and cancellation.")
 }

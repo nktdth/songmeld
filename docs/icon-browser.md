@@ -38,8 +38,9 @@ It also covers malformed/duplicate rows, token/name/codepoint queries and cancel
 The appearance preference checks now use the real icon models and include a
 corrupted saved-codepoint case.
 
-Kotlin syntax, resource/XML, JSON and whitespace checks passed. Full Android
-compilation and device UI verification are still outstanding.
+Kotlin syntax, resource/XML, JSON and whitespace checks passed. See
+`docs/build-verification.md` for the latest Android build status. Device UI
+verification remains outstanding.
 
 Device checklist:
 

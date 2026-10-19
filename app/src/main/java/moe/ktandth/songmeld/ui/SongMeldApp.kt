@@ -4,6 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.provider.MediaStore
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -19,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,9 +40,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.data.local.MediaStoreSongRepository
-import moe.ktandth.songmeld.data.model.Song
+import moe.ktandth.songmeld.ui.songs.LibraryLoadState
 import moe.ktandth.songmeld.ui.components.SongMeldHeader
 import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
 import moe.ktandth.songmeld.ui.icons.AppIconShape
@@ -88,6 +94,7 @@ fun SongMeldApp(
         mutableStateOf(permissionPreferences.getBoolean("audio_permission_requested", false))
     }
     var refreshKey by remember { mutableIntStateOf(0) }
+    var libraryWasShown by rememberSaveable { mutableStateOf(false) }
     // One saveable destination prevents conflicting combinations of page flags.
     var currentPage by rememberSaveable { mutableStateOf(SongMeldPage.LIBRARY) }
     var selectedLicense by rememberSaveable { mutableStateOf(LicenseDocument.SONGMELD) }
@@ -95,7 +102,11 @@ fun SongMeldApp(
         currentPage = currentPage.parent
     }
     BackHandler(enabled = currentPage != SongMeldPage.LIBRARY) { navigateBack() }
-    var libraryState by remember { mutableStateOf<LibraryState>(LibraryState.Idle) }
+    var libraryState by remember { mutableStateOf(LibraryLoadState()) }
+    var mediaChangeKey by remember { mutableIntStateOf(0) }
+    var foreground by remember(activity) {
+        mutableStateOf(activity?.lifecycle?.currentState?.isAtLeast(Lifecycle.State.STARTED) ?: true)
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -109,9 +120,11 @@ fun SongMeldApp(
             onDispose { }
         } else {
             val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_START) foreground = true
+                if (event == Lifecycle.Event.ON_STOP) foreground = false
                 if (event == Lifecycle.Event.ON_RESUME) {
                     val nowGranted = context.hasPermission(permission)
-                    if (nowGranted && !permissionGranted) refreshKey++
+                    if (nowGranted && (!permissionGranted || libraryState.hasLoaded)) refreshKey++
                     permissionGranted = nowGranted
                 }
             }
@@ -120,22 +133,47 @@ fun SongMeldApp(
         }
     }
 
-    LaunchedEffect(permissionGranted, refreshKey) {
+    DisposableEffect(context, permissionGranted, foreground) {
+        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) { mediaChangeKey++ }
+        }
+        var registered = false
+        if (permissionGranted && foreground) {
+            try {
+                context.contentResolver.registerContentObserver(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, observer,
+                )
+                registered = true
+            } catch (_: SecurityException) {
+                permissionGranted = context.hasPermission(permission)
+            }
+        }
+        onDispose { if (registered) context.contentResolver.unregisterContentObserver(observer) }
+    }
+    LaunchedEffect(mediaChangeKey) {
+        if (mediaChangeKey > 0) {
+            delay(350) // Coalesce bursts from downloads, file copies and metadata updates.
+            refreshKey++
+        }
+    }
+
+    LaunchedEffect(permissionGranted, refreshKey, foreground) {
         if (!permissionGranted) {
-            libraryState = LibraryState.Idle
+            libraryState = LibraryLoadState()
             return@LaunchedEffect
         }
 
-        libraryState = LibraryState.Loading
+        if (!foreground) return@LaunchedEffect
+        libraryState = libraryState.refreshing()
         libraryState = try {
-            LibraryState.Loaded(repository.loadSongs())
+            libraryState.loaded(repository.loadSongs())
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: SecurityException) {
             permissionGranted = context.hasPermission(permission)
-            LibraryState.Error
+            libraryState.failed()
         } catch (_: Exception) {
-            LibraryState.Error
+            libraryState.failed()
         }
     }
 
@@ -233,15 +271,19 @@ fun SongMeldApp(
                 SongMeldPage.LIBRARY -> Unit // Handled by the outer branch.
             }
         } else {
-            // The branded header stays composed while the audio permission/library state changes.
+            // Capture only on mounting this destination; recomposition must not cancel the entrance.
+            val animateHeader = remember { !libraryWasShown }
+            SideEffect { libraryWasShown = true }
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
-                topBar = { SongMeldHeader(onOpenSettings = { currentPage = SongMeldPage.SETTINGS }) },
+                topBar = { SongMeldHeader(animateEntrance = animateHeader,
+                    onOpenSettings = { currentPage = SongMeldPage.SETTINGS }) },
             ) { innerPadding ->
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding),
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding),
                 ) {
                     if (!permissionGranted) {
                         val showSettingsAction = permissionRequestedBefore &&
@@ -267,12 +309,13 @@ fun SongMeldApp(
                             },
                         )
                     } else {
-                        val loadedSongs = (libraryState as? LibraryState.Loaded)?.songs.orEmpty()
                         SongsScreen(
                             modifier = Modifier.fillMaxSize(),
-                            songs = loadedSongs,
-                            isLoading = libraryState == LibraryState.Idle || libraryState == LibraryState.Loading,
-                            errorMessage = if (libraryState == LibraryState.Error) "load_error" else null,
+                            songs = libraryState.songs,
+                            isLoading = libraryState.loading && !libraryState.hasLoaded,
+                            isRefreshing = libraryState.loading && libraryState.hasLoaded,
+                            refreshFailed = libraryState.error && libraryState.hasLoaded,
+                            errorMessage = if (libraryState.error && !libraryState.hasLoaded) "load_error" else null,
                             onRetry = { refreshKey++ },
                         )
                     }
@@ -296,13 +339,6 @@ private enum class SongMeldPage {
             ICON_APPEARANCE -> APPEARANCE
             ICON_PICKER -> ICON_APPEARANCE
         }
-}
-
-private sealed interface LibraryState {
-    data object Idle : LibraryState
-    data object Loading : LibraryState
-    data class Loaded(val songs: List<Song>) : LibraryState
-    data object Error : LibraryState
 }
 
 private fun requiredAudioPermission(): String =

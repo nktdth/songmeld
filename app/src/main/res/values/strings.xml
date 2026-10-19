@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="vi">
     <string name="app_name">SongMeld</string>
     <string name="menu_more_options">Tùy chọn khác</string>
     <string name="settings_title">Cài đặt</string>
     <string name="settings_back">Quay lại</string>
     <string name="settings_appearance">Giao diện</string>
-    <string name="settings_appearance_summary">Chủ đề, màu sắc và biểu tượng</string>
     <string name="settings_theme">Chủ đề</string>
     <string name="settings_theme_description">Chọn giao diện phù hợp với bạn.</string>
     <string name="settings_theme_system">Theo hệ thống</string>
@@ -17,14 +16,10 @@
     <string name="settings_icons">Biểu tượng</string>
     <string name="settings_icon_appearance">Kiểu biểu tượng</string>
     <string name="settings_icon_appearance_summary">Phong cách, nét vẽ và hình nền biểu tượng</string>
-    <string name="settings_icon_preview">Xem trước</string>
     <string name="settings_icon_style">Phong cách biểu tượng</string>
-    <string name="settings_icon_style_description">Áp dụng cho biểu tượng trong SongMeld.</string>
     <string name="settings_icon_style_rounded">Bo tròn</string>
     <string name="settings_icon_style_outlined">Nét viền</string>
     <string name="settings_icon_style_sharp">Góc sắc</string>
-    <string name="settings_icon_variable_axes">Chi tiết biểu tượng</string>
-    <string name="settings_icon_variable_axes_summary">Thay đổi được áp dụng ngay cho biểu tượng SongMeld.</string>
     <string name="settings_icon_fill">Tô kín</string>
     <string name="settings_icon_weight">Độ đậm</string>
     <string name="settings_icon_grade">Cấp độ nét</string>
@@ -35,7 +30,6 @@
     <string name="settings_icon_shape_rounded">Vuông bo tròn</string>
     <string name="settings_icon_shape_square">Vuông bo nhẹ</string>
     <string name="settings_icon_reset">Khôi phục biểu tượng mặc định</string>
-    <string name="settings_icon_font_note">Sử dụng Material Symbols Variable Font. Logo SongMeld và ảnh bìa không bị ảnh hưởng.</string>
     <string name="icon_browse_title">Khám phá biểu tượng</string>
     <string name="icon_pack_symbols">Symbols</string>
     <string name="icon_search_hint">Tìm biểu tượng theo tên</string>
@@ -51,7 +45,6 @@
     <string name="settings_about_description">Phiên bản, nhà phát triển và tài liệu của SongMeld.</string>
     <string name="songs_title">Bài hát</string>
     <plurals name="song_count">
-        <item quantity="one">%d bài hát trên thiết bị</item>
         <item quantity="other">%d bài hát trên thiết bị</item>
     </plurals>
     <string name="search_songs_hint">Tìm bài hát, nghệ sĩ, album</string>
@@ -171,4 +164,6 @@
     <string name="icon_pack_flutter">Flutter</string>
     <string name="icon_search_help">Tìm theo tên, ví dụ music note, hoặc mã U+E405.</string>
     <string name="icon_static_font_note">Bộ này dùng phông tĩnh; các tùy chọn độ đậm và tô kín chỉ áp dụng cho Material Symbols.</string>
+    <string name="library_refreshing">Đang quét lại thư viện…</string>
+    <string name="library_refresh_error">Chưa cập nhật được thư viện. Đang hiển thị kết quả từ lần quét trước.</string>
 </resources>

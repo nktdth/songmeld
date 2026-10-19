@@ -16,7 +16,11 @@
         "Thêm xem trước giao diện, danh sách nhạc gọn và tùy chọn giảm chuyển động trang trí.",
         "Cải thiện lựa chọn chủ đề ở cỡ chữ lớn, thêm khôi phục giao diện mặc định và tên hình nền biểu tượng đang chọn.",
         "Cải thiện trình chọn biểu tượng: tìm nhiều từ hoặc mã Unicode, thử lại khi lỗi và cuộn được cùng bàn phím.",
-        "Khắc phục trạng thái tải khi đổi bộ biểu tượng, bảo vệ dữ liệu lựa chọn cũ và bản ghi danh mục không hợp lệ."
+        "Khắc phục trạng thái tải khi đổi bộ biểu tượng, bảo vệ dữ liệu lựa chọn cũ và bản ghi danh mục không hợp lệ.",
+        "Tự cập nhật thư viện khi nhạc trên máy thay đổi và khi quay lại ứng dụng.",
+        "Giữ danh sách trong lúc quét lại, hiển thị tiến trình và cho thử lại nếu cập nhật thất bại.",
+        "Giảm bộ nhớ giải mã ảnh bìa quá dài/rộng, giới hạn tác vụ đồng thời và tránh phát lại hiệu ứng logo khi quay từ Cài đặt.",
+        "Đồng bộ nội dung tiếng Việt mặc định, loại bỏ bộ chuỗi cũ bị trùng và cải thiện khoảng trống khi mở bàn phím."
       ]
     }
   ]

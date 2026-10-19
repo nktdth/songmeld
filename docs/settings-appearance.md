@@ -38,8 +38,8 @@ and catalog selection, and system-motion precedence. This is not an Android disk
 persistence, lifecycle or Compose rendering test.
 
 Kotlin syntax parsing, XML/resource references, changelog JSON and diff whitespace
-were also checked. Full Android compilation and on-device verification remain
-required before merging the draft PR.
+were also checked. See `docs/build-verification.md` for the latest Android build
+status. On-device verification remains required before merging the draft PR.
 
 Device checklist:
 

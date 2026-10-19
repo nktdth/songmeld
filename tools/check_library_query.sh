@@ -16,6 +16,8 @@ java -cp "$kotlin_distribution/lib/*" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
   "$check_dir/Uri.kt" \
   "$repo_root/app/src/main/java/moe/ktandth/songmeld/data/model/Song.kt" \
   "$repo_root/app/src/main/java/moe/ktandth/songmeld/ui/songs/LibraryQuery.kt" \
+  "$repo_root/app/src/main/java/moe/ktandth/songmeld/ui/songs/LibraryLoadState.kt" \
+  "$repo_root/app/src/main/java/moe/ktandth/songmeld/data/local/ArtworkSampling.kt" \
   "$repo_root/tools/tests/LibraryQueryCheck.kt" \
   -d "$check_dir/checks.jar"
 java -cp "$check_dir/checks.jar:$kotlin_distribution/lib/*" \

@@ -30,6 +30,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -79,6 +81,8 @@ fun SongsScreen(
     errorMessage: String?,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    isRefreshing: Boolean = false,
+    refreshFailed: Boolean = false,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
@@ -105,12 +109,12 @@ fun SongsScreen(
     val artworkLoader = remember(context.applicationContext) {
         LocalSongArtworkLoader(context.applicationContext)
     }
-    // Null means this query is being computed; do not show an incorrect no-results state.
-    val filteredSongs by produceState<List<Song>?>(null, songs, query, sort) {
-        value = null
-        value = withContext(Dispatchers.Default) { querySongs(songs, query, sort) }
+    // Preserve the same view during a rescan, but never display another query's results.
+    val queryResult by produceState<LibraryQueryResult?>(null, songs, query, sort) {
+        val found = withContext(Dispatchers.Default) { querySongs(songs, query, sort) }
+        value = LibraryQueryResult(query, sort, found)
     }
-    val results = filteredSongs
+    val results = queryResult?.takeIf { it.query == query && it.sort == sort }?.songs
 
     Column(modifier = modifier.fillMaxSize().imePadding()) {
         Row(
@@ -123,7 +127,7 @@ fun SongsScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
-            IconButton(onClick = onRetry, enabled = !isLoading) {
+            IconButton(onClick = onRetry, enabled = !isLoading && !isRefreshing) {
                 SongMeldIcon(SongMeldIconId.Refresh, stringResource(R.string.library_refresh))
             }
             IconButton(onClick = { focusManager.clearFocus(); sortOpen = true },
@@ -133,6 +137,7 @@ fun SongsScreen(
         }
         val summary = when {
             isLoading -> stringResource(R.string.loading_music)
+            isRefreshing -> stringResource(R.string.library_refreshing)
             errorMessage != null -> stringResource(R.string.load_error_title)
             query.isNotBlank() && results != null -> stringResource(R.string.library_result_count, results.size, songs.size)
             else -> pluralStringResource(R.plurals.song_count, songs.size, songs.size)
@@ -149,10 +154,25 @@ fun SongsScreen(
             modifier = Modifier.padding(horizontal = 20.dp),
         )
         Spacer(modifier = Modifier.height(12.dp))
+        if (isRefreshing) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
+            Spacer(Modifier.height(8.dp))
+        }
+        if (refreshFailed) {
+            Surface(shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                Column(Modifier.fillMaxWidth().padding(14.dp)) {
+                    Text(stringResource(R.string.library_refresh_error), style = MaterialTheme.typography.bodySmall)
+                    TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                }
+            }
+        }
         when {
             isLoading -> LoadingState()
             errorMessage != null -> ErrorState(onRetry = onRetry)
-            songs.isEmpty() -> EmptyLibraryState(onRefresh = onRetry)
+            songs.isEmpty() -> EmptyLibraryState(onRefresh = onRetry, refreshing = isRefreshing)
             results == null -> LoadingState()
             results.isEmpty() -> EmptySearchState(query = query, onClear = { query = ""; focusManager.clearFocus() })
             else -> SongList(songs = results, artworkLoader = artworkLoader, state = listState,
@@ -383,12 +403,12 @@ private fun LoadingState() {
 }
 
 @Composable
-private fun EmptyLibraryState(onRefresh: () -> Unit) {
+private fun EmptyLibraryState(onRefresh: () -> Unit, refreshing: Boolean) {
     LibraryMessage(
         icon = SongMeldIconId.LibraryMusic,
         title = stringResource(R.string.empty_library_title),
         body = stringResource(R.string.empty_library_body),
-        action = { FilledTonalButton(onClick = onRefresh) { Text(stringResource(R.string.library_refresh)) } },
+        action = { FilledTonalButton(onClick = onRefresh, enabled = !refreshing) { Text(stringResource(R.string.library_refresh)) } },
     )
 }
 

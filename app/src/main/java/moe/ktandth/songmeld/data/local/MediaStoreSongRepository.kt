@@ -4,6 +4,9 @@ import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
 import moe.ktandth.songmeld.R
+import java.io.IOException
+import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import moe.ktandth.songmeld.data.model.Song
@@ -27,6 +30,7 @@ class MediaStoreSongRepository(
         val sortOrder = "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE ASC"
         val collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
+        coroutineContext.ensureActive()
         context.contentResolver.query(
             collection,
             projection,
@@ -45,6 +49,7 @@ class MediaStoreSongRepository(
 
             buildList {
                 while (cursor.moveToNext()) {
+                    coroutineContext.ensureActive()
                     val id = cursor.getLong(idColumn)
                     val title = cursor.getString(titleColumn).orEmpty().ifBlank { context.getString(R.string.song_unknown_title) }
                     val artist = cursor.getString(artistColumn)
@@ -76,6 +81,6 @@ class MediaStoreSongRepository(
                     )
                 }
             }
-        } ?: emptyList()
+        } ?: throw IOException("MediaStore query returned no cursor")
     }
 }
