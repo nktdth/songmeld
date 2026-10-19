@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -85,7 +87,7 @@ fun SettingsPageScaffold(
                         fontSize = if (title == R.string.settings_title) {
                             (30f - 8f * scrollBehavior.state.collapsedFraction).sp
                         } else {
-                            (26f - 5f * scrollBehavior.state.collapsedFraction).sp
+                            (28f - 6f * scrollBehavior.state.collapsedFraction).sp
                         },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -269,7 +271,7 @@ private fun SettingsToggle(
 private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
     val largeText = LocalDensity.current.fontScale > 1.3f
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        if (maxWidth < 300.dp || largeText) {
+        if (maxWidth < 320.dp || largeText) {
             Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppTheme.entries.forEach { theme ->
                     ThemeTile(stringResource(themeLabel(theme)), themeIcon(theme), theme == selected,
@@ -277,10 +279,10 @@ private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
                 }
             }
         } else {
-            Row(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.selectableGroup().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppTheme.entries.forEach { theme ->
                     ThemeTile(stringResource(themeLabel(theme)), themeIcon(theme), theme == selected,
-                        { onSelected(theme) }, Modifier.weight(1f))
+                        { onSelected(theme) }, Modifier.weight(1f).fillMaxHeight())
                 }
             }
         }
@@ -318,13 +320,13 @@ private fun settingsAccent(index: Int): SettingsAccent {
 @Composable
 private fun SettingsIconCircle(icon: SongMeldIconId, accent: SettingsAccent) {
     Surface(
-        modifier = Modifier.size(40.dp),
+        modifier = Modifier.size(56.dp),
         shape = CircleShape,
         color = accent.background,
         contentColor = accent.foreground,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            SongMeldIcon(id = icon, contentDescription = null, size = 22.dp)
+            SongMeldIcon(id = icon, contentDescription = null, size = 28.dp)
         }
     }
 }
@@ -345,7 +347,7 @@ private fun ColorfulSettingsEntry(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -366,7 +368,7 @@ private fun ColorfulSettingsEntry(
                 id = SongMeldIconId.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                size = 20.dp,
+                size = 24.dp,
             )
         }
     }
@@ -419,13 +421,13 @@ private fun ThemeTile(
             SongMeldIcon(
                 id = icon,
                 contentDescription = null,
-                size = 29.dp,
+                size = 34.dp,
                 modifier = Modifier.graphicsLayer { scaleX = iconScale; scaleY = iconScale },
                 tint = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
             )
             Text(
                 title,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 color = if (selected) colors.onPrimaryContainer else colors.onSurface,

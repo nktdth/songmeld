@@ -116,7 +116,7 @@ private fun AboutHero(version: String) {
     ) {
         Surface(shape = RoundedCornerShape(36.dp), color = colors.primaryContainer) {
             Image(painterResource(R.drawable.songmeld_logo), contentDescription = null,
-                modifier = Modifier.size(112.dp).padding(18.dp))
+                modifier = Modifier.size(128.dp).padding(20.dp))
         }
         Text(
             buildAnnotatedString {
@@ -153,16 +153,16 @@ private fun AboutLinkRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                Box(Modifier.size(38.dp), contentAlignment = Alignment.Center) {
-                    SongMeldIcon(icon, contentDescription = null, size = 20.dp)
+                Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                    SongMeldIcon(icon, contentDescription = null, size = 28.dp)
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(summary, style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            SongMeldIcon(SongMeldIconId.ChevronRight, contentDescription = null, size = 20.dp)
+            SongMeldIcon(SongMeldIconId.ChevronRight, contentDescription = null, size = 24.dp)
         }
     }
 }
@@ -195,11 +195,11 @@ private fun AboutPersonCard(person: AboutPerson) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 if (person.avatar != null) {
                     Image(painterResource(person.avatar), stringResource(R.string.about_avatar, person.name),
-                        modifier = Modifier.size(64.dp).clip(RoundedCornerShape(24.dp)), contentScale = ContentScale.Crop)
+                        modifier = Modifier.size(72.dp).clip(RoundedCornerShape(24.dp)), contentScale = ContentScale.Crop)
                 } else {
                     Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-                        Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) {
                             Text(person.name.take(1), style = MaterialTheme.typography.headlineSmall)
                         }
                     }

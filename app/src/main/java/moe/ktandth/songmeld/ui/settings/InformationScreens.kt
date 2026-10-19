@@ -73,7 +73,7 @@ fun LicensesScreen(onBack: () -> Unit, onOpenLicense: (LicenseDocument) -> Unit)
                         Text(stringResource(document.summary), style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    SongMeldIcon(SongMeldIconId.ChevronRight, null, size = 20.dp)
+                    SongMeldIcon(SongMeldIconId.ChevronRight, null, size = 24.dp)
                 }
             }
         }
@@ -89,8 +89,15 @@ fun LicenseDetailScreen(document: LicenseDocument, onBack: () -> Unit) {
         Text(stringResource(document.summary), style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         AssetContent(document.asset) { text ->
+            // Bound each text layout when font scaling makes a long license very tall.
+            val paragraphs = remember(text) { text.split(Regex("\\n[ \\t]*\\n")) }
             SelectionContainer {
-                Text(text, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth())
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    paragraphs.forEach { paragraph ->
+                        Text(paragraph, style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.fillMaxWidth())
+                    }
+                }
             }
         }
     }
@@ -225,8 +232,8 @@ private fun InformationHeader(icon: SongMeldIconId, description: String) {
     Column(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Surface(shape = RoundedCornerShape(22.dp), color = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-            Box(Modifier.size(60.dp), contentAlignment = Alignment.Center) {
-                SongMeldIcon(icon, null, size = 28.dp)
+            Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) {
+                SongMeldIcon(icon, null, size = 36.dp)
             }
         }
         Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

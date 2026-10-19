@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -92,8 +93,9 @@ fun IconPickerScreen(
         catalog?.entries?.firstOrNull { it.reference == selected }?.name
     }
 
+    val minimumCellWidth = 96.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(80.dp),
+        columns = GridCells.Adaptive(minimumCellWidth),
         state = gridState,
         modifier = modifier.fillMaxSize().imePadding(),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -180,9 +182,9 @@ private fun SelectedIconPreview(selected: IconReference?, name: String?, appeara
             horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-                Box(Modifier.size(58.dp), contentAlignment = Alignment.Center) {
-                    if (selected != null) CatalogIcon(selected, null, size = 32.dp, appearance = appearance)
-                    else SongMeldIcon(SongMeldIconId.MusicNote, null, size = 32.dp)
+                Box(Modifier.size(68.dp), contentAlignment = Alignment.Center) {
+                    if (selected != null) CatalogIcon(selected, null, size = 38.dp, appearance = appearance)
+                    else SongMeldIcon(SongMeldIconId.MusicNote, null, size = 38.dp)
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -202,13 +204,13 @@ private fun IconChoice(entry: CatalogIconEntry, active: Boolean, appearance: Mat
         Modifier.clip(RoundedCornerShape(16.dp))
             .background(if (active) colors.primaryContainer else colors.surfaceContainerLow)
             .selectable(selected = active, role = Role.RadioButton, onClick = onClick)
-            .heightIn(min = 80.dp).padding(horizontal = 4.dp, vertical = 12.dp),
+            .heightIn(min = 100.dp).padding(horizontal = 4.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        CatalogIcon(entry.reference, null, size = 28.dp, appearance = appearance,
+        CatalogIcon(entry.reference, null, size = 36.dp, appearance = appearance,
             tint = if (active) colors.onPrimaryContainer else colors.onSurface)
         Text(entry.name.replace('_', ' ').replace('-', ' '), maxLines = 2, overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelMedium,
             color = if (active) colors.onPrimaryContainer else colors.onSurfaceVariant)
     }
 }

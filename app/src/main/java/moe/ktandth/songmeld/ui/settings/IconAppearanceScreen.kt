@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -36,11 +38,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import moe.ktandth.songmeld.R
@@ -102,28 +105,7 @@ fun IconAppearanceScreen(
         }
 
         SettingsIconGroupTitle(stringResource(R.string.settings_icon_style))
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            AppIconStyle.entries.forEachIndexed { index, style ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index, AppIconStyle.entries.size),
-                    selected = appearance.style == style,
-                    onClick = { onAppearanceChanged(appearance.copy(style = style)) },
-                    label = {
-                        Text(
-                            stringResource(
-                                when (style) {
-                                    AppIconStyle.ROUNDED -> R.string.settings_icon_style_rounded
-                                    AppIconStyle.OUTLINED -> R.string.settings_icon_style_outlined
-                                    AppIconStyle.SHARP -> R.string.settings_icon_style_sharp
-                                }
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                )
-            }
-        }
+        IconStyleChoices(appearance, onAppearanceChanged)
 
         Card(
             shape = RoundedCornerShape(28.dp),
@@ -199,7 +181,7 @@ fun IconAppearanceScreen(
                             val selected = shape == iconShape
                             val label = stringResource(shapeLabel(shape))
                             Box(
-                                modifier = Modifier.weight(1f).height(68.dp)
+                                modifier = Modifier.weight(1f).height(80.dp)
                                     .clip(RoundedCornerShape(18.dp))
                                     .background(if (selected) MaterialTheme.colorScheme.primaryContainer
                                         else MaterialTheme.colorScheme.surfaceContainerLow)
@@ -254,6 +236,61 @@ fun IconAppearanceScreen(
     }
 }
 
+/** Larger labels wrap into full-width choices when three segments would be cramped. */
+@Composable
+private fun IconStyleChoices(
+    appearance: MaterialSymbolAppearance,
+    onAppearanceChanged: (MaterialSymbolAppearance) -> Unit,
+) {
+    val fontScale = LocalDensity.current.fontScale
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        if (maxWidth < 360.dp || fontScale > 1.15f) {
+            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                AppIconStyle.entries.forEach { style ->
+                    val selected = appearance.style == style
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().selectable(selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { onAppearanceChanged(appearance.copy(style = style)) }),
+                        shape = RoundedCornerShape(24.dp),
+                        color = if (selected) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceContainerLow,
+                        contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurface,
+                        border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                    ) {
+                        Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 32.dp,
+                                appearance = appearance.copy(style = style))
+                            Text(stringResource(iconStyleLabel(style)), modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium)
+                        }
+                    }
+                }
+            }
+        } else {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                AppIconStyle.entries.forEachIndexed { index, style ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index, AppIconStyle.entries.size),
+                        selected = appearance.style == style,
+                        onClick = { onAppearanceChanged(appearance.copy(style = style)) },
+                        label = { Text(stringResource(iconStyleLabel(style)), textAlign = TextAlign.Center) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun iconStyleLabel(style: AppIconStyle): Int = when (style) {
+    AppIconStyle.ROUNDED -> R.string.settings_icon_style_rounded
+    AppIconStyle.OUTLINED -> R.string.settings_icon_style_outlined
+    AppIconStyle.SHARP -> R.string.settings_icon_style_sharp
+}
+
 @Composable
 private fun SafeIconSlider(
     title: String,
@@ -265,9 +302,9 @@ private fun SafeIconSlider(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
             Text(value.roundToInt().toString(), style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary)
         }
