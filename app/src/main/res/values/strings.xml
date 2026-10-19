@@ -7,7 +7,7 @@
     <string name="settings_appearance">Giao diện</string>
     <string name="settings_appearance_summary">Chủ đề, màu sắc và biểu tượng</string>
     <string name="settings_theme">Chủ đề</string>
-    <string name="settings_theme_description">Chọn giao diện phù hợp với anh.</string>
+    <string name="settings_theme_description">Chọn giao diện phù hợp với bạn.</string>
     <string name="settings_theme_system">Theo hệ thống</string>
     <string name="settings_theme_light">Sáng</string>
     <string name="settings_theme_dark">Tối</string>
@@ -134,4 +134,20 @@
     <string name="terms_warranty_title">Giấy phép và bảo đảm</string>
     <string name="terms_warranty_body">Các quyền sử dụng, sửa đổi, phân phối và điều kiện bảo đảm của SongMeld được quy định trong GNU GPL v3.0. Xem toàn văn tại Giới thiệu → Giấy phép → SongMeld.</string>
     <string name="info_last_updated">Cập nhật cuối: %1$s</string>
+    <string name="library_refresh">Quét lại thư viện</string>
+    <string name="library_sort">Sắp xếp bài hát</string>
+    <string name="library_sort_title">Tên bài hát (A–Z)</string>
+    <string name="library_sort_artist">Nghệ sĩ (A–Z)</string>
+    <string name="library_sort_newest">Mới thêm gần đây</string>
+    <string name="library_sort_longest">Thời lượng dài nhất</string>
+    <string name="library_result_count">%1$d kết quả trong %2$d bài hát</string>
+    <string name="song_details">Thông tin bài hát</string>
+    <string name="song_artist">Nghệ sĩ</string>
+    <string name="song_album">Album</string>
+    <string name="song_duration">Thời lượng</string>
+    <string name="song_date_added">Ngày thêm vào thư viện</string>
+    <string name="song_unknown_title">Bài hát chưa có tên</string>
+    <string name="song_unknown_artist">Nghệ sĩ chưa xác định</string>
+    <string name="song_unknown_album">Album chưa xác định</string>
+    <string name="library_summary_sort">%1$s · %2$s</string>
 </resources>

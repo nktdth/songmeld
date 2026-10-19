@@ -3,6 +3,7 @@ package moe.ktandth.songmeld.data.local
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
+import moe.ktandth.songmeld.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import moe.ktandth.songmeld.data.model.Song
@@ -45,12 +46,12 @@ class MediaStoreSongRepository(
             buildList {
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idColumn)
-                    val title = cursor.getString(titleColumn).orEmpty().ifBlank { "Unknown title" }
+                    val title = cursor.getString(titleColumn).orEmpty().ifBlank { context.getString(R.string.song_unknown_title) }
                     val artist = cursor.getString(artistColumn)
                         .orEmpty()
                         .takeUnless { it == MediaStore.UNKNOWN_STRING }
                         .orEmpty()
-                        .ifBlank { "Unknown artist" }
+                        .ifBlank { context.getString(R.string.song_unknown_artist) }
                     val album = cursor.getString(albumColumn)
                         .orEmpty()
                         .takeUnless { it == MediaStore.UNKNOWN_STRING }

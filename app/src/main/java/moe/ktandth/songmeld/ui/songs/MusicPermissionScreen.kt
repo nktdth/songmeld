@@ -1,5 +1,7 @@
 package moe.ktandth.songmeld.ui.songs
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +39,8 @@ fun MusicPermissionScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 28.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 28.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

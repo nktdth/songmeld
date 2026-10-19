@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
@@ -135,148 +136,136 @@ fun SongMeldApp(
         }
     }
 
-    if (currentPage != SongMeldPage.LIBRARY) {
-        // Own Scaffold per destination: collapsing app bars must receive nested scroll directly
-        // from their content. Keeping the library screen out of this branch avoids double insets.
-        when (currentPage) {
-            SongMeldPage.ICON_PICKER -> key("icon_picker") {
-                SettingsPageScaffold(
-                    title = R.string.icon_browse_title,
-                    onBack = { navigateBack() },
-                ) { innerPadding ->
-                    IconPickerScreen(
-                        modifier = Modifier.fillMaxSize()
-                            .padding(innerPadding)
-                            .consumeWindowInsets(innerPadding),
-                        appearance = symbols,
-                        selected = selectedIcon,
-                        onSelected = onSelectedIconChanged,
+    val pageStateHolder = rememberSaveableStateHolder()
+    val pageKey = if (currentPage == SongMeldPage.LICENSE_DETAIL) {
+        "${currentPage.name}:${selectedLicense.name}"
+    } else currentPage.name
+    pageStateHolder.SaveableStateProvider(pageKey) {
+        if (currentPage != SongMeldPage.LIBRARY) {
+            // Own Scaffold per destination: collapsing app bars must receive nested scroll directly
+            // from their content. Keeping the library screen out of this branch avoids double insets.
+            when (currentPage) {
+                SongMeldPage.ICON_PICKER -> key("icon_picker") {
+                    SettingsPageScaffold(
+                        title = R.string.icon_browse_title,
+                        onBack = { navigateBack() },
+                    ) { innerPadding ->
+                        IconPickerScreen(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(innerPadding)
+                                .consumeWindowInsets(innerPadding),
+                            appearance = symbols,
+                            selected = selectedIcon,
+                            onSelected = onSelectedIconChanged,
+                        )
+                    }
+                }
+
+                SongMeldPage.ICON_APPEARANCE -> key("icon_appearance") {
+                    SettingsPageScaffold(
+                        title = R.string.settings_icon_appearance,
+                        onBack = { navigateBack() },
+                    ) { innerPadding ->
+                        IconAppearanceScreen(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(innerPadding)
+                                .consumeWindowInsets(innerPadding),
+                            appearance = symbols,
+                            iconShape = iconShape,
+                            onAppearanceChanged = onSymbolsChanged,
+                            onIconShapeChanged = onIconShapeChanged,
+                            onBrowseIcons = { currentPage = SongMeldPage.ICON_PICKER },
+                            selectedCatalogIcon = selectedIcon,
+                        )
+                    }
+                }
+
+                SongMeldPage.APPEARANCE -> key("appearance") {
+                    AppearanceSettingsScreen(
+                        theme = theme,
+                        dynamicColorEnabled = dynamicColorEnabled,
+                        onThemeChanged = onThemeChanged,
+                        onDynamicColorChanged = onDynamicColorChanged,
+                        onOpenIconAppearance = { currentPage = SongMeldPage.ICON_APPEARANCE },
+                        onBack = { navigateBack() },
                     )
                 }
-            }
 
-            SongMeldPage.ICON_APPEARANCE -> key("icon_appearance") {
-                SettingsPageScaffold(
-                    title = R.string.settings_icon_appearance,
-                    onBack = { navigateBack() },
-                ) { innerPadding ->
-                    IconAppearanceScreen(
-                        modifier = Modifier.fillMaxSize()
-                            .padding(innerPadding)
-                            .consumeWindowInsets(innerPadding),
-                        appearance = symbols,
-                        iconShape = iconShape,
-                        onAppearanceChanged = onSymbolsChanged,
-                        onIconShapeChanged = onIconShapeChanged,
-                        onBrowseIcons = { currentPage = SongMeldPage.ICON_PICKER },
-                        selectedCatalogIcon = selectedIcon,
+                SongMeldPage.ABOUT -> key("about") {
+                    AboutSettingsScreen(
+                        onBack = { navigateBack() },
+                        onOpenLicenses = { currentPage = SongMeldPage.LICENSES },
+                        onOpenChangelog = { currentPage = SongMeldPage.CHANGELOG },
+                        onOpenTerms = { currentPage = SongMeldPage.TERMS },
                     )
                 }
-            }
 
-            SongMeldPage.APPEARANCE -> key("appearance") {
-                AppearanceSettingsScreen(
-                    theme = theme,
-                    dynamicColorEnabled = dynamicColorEnabled,
-                    onThemeChanged = onThemeChanged,
-                    onDynamicColorChanged = onDynamicColorChanged,
-                    onOpenIconAppearance = { currentPage = SongMeldPage.ICON_APPEARANCE },
-                    onBack = { navigateBack() },
-                )
-            }
-
-            SongMeldPage.ABOUT -> key("about") {
-                AboutSettingsScreen(
-                    onBack = { navigateBack() },
-                    onOpenLicenses = { currentPage = SongMeldPage.LICENSES },
-                    onOpenChangelog = { currentPage = SongMeldPage.CHANGELOG },
-                    onOpenTerms = { currentPage = SongMeldPage.TERMS },
-                )
-            }
-
-            SongMeldPage.LICENSES -> key("licenses") {
-                LicensesScreen(onBack = { navigateBack() }, onOpenLicense = {
-                    selectedLicense = it
-                    currentPage = SongMeldPage.LICENSE_DETAIL
-                })
-            }
-            SongMeldPage.LICENSE_DETAIL -> key(selectedLicense) {
-                LicenseDetailScreen(document = selectedLicense, onBack = { navigateBack() })
-            }
-            SongMeldPage.CHANGELOG -> key("changelog") {
-                ChangelogScreen(onBack = { navigateBack() })
-            }
-            SongMeldPage.TERMS -> key("terms") {
-                TermsScreen(onBack = { navigateBack() })
-            }
-            SongMeldPage.SETTINGS -> key("settings") {
-                SettingsScreen(
-                    onBack = { navigateBack() },
-                    onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
-                    onOpenAbout = { currentPage = SongMeldPage.ABOUT },
-                )
-            }
-
-            SongMeldPage.LIBRARY -> Unit // Handled by the outer branch.
-        }
-    } else {
-        // The branded header stays composed while the audio permission/library state changes.
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = { SongMeldHeader(onOpenSettings = { currentPage = SongMeldPage.SETTINGS }) },
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-            ) {
-                if (!permissionGranted) {
-                    val showSettingsAction = permissionRequestedBefore &&
-                        activity != null &&
-                        !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
-
-                    MusicPermissionScreen(
-                        modifier = Modifier.fillMaxSize(),
-                        showSettingsAction = showSettingsAction,
-                        onRequestPermission = {
-                            permissionRequestedBefore = true
-                            permissionPreferences.edit()
-                                .putBoolean("audio_permission_requested", true)
-                                .apply()
-                            permissionLauncher.launch(permission)
-                        },
-                        onOpenSettings = {
-                            context.startActivity(
-                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                    data = Uri.fromParts("package", context.packageName, null)
-                                }
-                            )
-                        },
+                SongMeldPage.LICENSES -> key("licenses") {
+                    LicensesScreen(onBack = { navigateBack() }, onOpenLicense = {
+                        selectedLicense = it
+                        currentPage = SongMeldPage.LICENSE_DETAIL
+                    })
+                }
+                SongMeldPage.LICENSE_DETAIL -> key(selectedLicense) {
+                    LicenseDetailScreen(document = selectedLicense, onBack = { navigateBack() })
+                }
+                SongMeldPage.CHANGELOG -> key("changelog") {
+                    ChangelogScreen(onBack = { navigateBack() })
+                }
+                SongMeldPage.TERMS -> key("terms") {
+                    TermsScreen(onBack = { navigateBack() })
+                }
+                SongMeldPage.SETTINGS -> key("settings") {
+                    SettingsScreen(
+                        onBack = { navigateBack() },
+                        onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
+                        onOpenAbout = { currentPage = SongMeldPage.ABOUT },
                     )
-                } else {
-                    when (val state = libraryState) {
-                        LibraryState.Idle,
-                        LibraryState.Loading -> SongsScreen(
-                            modifier = Modifier.fillMaxSize(),
-                            songs = emptyList(),
-                            isLoading = true,
-                            errorMessage = null,
-                            onRetry = { refreshKey++ },
-                        )
+                }
 
-                        is LibraryState.Loaded -> SongsScreen(
-                            modifier = Modifier.fillMaxSize(),
-                            songs = state.songs,
-                            isLoading = false,
-                            errorMessage = null,
-                            onRetry = { refreshKey++ },
-                        )
+                SongMeldPage.LIBRARY -> Unit // Handled by the outer branch.
+            }
+        } else {
+            // The branded header stays composed while the audio permission/library state changes.
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = { SongMeldHeader(onOpenSettings = { currentPage = SongMeldPage.SETTINGS }) },
+            ) { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                ) {
+                    if (!permissionGranted) {
+                        val showSettingsAction = permissionRequestedBefore &&
+                            activity != null &&
+                            !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
 
-                        LibraryState.Error -> SongsScreen(
+                        MusicPermissionScreen(
                             modifier = Modifier.fillMaxSize(),
-                            songs = emptyList(),
-                            isLoading = false,
-                            errorMessage = "load_error",
+                            showSettingsAction = showSettingsAction,
+                            onRequestPermission = {
+                                permissionRequestedBefore = true
+                                permissionPreferences.edit()
+                                    .putBoolean("audio_permission_requested", true)
+                                    .apply()
+                                permissionLauncher.launch(permission)
+                            },
+                            onOpenSettings = {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.fromParts("package", context.packageName, null)
+                                    }
+                                )
+                            },
+                        )
+                    } else {
+                        val loadedSongs = (libraryState as? LibraryState.Loaded)?.songs.orEmpty()
+                        SongsScreen(
+                            modifier = Modifier.fillMaxSize(),
+                            songs = loadedSongs,
+                            isLoading = libraryState == LibraryState.Idle || libraryState == LibraryState.Loading,
+                            errorMessage = if (libraryState == LibraryState.Error) "load_error" else null,
                             onRetry = { refreshKey++ },
                         )
                     }
