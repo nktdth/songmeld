@@ -29,5 +29,8 @@ fun main() {
     check(decorativeMotionEnabled(reduceMotion = false, systemAnimationsEnabled = true))
     check(!decorativeMotionEnabled(reduceMotion = true, systemAnimationsEnabled = true))
     check(!decorativeMotionEnabled(reduceMotion = false, systemAnimationsEnabled = false))
+    context.getSharedPreferences("songmeld_appearance", Context.MODE_PRIVATE).edit()
+        .putInt("selected_icon_codepoint", Int.MAX_VALUE).apply()
+    check(AppearancePreferences(context).iconPickerSelection == null)
     println("Appearance preference checks passed: persistence, reset scope, accessibility retention and motion precedence.")
 }

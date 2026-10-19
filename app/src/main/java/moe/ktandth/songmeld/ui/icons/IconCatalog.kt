@@ -27,24 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import moe.ktandth.songmeld.R
 
-/** Only Symbols supports variable axes. The other two packs are static icon fonts. */
-enum class IconPack(val storageName: String) {
-    SYMBOLS("symbols"),
-    MDI("mdi"),
-    FLUTTER("flutter");
-
-    companion object {
-        fun fromStorage(value: String?): IconPack =
-            entries.firstOrNull { it.storageName == value } ?: SYMBOLS
-    }
-}
-
-data class IconReference(val pack: IconPack, val codepoint: Int) {
-    init { require(codepoint in 0xE000..0x10FFFF && codepoint !in 0xD800..0xDFFF) }
-}
-
-data class CatalogIconEntry(val reference: IconReference, val name: String)
-
 /** In-memory cache: indexes are parsed once per pack, off the main thread, from local assets. */
 object SongMeldIconCatalog {
     private val cache = ConcurrentHashMap<IconPack, List<CatalogIconEntry>>()
@@ -54,15 +36,11 @@ object SongMeldIconCatalog {
             cache[pack] ?: context.applicationContext.assets
                 .open("icon_catalog/${pack.storageName}.tsv")
                 .bufferedReader(Charsets.UTF_8)
-                .useLines { lines ->
-                    lines.mapNotNull { line ->
-                        val splitAt = line.indexOf('\t')
-                        if (splitAt <= 0) return@mapNotNull null
-                        val codepoint = line.substring(0, splitAt).toIntOrNull(16)
-                            ?: return@mapNotNull null
-                        CatalogIconEntry(IconReference(pack, codepoint), line.substring(splitAt + 1))
-                    }.toList()
-                }.also { cache[pack] = it }
+                .useLines { lines -> parseIconCatalog(lines, pack) }
+                .also { entries ->
+                    check(entries.isNotEmpty()) { "Empty icon catalog: ${pack.storageName}" }
+                    cache[pack] = entries
+                }
         }
     }
 }

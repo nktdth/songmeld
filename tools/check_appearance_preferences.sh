@@ -43,11 +43,6 @@ enum class AppIconShape(val preferenceValue: String) {
     CIRCLE("circle"), SQUARE("square");
     companion object { fun fromPreference(v: String?) = entries.firstOrNull { it.preferenceValue == v } ?: CIRCLE }
 }
-enum class IconPack(val storageName: String) {
-    SYMBOLS("symbols");
-    companion object { fun fromStorage(@Suppress("UNUSED_PARAMETER") v: String?) = SYMBOLS }
-}
-data class IconReference(val pack: IconPack, val codepoint: Int)
 data class MaterialSymbolAppearance(val style: AppIconStyle = AppIconStyle.ROUNDED, val fill: Float = 0f,
     val weight: Int = 400, val grade: Int = 0, val opticalSize: Int = 24) {
     fun validated() = this
@@ -56,6 +51,7 @@ KOTLIN
 java -cp "$kotlin_distribution/lib/*" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
   -kotlin-home "$kotlin_distribution" \
   "$check_dir/Context.kt" "$check_dir/Icons.kt" \
+  "$repo_root/app/src/main/java/moe/ktandth/songmeld/ui/icons/IconModels.kt" \
   "$repo_root/app/src/main/java/moe/ktandth/songmeld/ui/settings/AppearancePreferences.kt" \
   "$repo_root/app/src/main/java/moe/ktandth/songmeld/ui/settings/InterfaceOptions.kt" \
   "$repo_root/app/src/main/java/moe/ktandth/songmeld/ui/settings/MotionPolicy.kt" \

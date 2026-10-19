@@ -167,4 +167,8 @@
     <string name="settings_reset_confirm">Khôi phục</string>
     <string name="settings_cancel">Hủy</string>
     <string name="settings_icon_selected_shape">Đang chọn: %1$s</string>
+    <string name="icon_pack_mdi">MDI</string>
+    <string name="icon_pack_flutter">Flutter</string>
+    <string name="icon_search_help">Tìm theo tên, ví dụ music note, hoặc mã U+E405.</string>
+    <string name="icon_static_font_note">Bộ này dùng phông tĩnh; các tùy chọn độ đậm và tô kín chỉ áp dụng cho Material Symbols.</string>
 </resources>

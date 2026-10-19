@@ -5,6 +5,7 @@ import moe.ktandth.songmeld.ui.icons.AppIconShape
 import moe.ktandth.songmeld.ui.icons.AppIconStyle
 import moe.ktandth.songmeld.ui.icons.IconPack
 import moe.ktandth.songmeld.ui.icons.IconReference
+import moe.ktandth.songmeld.ui.icons.isSupportedIconCodepoint
 import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
 
 /** Theme selection is kept independent from the device theme. */
@@ -77,7 +78,7 @@ class AppearancePreferences(context: Context) {
     val iconPickerSelection: IconReference?
         get() {
             val codepoint = preferences.getInt(KEY_SELECTED_ICON_CODEPOINT, -1)
-            if (codepoint < 0xE000) return null
+            if (!isSupportedIconCodepoint(codepoint)) return null
             return IconReference(
                 pack = IconPack.fromStorage(preferences.getString(KEY_SELECTED_ICON_PACK, null)),
                 codepoint = codepoint,

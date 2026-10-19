@@ -14,7 +14,9 @@
         "Chạm bài hát để xem thông tin; thêm nút quét lại và thao tác nhanh ở trạng thái trống.",
         "Giữ nội dung tìm kiếm và vị trí cuộn khi quay lại từ Cài đặt; cải thiện màn hình xin quyền ở cỡ chữ lớn.",
         "Thêm xem trước giao diện, danh sách nhạc gọn và tùy chọn giảm chuyển động trang trí.",
-        "Cải thiện lựa chọn chủ đề ở cỡ chữ lớn, thêm khôi phục giao diện mặc định và tên hình nền biểu tượng đang chọn."
+        "Cải thiện lựa chọn chủ đề ở cỡ chữ lớn, thêm khôi phục giao diện mặc định và tên hình nền biểu tượng đang chọn.",
+        "Cải thiện trình chọn biểu tượng: tìm nhiều từ hoặc mã Unicode, thử lại khi lỗi và cuộn được cùng bàn phím.",
+        "Khắc phục trạng thái tải khi đổi bộ biểu tượng, bảo vệ dữ liệu lựa chọn cũ và bản ghi danh mục không hợp lệ."
       ]
     }
   ]
