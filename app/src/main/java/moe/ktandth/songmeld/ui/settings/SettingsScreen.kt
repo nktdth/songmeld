@@ -1,6 +1,12 @@
 package moe.ktandth.songmeld.ui.settings
 
 import android.os.Build
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
@@ -12,13 +18,10 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.snap
 import androidx.compose.foundation.selection.selectableGroup
@@ -44,8 +47,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
@@ -54,7 +55,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
@@ -171,7 +171,6 @@ fun AppearanceSettingsScreen(
                 .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            AppearancePreview(options.compactLibrary)
             SettingsSectionTitle(stringResource(R.string.settings_theme))
             ThemeChoices(theme, onThemeChanged)
             Text(
@@ -287,22 +286,83 @@ private fun SettingsToggle(
     }
 }
 
+/**
+ * SongMeld-v1's single horizontal theme selector, upgraded with Material Symbols
+ * and a sliding selected-pill indicator. The three hit targets remain 56dp tall.
+ */
 @Composable
 private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
-    val largeText = LocalDensity.current.fontScale > 1.3f
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        if (maxWidth < 320.dp || largeText) {
-            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppTheme.entries.forEach { theme ->
-                    ThemeTile(stringResource(themeLabel(theme)), themeIcon(theme), theme == selected,
-                        { onSelected(theme) }, Modifier.fillMaxWidth())
-                }
-            }
-        } else {
-            Row(Modifier.selectableGroup().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppTheme.entries.forEach { theme ->
-                    ThemeTile(stringResource(themeLabel(theme)), themeIcon(theme), theme == selected,
-                        { onSelected(theme) }, Modifier.weight(1f).fillMaxHeight())
+    val colors = MaterialTheme.colorScheme
+    val motion = LocalDecorativeMotionEnabled.current
+    val modes = AppTheme.entries
+    val selectedIndex = modes.indexOf(selected).coerceAtLeast(0)
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(30.dp),
+        color = colors.surfaceContainerLow,
+    ) {
+        BoxWithConstraints(Modifier.fillMaxWidth().padding(5.dp)) {
+            val gap = 4.dp
+            val tileWidth = (maxWidth - gap * (modes.size - 1)) / modes.size
+            val offset by animateDpAsState(
+                targetValue = (tileWidth + gap) * selectedIndex,
+                animationSpec = if (motion) {
+                    tween(durationMillis = 270, easing = FastOutSlowInEasing)
+                } else snap(),
+                label = "Sliding theme selection",
+            )
+
+            // Draw the animated pill underneath the three labeled buttons.
+            Box(
+                modifier = Modifier
+                    .offset(x = offset)
+                    .width(tileWidth)
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(26.dp))
+                    .background(colors.primaryContainer),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().selectableGroup(),
+                horizontalArrangement = Arrangement.spacedBy(gap),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                modes.forEach { theme ->
+                    val isSelected = theme == selected
+                    val itemColor by animateColorAsState(
+                        targetValue = if (isSelected) colors.onPrimaryContainer else colors.onSurfaceVariant,
+                        animationSpec = if (motion) tween(180) else snap(),
+                        label = "Theme mode content",
+                    )
+                    Row(
+                        modifier = Modifier
+                            .width(tileWidth)
+                            .height(56.dp)
+                            .selectable(
+                                selected = isSelected,
+                                role = Role.RadioButton,
+                                onClick = { if (!isSelected) onSelected(theme) },
+                            )
+                            .padding(horizontal = 5.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        SongMeldIcon(
+                            id = themeIcon(theme),
+                            contentDescription = null,
+                            tint = itemColor,
+                            size = 20.dp,
+                        )
+                        Spacer(Modifier.width(5.dp))
+                        Text(
+                            text = stringResource(themeLabel(theme)),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = itemColor,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         }
@@ -403,55 +463,4 @@ private fun SettingsSectionTitle(title: String) {
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(start = 8.dp, top = 12.dp, bottom = 2.dp).semantics { heading() },
     )
-}
-
-/** Compact, fully clickable M3 theme tile inspired by SongMeld v1. */
-@Composable
-private fun ThemeTile(
-    title: String,
-    icon: SongMeldIconId,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val colors = MaterialTheme.colorScheme
-    val motion = LocalDecorativeMotionEnabled.current
-    val tileColor by animateColorAsState(
-        if (selected) colors.primaryContainer else colors.surfaceContainerLow,
-        animationSpec = if (motion) tween(220) else snap(), label = "Theme tile color",
-    )
-    val iconScale by animateFloatAsState(
-        if (selected) 1.04f else 1f,
-        animationSpec = if (motion) tween(220) else snap(), label = "Theme icon emphasis",
-    )
-    Surface(
-        modifier = modifier.selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
-        shape = RoundedCornerShape(22.dp),
-        color = tileColor,
-        border = androidx.compose.foundation.BorderStroke(
-            if (selected) 1.5.dp else 0.dp,
-            if (selected) colors.primary else Color.Transparent,
-        ),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            SongMeldIcon(
-                id = icon,
-                contentDescription = null,
-                size = 28.dp,
-                modifier = Modifier.graphicsLayer { scaleX = iconScale; scaleY = iconScale },
-                tint = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
-            )
-            Text(
-                title,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                color = if (selected) colors.onPrimaryContainer else colors.onSurface,
-            )
-        }
-    }
 }
