@@ -148,11 +148,16 @@ private fun AboutLinkRow(
     title: String, summary: String, icon: SongMeldIconId,
     shape: RoundedCornerShape = RoundedCornerShape(28.dp), onClick: () -> Unit,
 ) {
+    val accent = when (icon) {
+        SongMeldIconId.License, SongMeldIconId.Description -> settingsAccent(2)
+        SongMeldIconId.History -> settingsAccent(1)
+        else -> settingsAccent(0)
+    }
     Surface(onClick = onClick, shape = shape, color = MaterialTheme.colorScheme.surfaceContainerLow) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
+            Surface(shape = CircleShape, color = accent.background,
+                contentColor = accent.foreground) {
                 Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
                     SongMeldIcon(icon, contentDescription = null, size = 24.dp)
                 }
