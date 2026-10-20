@@ -46,6 +46,8 @@
     <string name="settings_version">Phiên bản %1$s</string>
     <string name="settings_about_description">Phiên bản, nhà phát triển và tài liệu của SongMeld.</string>
     <string name="songs_title">Bài hát</string>
+    <string name="songs_scroll_to_top">Cuộn lên đầu danh sách</string>
+    <string name="songs_scroll_top_label">Lên đầu</string>
     <plurals name="song_count">
         <item quantity="other">%d bài hát trên thiết bị</item>
     </plurals>
