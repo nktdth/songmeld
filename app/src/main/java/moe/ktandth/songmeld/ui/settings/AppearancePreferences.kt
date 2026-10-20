@@ -43,7 +43,7 @@ class AppearancePreferences(context: Context) {
     /** Preserve motion accessibility preference and the separate catalog test selection. */
     fun resetVisualAppearance() {
         preferences.edit()
-            .remove(KEY_THEME).remove(KEY_DYNAMIC_COLOR)
+            .remove(KEY_THEME).remove(KEY_DYNAMIC_COLOR).remove(KEY_AMOLED_BLACK)
             .remove(KEY_ICON_STYLE).remove(KEY_ICON_FILL).remove(KEY_ICON_WEIGHT)
             .remove(KEY_ICON_GRADE).remove(KEY_ICON_OPTICAL_SIZE).remove(KEY_ICON_SHAPE)
             .remove(KEY_COMPACT_LIBRARY)
@@ -55,6 +55,10 @@ class AppearancePreferences(context: Context) {
 
     val dynamicColorEnabled: Boolean
         get() = preferences.getBoolean(KEY_DYNAMIC_COLOR, true)
+
+    /** Pure-black dark surfaces; applies only while dark mode is active. */
+    val amoledBlackEnabled: Boolean
+        get() = preferences.getBoolean(KEY_AMOLED_BLACK, false)
 
     val symbols: MaterialSymbolAppearance
         get() {
@@ -115,6 +119,10 @@ class AppearancePreferences(context: Context) {
         preferences.edit().putBoolean(KEY_DYNAMIC_COLOR, enabled).apply()
     }
 
+    fun setAmoledBlackEnabled(enabled: Boolean) {
+        preferences.edit().putBoolean(KEY_AMOLED_BLACK, enabled).apply()
+    }
+
     private companion object {
         const val KEY_REDUCE_MOTION = "reduce_motion"
         const val KEY_COMPACT_LIBRARY = "compact_library"
@@ -122,6 +130,7 @@ class AppearancePreferences(context: Context) {
         const val KEY_SELECTED_ICON_CODEPOINT = "selected_icon_codepoint"
         const val KEY_THEME = "theme"
         const val KEY_DYNAMIC_COLOR = "dynamic_color"
+        const val KEY_AMOLED_BLACK = "amoled_black"
         const val KEY_ICON_STYLE = "icon_style"
         const val KEY_ICON_FILL = "icon_fill"
         const val KEY_ICON_WEIGHT = "icon_weight"
