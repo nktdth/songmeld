@@ -232,8 +232,8 @@ private fun InformationHeader(icon: SongMeldIconId, description: String) {
     Column(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Surface(shape = RoundedCornerShape(22.dp), color = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-            Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) {
-                SongMeldIcon(icon, null, size = 36.dp)
+            Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+                SongMeldIcon(icon, null, size = 30.dp)
             }
         }
         Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
