@@ -155,6 +155,8 @@ fun SettingsScreen(
 fun AppearanceSettingsScreen(
     theme: AppTheme,
     dynamicColorEnabled: Boolean,
+    amoledBlackEnabled: Boolean,
+    onAmoledBlackChanged: (Boolean) -> Unit,
     onThemeChanged: (AppTheme) -> Unit,
     onDynamicColorChanged: (Boolean) -> Unit,
     onOpenIconAppearance: () -> Unit,
@@ -171,27 +173,39 @@ fun AppearanceSettingsScreen(
                 .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SettingsSectionTitle(stringResource(R.string.settings_theme))
             ThemeChoices(theme, onThemeChanged)
-            Text(
-                stringResource(R.string.settings_theme_description),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-            )
+            SettingsSectionTitle(stringResource(R.string.settings_theme))
             val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            SettingsToggle(
-                title = stringResource(R.string.settings_dynamic_color),
-                description = stringResource(
-                    if (dynamicAvailable) R.string.settings_dynamic_color_description
-                    else R.string.settings_dynamic_color_unavailable
-                ),
-                icon = SongMeldIconId.Palette,
-                accentIndex = 0,
-                checked = dynamicAvailable && dynamicColorEnabled,
-                enabled = dynamicAvailable,
-                onCheckedChange = onDynamicColorChanged,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                SettingsToggle(
+                    title = stringResource(R.string.settings_amoled_black),
+                    description = stringResource(R.string.settings_amoled_black_description),
+                    icon = SongMeldIconId.DarkMode,
+                    checked = amoledBlackEnabled,
+                    accentIndex = 1,
+                    shape = RoundedCornerShape(
+                        topStart = 28.dp, topEnd = 28.dp,
+                        bottomStart = 8.dp, bottomEnd = 8.dp,
+                    ),
+                    onCheckedChange = onAmoledBlackChanged,
+                )
+                SettingsToggle(
+                    title = stringResource(R.string.settings_dynamic_color),
+                    description = stringResource(
+                        if (dynamicAvailable) R.string.settings_dynamic_color_description
+                        else R.string.settings_dynamic_color_unavailable
+                    ),
+                    icon = SongMeldIconId.Palette,
+                    accentIndex = 0,
+                    checked = dynamicAvailable && dynamicColorEnabled,
+                    enabled = dynamicAvailable,
+                    shape = RoundedCornerShape(
+                        topStart = 8.dp, topEnd = 8.dp,
+                        bottomStart = 28.dp, bottomEnd = 28.dp,
+                    ),
+                    onCheckedChange = onDynamicColorChanged,
+                )
+            }
             SettingsSectionTitle(stringResource(R.string.settings_icons))
             ColorfulSettingsEntry(
                 title = stringResource(R.string.settings_icon_appearance),
@@ -260,11 +274,12 @@ private fun SettingsToggle(
     checked: Boolean,
     icon: SongMeldIconId? = null,
     accentIndex: Int = 2,
+    shape: RoundedCornerShape = RoundedCornerShape(28.dp),
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Surface(
-        shape = RoundedCornerShape(28.dp),
+        shape = shape,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -299,7 +314,7 @@ private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(30.dp),
+        shape = CircleShape,
         color = colors.surfaceContainerLow,
     ) {
         BoxWithConstraints(Modifier.fillMaxWidth().padding(5.dp)) {
@@ -319,7 +334,7 @@ private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
                     .offset(x = offset)
                     .width(tileWidth)
                     .height(56.dp)
-                    .clip(RoundedCornerShape(26.dp))
+                    .clip(CircleShape)
                     .background(colors.primaryContainer),
             )
             Row(
