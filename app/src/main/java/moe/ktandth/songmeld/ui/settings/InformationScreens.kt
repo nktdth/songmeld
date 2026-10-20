@@ -46,7 +46,7 @@ private fun InformationPage(
     SettingsPageScaffold(title = title, onBack = onBack) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
-                .verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 12.dp),
+                .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             content = content,
         )
@@ -63,14 +63,14 @@ fun LicensesScreen(onBack: () -> Unit, onOpenLicense: (LicenseDocument) -> Unit)
             Surface(
                 onClick = { onOpenLicense(document) },
                 modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                color = MaterialTheme.colorScheme.surfaceContainer,
             ) {
                 Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                         Text(stringResource(document.title), style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold)
-                        Text(stringResource(document.summary), style = MaterialTheme.typography.bodySmall,
+                        Text(stringResource(document.summary), style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     SongMeldIcon(SongMeldIconId.ChevronRight, null, size = 24.dp)
@@ -243,6 +243,6 @@ private fun InformationHeader(icon: SongMeldIconId, description: String) {
 @Composable
 private fun InformationSectionTitle(title: String) {
     Text(title, modifier = Modifier.padding(start = 12.dp, top = 8.dp),
-        style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.SemiBold)
 }
