@@ -150,9 +150,6 @@
     <string name="settings_appearance_current">%1$s · %2$s</string>
     <string name="settings_palette_dynamic">Màu hình nền</string>
     <string name="settings_palette_warm">Màu cam ấm</string>
-    <string name="settings_live_preview">Xem trước giao diện</string>
-    <string name="settings_preview_song">Tên bài hát</string>
-    <string name="settings_preview_artist">Tên nghệ sĩ · 3:24</string>
     <string name="settings_library_display">Hiển thị thư viện</string>
     <string name="settings_compact_library">Danh sách nhạc gọn</string>
     <string name="settings_compact_library_summary">Ảnh bìa nhỏ hơn và khoảng cách gọn hơn để xem được nhiều bài hát.</string>
