@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -176,7 +177,7 @@ fun SongsScreen(
             results == null -> LoadingState()
             results.isEmpty() -> EmptySearchState(query = query, onClear = { query = ""; focusManager.clearFocus() })
             else -> SongList(songs = results, artworkLoader = artworkLoader, state = listState,
-                onSongClick = { focusManager.clearFocus(); selectedSongId = it.id })
+                sort = sort, onSongClick = { focusManager.clearFocus(); selectedSongId = it.id })
         }
     }
     if (sortOpen) {
@@ -246,29 +247,44 @@ private fun SongList(
     songs: List<Song>,
     artworkLoader: LocalSongArtworkLoader,
     state: LazyListState,
+    sort: SongSort,
     onSongClick: (Song) -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        state = state,
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        itemsIndexed(
-            items = songs,
-            key = { _, song -> song.id },
-            contentType = { _, _ -> "song" },
-        ) { index, song ->
-            SongRow(
-                song = song,
-                artworkLoader = artworkLoader,
-                onClick = { onSongClick(song) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(songItemShape(index, songs.size))
-                    .background(MaterialTheme.colorScheme.surfaceContainerLow),
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = state,
+            // The floating scroll action must not cover the last library entry.
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            itemsIndexed(
+                items = songs,
+                key = { _, song -> song.id },
+                contentType = { _, _ -> "song" },
+            ) { index, song ->
+                SongRow(
+                    song = song,
+                    artworkLoader = artworkLoader,
+                    onClick = { onSongClick(song) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(songItemShape(index, songs.size))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                )
+            }
         }
+        SongsFastScrollbar(
+            listState = state,
+            songs = songs,
+            sort = sort,
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+        )
+        SongsScrollToTopFab(
+            listState = state,
+            modifier = Modifier.align(Alignment.BottomEnd)
+                .padding(end = 28.dp, bottom = 18.dp),
+        )
     }
 }
 
