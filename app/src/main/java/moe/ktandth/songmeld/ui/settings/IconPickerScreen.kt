@@ -177,7 +177,7 @@ fun IconPickerScreen(
 
 @Composable
 private fun SelectedIconPreview(selected: IconReference?, name: String?, appearance: MaterialSymbolAppearance) {
-    Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
+    Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
         Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primaryContainer,
@@ -202,9 +202,9 @@ private fun IconChoice(entry: CatalogIconEntry, active: Boolean, appearance: Mat
     val colors = MaterialTheme.colorScheme
     Column(
         Modifier.clip(RoundedCornerShape(16.dp))
-            .background(if (active) colors.primaryContainer else colors.surfaceContainerLow)
+            .background(if (active) colors.primaryContainer else colors.surfaceContainer)
             .selectable(selected = active, role = Role.RadioButton, onClick = onClick)
-            .heightIn(min = 100.dp).padding(horizontal = 4.dp, vertical = 12.dp),
+            .heightIn(min = 112.dp).padding(horizontal = 4.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         CatalogIcon(entry.reference, null, size = 36.dp, appearance = appearance,
