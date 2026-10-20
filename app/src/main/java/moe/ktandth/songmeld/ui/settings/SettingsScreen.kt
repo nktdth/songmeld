@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.draw.clip
@@ -106,18 +107,27 @@ fun SettingsPageScaffold(
 fun SettingsScreen(
     theme: AppTheme,
     dynamicColorEnabled: Boolean,
+    amoledBlackEnabled: Boolean,
     onBack: () -> Unit,
     onOpenAppearance: () -> Unit,
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val darkModeActive = when (theme) {
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+    }
+    val paletteLabel = when {
+        amoledBlackEnabled && darkModeActive -> R.string.settings_palette_amoled
+        dynamicColorEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+            R.string.settings_palette_dynamic
+        else -> R.string.settings_palette_warm
+    }
     val themeDescription = stringResource(
         R.string.settings_appearance_current,
         stringResource(themeLabel(theme)),
-        stringResource(
-            if (dynamicColorEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                R.string.settings_palette_dynamic else R.string.settings_palette_warm
-        ),
+        stringResource(paletteLabel),
     )
     SettingsPageScaffold(title = R.string.settings_title, onBack = onBack, modifier = modifier) { padding ->
         Column(
