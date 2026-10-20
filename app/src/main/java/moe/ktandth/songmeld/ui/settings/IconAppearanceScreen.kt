@@ -71,8 +71,8 @@ fun IconAppearanceScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -109,7 +109,7 @@ fun IconAppearanceScreen(
 
         Card(
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
@@ -128,7 +128,7 @@ fun IconAppearanceScreen(
                         Text(stringResource(R.string.settings_icon_fill), style = MaterialTheme.typography.titleMedium)
                         Text(
                             stringResource(R.string.settings_icon_fill_summary),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -171,7 +171,7 @@ fun IconAppearanceScreen(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 AppIconShape.entries.chunked(4).forEach { rowShapes ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -184,7 +184,7 @@ fun IconAppearanceScreen(
                                 modifier = Modifier.weight(1f).height(80.dp)
                                     .clip(RoundedCornerShape(18.dp))
                                     .background(if (selected) MaterialTheme.colorScheme.primaryContainer
-                                        else MaterialTheme.colorScheme.surfaceContainerLow)
+                                        else MaterialTheme.colorScheme.surfaceContainer)
                                     .selectable(selected = selected, role = Role.RadioButton) {
                                         onIconShapeChanged(shape)
                                     }
@@ -318,7 +318,7 @@ private fun SettingsIconGroupTitle(title: String) {
     Text(title, modifier = Modifier.padding(start = 12.dp, top = 4.dp),
         color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.SemiBold,
-        style = MaterialTheme.typography.titleSmall)
+        style = MaterialTheme.typography.titleMedium)
 }
 
 private fun shapeLabel(shape: AppIconShape): Int = when (shape) {
