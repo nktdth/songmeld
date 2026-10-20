@@ -8,10 +8,11 @@
     <string name="settings_back">Quay lại</string>
     <string name="settings_appearance">Giao diện</string>
     <string name="settings_theme">Chủ đề</string>
-    <string name="settings_theme_description">Chọn giao diện phù hợp với bạn.</string>
-    <string name="settings_theme_system">Theo hệ thống</string>
+    <string name="settings_theme_system">Hệ thống</string>
     <string name="settings_theme_light">Sáng</string>
     <string name="settings_theme_dark">Tối</string>
+    <string name="settings_amoled_black">Đen AMOLED</string>
+    <string name="settings_amoled_black_description">Dùng nền đen tuyệt đối khi giao diện tối được kích hoạt.</string>
     <string name="settings_dynamic_color">Màu động</string>
     <string name="settings_dynamic_color_description">Sử dụng màu từ hình nền thiết bị.</string>
     <string name="settings_dynamic_color_unavailable">Chỉ hỗ trợ Android 12 trở lên.</string>
