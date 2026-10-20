@@ -39,7 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import moe.ktandth.songmeld.ui.components.SongMeldSwitch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -81,7 +81,7 @@ fun SettingsPageScaffold(
                 title = {
                     Text(
                         stringResource(title),
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -156,7 +156,7 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(28.dp),
                 onClick = onOpenAbout,
             )
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(14.dp))
         }
     }
 }
@@ -180,7 +180,7 @@ fun AppearanceSettingsScreen(
     SettingsPageScaffold(title = R.string.settings_appearance, onBack = onBack, modifier = modifier) { innerPadding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
-                .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
+                .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             ThemeChoices(theme, onThemeChanged)
@@ -296,7 +296,7 @@ private fun SettingsToggle(
         Row(
             modifier = Modifier.fillMaxWidth()
                 .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
-                .padding(horizontal = 16.dp, vertical = 13.dp),
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -306,7 +306,7 @@ private fun SettingsToggle(
                 Text(description, style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Switch(checked = checked, onCheckedChange = null, enabled = enabled)
+            SongMeldSwitch(checked = checked, onCheckedChange = null, enabled = enabled)
         }
     }
 }
@@ -343,7 +343,7 @@ private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
                 modifier = Modifier
                     .offset(x = offset)
                     .width(tileWidth)
-                    .height(56.dp)
+                    .height(52.dp)
                     .clip(CircleShape)
                     .background(colors.primaryContainer),
             )
@@ -362,7 +362,7 @@ private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
                     Row(
                         modifier = Modifier
                             .width(tileWidth)
-                            .height(56.dp)
+                            .height(52.dp)
                             .selectable(
                                 selected = isSelected,
                                 role = Role.RadioButton,
@@ -425,13 +425,13 @@ internal fun settingsAccent(index: Int): SettingsAccent {
 @Composable
 private fun SettingsIconCircle(icon: SongMeldIconId, accent: SettingsAccent) {
     Surface(
-        modifier = Modifier.size(50.dp),
+        modifier = Modifier.size(44.dp),
         shape = CircleShape,
         color = accent.background,
         contentColor = accent.foreground,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            SongMeldIcon(id = icon, contentDescription = null, size = 26.dp)
+            SongMeldIcon(id = icon, contentDescription = null, size = 23.dp)
         }
     }
 }
@@ -452,7 +452,7 @@ private fun ColorfulSettingsEntry(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
