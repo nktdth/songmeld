@@ -39,7 +39,7 @@ The owner preferred the v1 Settings design over the initial expressive redesign.
 2. **Color:** v1-inspired pastel icon accents for entries, and semantic Material 3 tokens for app theming and selection state. Preserve light/dark legibility and system-driven Dynamic Color in the app.
 3. **Hierarchy:** use the v1-inspired small top bar and moderate title/body typography rather than enlarged headers and panels.
 4. **Touch comfort:** keep full-row click targets, sensible grouped corners and comfortable default density; decorative icon size is smaller than the interaction area.
-5. **Appearance:** preserve all three theme choices, live preview, Android 12+ Dynamic Color, icon customization, compact library, Reduce Motion and reset confirmation.
+5. **Appearance:** preserve all three theme choices, real-time theme controls, Android 12+ Dynamic Color, icon customization, compact library, Reduce Motion and reset confirmation.
 6. **Accessibility:** preserve semantic Switch/RadioButton roles, available/disabled states and reduced-motion policy; test TalkBack and font scaling on device.
 7. **Related screens:** harmonize About, icon customization, catalog and legal/changelog pages with moderate visual density without changing callbacks.
 8. **No third-party code copied:** Material 3 / other projects were used as design references; v1 is an owner-controlled source. Existing bundled notices remain unchanged.
@@ -61,6 +61,19 @@ These interactions now live in `ui/songs/SongsScrollControls.kt` and are wired i
 - The scrollbar exposes an accessibility progress range and adjustable progress action; the FAB has a Vietnamese content description.
 - Decorative animations honor `LocalDecorativeMotionEnabled`.
 - The v1 Add Songs FAB is **not ported** because the new app has no matching implemented add action.
+
+## Appearance preferences: v1 horizontal theme selector
+
+The owner requested removing the decorative Appearance preview entirely. The unused `AppearancePreview.kt` component and its three supporting strings have been deleted.
+
+The three-mode **System / Light / Dark** selector now follows the compact SongMeld-v1 horizontal segmented control, with these refinements:
+
+- Material Symbols icon **before** the text in each 56dp-high option.
+- One highlighted pill underneath the choices, moving horizontally using `animateDpAsState` when the selected theme changes (270ms).
+- Material 3 semantic colors for selected state, with individual content color transitions.
+- `selectableGroup` and radio-button roles retained for accessibility; labels allow up to two lines on narrow displays.
+- When the app/system disables decorative motion, the selection switches without sliding animation.
+- Appearance preferences, persistence callbacks and theme handling are otherwise unchanged.
 
 ## Validation checklist
 
