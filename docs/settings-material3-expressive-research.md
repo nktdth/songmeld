@@ -44,6 +44,24 @@ The owner preferred the v1 Settings design over the initial expressive redesign.
 7. **Related screens:** harmonize About, icon customization, catalog and legal/changelog pages with moderate visual density without changing callbacks.
 8. **No third-party code copied:** Material 3 / other projects were used as design references; v1 is an owner-controlled source. Existing bundled notices remain unchanged.
 
+## Song list scrolling — ported from SongMeld v1
+
+The original implementation was studied in the owner's `songmeld-v1` repository:
+
+- `ui/songs/SongsScreen.kt`: right-edge `SongsFastScrollbar`, A–Z bubble, scroll progress from `LazyListState`.
+- `ui/songs/SongsActionFab.kt`: scroll-to-top FAB with a direction-sensitive expanding label.
+
+These interactions now live in `ui/songs/SongsScrollControls.kt` and are wired into the existing SongMeld local library without importing old player/download/selection logic.
+
+- 6dp visible vertical thumb, 28dp gesture target confined to the right edge, with a rounded alphabet bubble while dragging in title A–Z sort.
+- Vietnamese initials such as `Đ`, `Â` and `Ế` group under the equivalent Latin letter.
+- Scrubbing works in all sort modes; only TITLE sort displays letter groups.
+- The small Material-colored scroll-to-top FAB appears only after meaningful scrolling, expands its label on upward gestures, and avoids tiny-gesture flicker using distinct thresholds.
+- Extra bottom padding lets the final song scroll clear of the FAB.
+- The scrollbar exposes an accessibility progress range and adjustable progress action; the FAB has a Vietnamese content description.
+- Decorative animations honor `LocalDecorativeMotionEnabled`.
+- The v1 Add Songs FAB is **not ported** because the new app has no matching implemented add action.
+
 ## Validation checklist
 
 - [x] Review existing navigation and state callbacks
