@@ -48,7 +48,7 @@ fun AboutSettingsScreen(
     SettingsPageScaffold(title = R.string.settings_about, onBack = onBack, modifier = modifier) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
-                .verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 12.dp),
+                .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             AboutHero(version)
@@ -138,8 +138,8 @@ private fun AboutHero(version: String) {
 
 @Composable
 private fun AboutSectionTitle(title: String) {
-    Text(title, modifier = Modifier.padding(start = 14.dp, top = 10.dp),
-        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold,
+    Text(title, modifier = Modifier.padding(start = 14.dp, top = 18.dp),
+        style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary)
 }
 
@@ -148,18 +148,18 @@ private fun AboutLinkRow(
     title: String, summary: String, icon: SongMeldIconId,
     shape: RoundedCornerShape = RoundedCornerShape(28.dp), onClick: () -> Unit,
 ) {
-    Surface(onClick = onClick, shape = shape, color = MaterialTheme.colorScheme.surfaceContainerLow) {
+    Surface(onClick = onClick, shape = shape, color = MaterialTheme.colorScheme.surfaceContainer) {
         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(52.dp), contentAlignment = Alignment.Center) {
                     SongMeldIcon(icon, contentDescription = null, size = 28.dp)
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text(summary, style = MaterialTheme.typography.bodySmall,
+                Text(summary, style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             SongMeldIcon(SongMeldIconId.ChevronRight, contentDescription = null, size = 24.dp)
