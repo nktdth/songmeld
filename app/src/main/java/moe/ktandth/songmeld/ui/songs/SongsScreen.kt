@@ -70,7 +70,6 @@ import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
 import moe.ktandth.songmeld.ui.theme.SongMeldCodeStyle
-import moe.ktandth.songmeld.ui.settings.LocalInterfaceOptions
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -314,12 +313,11 @@ private fun SongRow(
     modifier: Modifier = Modifier,
 ) {
     val detailsLabel = stringResource(R.string.song_details)
-    val compact = LocalInterfaceOptions.current.compactLibrary
     Row(
         modifier = modifier
             .clickable(onClickLabel = detailsLabel, onClick = onClick)
-            .heightIn(min = if (compact) 60.dp else 68.dp)
-            .padding(horizontal = 12.dp, vertical = if (compact) 5.dp else 6.dp),
+            .heightIn(min = 68.dp)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SongArtwork(song = song, artworkLoader = artworkLoader)
@@ -377,7 +375,7 @@ private fun SongArtwork(
     }
     Box(
         modifier = Modifier
-            .size(if (LocalInterfaceOptions.current.compactLibrary) 42.dp else 46.dp)
+            .size(46.dp)
             .clip(RoundedCornerShape(11.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center,
