@@ -181,7 +181,7 @@ fun IconAppearanceScreen(
                             val selected = shape == iconShape
                             val label = stringResource(shapeLabel(shape))
                             Box(
-                                modifier = Modifier.weight(1f).height(72.dp)
+                                modifier = Modifier.weight(1f).height(64.dp)
                                     .clip(RoundedCornerShape(18.dp))
                                     .background(if (selected) MaterialTheme.colorScheme.primaryContainer
                                         else MaterialTheme.colorScheme.surfaceContainerLow)
@@ -192,8 +192,8 @@ fun IconAppearanceScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Box(
-                                    modifier = (if (shape == AppIconShape.PILL) Modifier.size(width = 52.dp, height = 32.dp)
-                                        else Modifier.size(47.dp))
+                                    modifier = (if (shape == AppIconShape.PILL) Modifier.size(width = 46.dp, height = 28.dp)
+                                        else Modifier.size(42.dp))
                                         .clip(iconBackgroundShape(shape))
                                         .background(if (selected) MaterialTheme.colorScheme.primary
                                             else MaterialTheme.colorScheme.tertiary),
@@ -259,9 +259,9 @@ private fun IconStyleChoices(
                             else MaterialTheme.colorScheme.onSurface,
                         border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
                     ) {
-                        Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically,
+                        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 32.dp,
+                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 28.dp,
                                 appearance = appearance.copy(style = style))
                             Text(stringResource(iconStyleLabel(style)), modifier = Modifier.weight(1f),
                                 style = MaterialTheme.typography.titleMedium,
