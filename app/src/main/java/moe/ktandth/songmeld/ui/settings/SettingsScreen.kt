@@ -50,6 +50,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
@@ -186,6 +188,7 @@ fun AppearanceSettingsScreen(
                     else R.string.settings_dynamic_color_unavailable
                 ),
                 icon = SongMeldIconId.Palette,
+                accentIndex = 0,
                 checked = dynamicAvailable && dynamicColorEnabled,
                 enabled = dynamicAvailable,
                 onCheckedChange = onDynamicColorChanged,
@@ -204,6 +207,7 @@ fun AppearanceSettingsScreen(
                 title = stringResource(R.string.settings_compact_library),
                 description = stringResource(R.string.settings_compact_library_summary),
                 icon = SongMeldIconId.LibraryMusic,
+                accentIndex = 1,
                 checked = options.compactLibrary,
                 onCheckedChange = { onInterfaceOptionsChanged(options.copy(compactLibrary = it)) },
             )
@@ -256,6 +260,7 @@ private fun SettingsToggle(
     description: String,
     checked: Boolean,
     icon: SongMeldIconId? = null,
+    accentIndex: Int = 2,
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
 ) {
@@ -271,7 +276,7 @@ private fun SettingsToggle(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (icon != null) SettingsIconCircle(icon, settingsAccent(2))
+            if (icon != null) SettingsIconCircle(icon, settingsAccent(accentIndex))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(description, style = MaterialTheme.typography.bodyMedium,
@@ -316,11 +321,11 @@ private fun themeIcon(theme: AppTheme): SongMeldIconId = when (theme) {
     AppTheme.DARK -> SongMeldIconId.DarkMode
 }
 
-private data class SettingsAccent(val background: Color, val foreground: Color)
+internal data class SettingsAccent(val background: Color, val foreground: Color)
 
 /** Restores SongMeld-v1's soft pastel icon accents, adjusted for light/dark contrast. */
 @Composable
-private fun settingsAccent(index: Int): SettingsAccent {
+internal fun settingsAccent(index: Int): SettingsAccent {
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     return when (index) {
         0 -> if (dark) SettingsAccent(Color(0xFFE7A2BC), Color(0xFF431127))
@@ -396,7 +401,7 @@ private fun SettingsSectionTitle(title: String) {
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(start = 8.dp, top = 12.dp, bottom = 2.dp),
+        modifier = Modifier.padding(start = 8.dp, top = 12.dp, bottom = 2.dp).semantics { heading() },
     )
 }
 
