@@ -266,6 +266,7 @@ fun SongMeldApp(
                     SettingsScreen(
                         theme = theme,
                         dynamicColorEnabled = dynamicColorEnabled,
+                        amoledBlackEnabled = amoledBlackEnabled,
                         onBack = { navigateBack() },
                         onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
                         onOpenAbout = { currentPage = SongMeldPage.ABOUT },
