@@ -22,12 +22,12 @@ import moe.ktandth.songmeld.ui.icons.SongMeldIconId
 @Composable
 internal fun AppearancePreview(compact: Boolean) {
     val motion = LocalDecorativeMotionEnabled.current
-    Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
+    Surface(shape = RoundedCornerShape(32.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
         Column(Modifier.fillMaxWidth()
             .animateContentSize(animationSpec = if (motion) tween(220) else snap())
             .padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(stringResource(R.string.settings_live_preview),
-                style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
             Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold)
             Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
