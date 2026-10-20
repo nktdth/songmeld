@@ -175,7 +175,7 @@ fun ChangelogScreen(onBack: () -> Unit) {
             } else {
                 releases.forEach { release ->
                     Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
-                        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(release.version, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                             Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
@@ -217,7 +217,7 @@ fun TermsScreen(onBack: () -> Unit) {
         InformationHeader(SongMeldIconId.Description, stringResource(R.string.terms_intro))
         sections.forEach { (title, body) ->
             Surface(shape = RoundedCornerShape(26.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
-                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Text(stringResource(body), style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -232,8 +232,8 @@ private fun InformationHeader(icon: SongMeldIconId, description: String) {
     Column(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Surface(shape = RoundedCornerShape(22.dp), color = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-            Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
-                SongMeldIcon(icon, null, size = 30.dp)
+            Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                SongMeldIcon(icon, null, size = 26.dp)
             }
         }
         Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
