@@ -9,7 +9,7 @@ private val MaterialTypography = Typography()
 /**
  * Material 3 typography with Google Sans Flex applied to every text role.
  *
- * Body and control roles use a roomier reading scale. Sizes remain in sp, so
+ * Body and control roles use the regular Material 3 reading scale. Sizes remain in sp, so
  * Android font scaling still applies. Display/headline roles retain Material defaults.
  */
 val SongMeldTypography =
@@ -20,15 +20,15 @@ val SongMeldTypography =
     headlineLarge = MaterialTypography.headlineLarge.copy(fontFamily = GoogleSansFlexRounded),
     headlineMedium = MaterialTypography.headlineMedium.copy(fontFamily = GoogleSansFlexRounded),
     headlineSmall = MaterialTypography.headlineSmall.copy(fontFamily = GoogleSansFlexRounded),
-    titleLarge = MaterialTypography.titleLarge.copy(fontFamily = GoogleSansFlexRounded, fontSize = 24.sp, lineHeight = 30.sp),
-    titleMedium = MaterialTypography.titleMedium.copy(fontFamily = GoogleSansFlexRounded, fontSize = 18.sp, lineHeight = 26.sp),
-    titleSmall = MaterialTypography.titleSmall.copy(fontFamily = GoogleSansFlexRounded, fontSize = 16.sp, lineHeight = 24.sp),
-    bodyLarge = MaterialTypography.bodyLarge.copy(fontFamily = GoogleSansFlexRounded, fontSize = 18.sp, lineHeight = 28.sp),
-    bodyMedium = MaterialTypography.bodyMedium.copy(fontFamily = GoogleSansFlexRounded, fontSize = 16.sp, lineHeight = 24.sp),
-    bodySmall = MaterialTypography.bodySmall.copy(fontFamily = GoogleSansFlexRounded, fontSize = 14.sp, lineHeight = 20.sp),
-    labelLarge = MaterialTypography.labelLarge.copy(fontFamily = GoogleSansFlexRounded, fontSize = 16.sp, lineHeight = 24.sp),
-    labelMedium = MaterialTypography.labelMedium.copy(fontFamily = GoogleSansFlexRounded, fontSize = 14.sp, lineHeight = 20.sp),
-    labelSmall = MaterialTypography.labelSmall.copy(fontFamily = GoogleSansFlexRounded, fontSize = 12.sp, lineHeight = 16.sp),
+    titleLarge = MaterialTypography.titleLarge.copy(fontFamily = GoogleSansFlexRounded, fontSize = 22.sp, lineHeight = 28.sp),
+    titleMedium = MaterialTypography.titleMedium.copy(fontFamily = GoogleSansFlexRounded, fontSize = 16.sp, lineHeight = 24.sp),
+    titleSmall = MaterialTypography.titleSmall.copy(fontFamily = GoogleSansFlexRounded, fontSize = 14.sp, lineHeight = 20.sp),
+    bodyLarge = MaterialTypography.bodyLarge.copy(fontFamily = GoogleSansFlexRounded, fontSize = 16.sp, lineHeight = 24.sp),
+    bodyMedium = MaterialTypography.bodyMedium.copy(fontFamily = GoogleSansFlexRounded, fontSize = 14.sp, lineHeight = 20.sp),
+    bodySmall = MaterialTypography.bodySmall.copy(fontFamily = GoogleSansFlexRounded, fontSize = 13.sp, lineHeight = 18.sp),
+    labelLarge = MaterialTypography.labelLarge.copy(fontFamily = GoogleSansFlexRounded, fontSize = 14.sp, lineHeight = 20.sp),
+    labelMedium = MaterialTypography.labelMedium.copy(fontFamily = GoogleSansFlexRounded, fontSize = 13.sp, lineHeight = 18.sp),
+    labelSmall = MaterialTypography.labelSmall.copy(fontFamily = GoogleSansFlexRounded, fontSize = 11.sp, lineHeight = 16.sp),
   )
 
 /** Consistent monospaced style for timecodes, technical values and LRC editing. */
