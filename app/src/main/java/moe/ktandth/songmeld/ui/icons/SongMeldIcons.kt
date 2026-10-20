@@ -83,7 +83,7 @@ fun SongMeldIcon(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
-    size: Dp = 26.dp,
+    size: Dp = 24.dp,
     appearance: MaterialSymbolAppearance = LocalMaterialSymbolAppearance.current,
 ) {
     SongMeldIconGlyph(
