@@ -3,6 +3,8 @@
     <string name="app_name">SongMeld</string>
     <string name="menu_more_options">Tùy chọn khác</string>
     <string name="settings_title">Cài đặt</string>
+    <string name="settings_preferences_section">Tùy chọn</string>
+    <string name="settings_songmeld_section">SongMeld</string>
     <string name="settings_back">Quay lại</string>
     <string name="settings_appearance">Giao diện</string>
     <string name="settings_theme">Chủ đề</string>
