@@ -119,7 +119,7 @@ fun SongsScreen(
 
     Column(modifier = modifier.fillMaxSize().imePadding()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -146,15 +146,15 @@ fun SongsScreen(
         val summaryWithSort = if (!isLoading && errorMessage == null && songs.isNotEmpty()) {
             stringResource(R.string.library_summary_sort, summary, stringResource(sort.label()))
         } else summary
-        Text(summaryWithSort, modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
+        Text(summaryWithSort, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         SongSearchBar(
             query = query,
             onQueryChange = { query = it },
             focusManager = focusManager,
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         if (isRefreshing) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
             Spacer(Modifier.height(8.dp))
@@ -255,7 +255,7 @@ private fun SongList(
             modifier = Modifier.fillMaxSize(),
             state = state,
             // The floating scroll action must not cover the last library entry.
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 88.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             itemsIndexed(
@@ -290,18 +290,18 @@ private fun SongList(
 
 /** Keep the outer 24dp corners while gently rounding the seams between songs. */
 private fun songItemShape(index: Int, count: Int): RoundedCornerShape = when {
-    count == 1 -> RoundedCornerShape(22.dp)
+    count == 1 -> RoundedCornerShape(20.dp)
     index == 0 -> RoundedCornerShape(
-        topStart = 22.dp,
-        topEnd = 22.dp,
+        topStart = 20.dp,
+        topEnd = 20.dp,
         bottomStart = 6.dp,
         bottomEnd = 6.dp,
     )
     index == count - 1 -> RoundedCornerShape(
         topStart = 6.dp,
         topEnd = 6.dp,
-        bottomStart = 22.dp,
-        bottomEnd = 22.dp,
+        bottomStart = 20.dp,
+        bottomEnd = 20.dp,
     )
     else -> RoundedCornerShape(6.dp)
 }
@@ -318,8 +318,8 @@ private fun SongRow(
     Row(
         modifier = modifier
             .clickable(onClickLabel = detailsLabel, onClick = onClick)
-            .heightIn(min = if (compact) 64.dp else 72.dp)
-            .padding(horizontal = 12.dp, vertical = if (compact) 6.dp else 7.dp),
+            .heightIn(min = if (compact) 60.dp else 68.dp)
+            .padding(horizontal = 12.dp, vertical = if (compact) 5.dp else 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SongArtwork(song = song, artworkLoader = artworkLoader)
@@ -377,7 +377,7 @@ private fun SongArtwork(
     }
     Box(
         modifier = Modifier
-            .size(if (LocalInterfaceOptions.current.compactLibrary) 44.dp else 50.dp)
+            .size(if (LocalInterfaceOptions.current.compactLibrary) 42.dp else 46.dp)
             .clip(RoundedCornerShape(11.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center,
