@@ -30,7 +30,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import moe.ktandth.songmeld.ui.components.SongMeldSwitch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -71,8 +71,8 @@ fun IconAppearanceScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -84,20 +84,20 @@ fun IconAppearanceScreen(
                 id = SongMeldIconId.MusicNote,
                 contentDescription = null,
                 appearance = appearance,
-                size = 50.dp,
+                size = 44.dp,
                 tint = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.size(14.dp))
             Box(
-                modifier = (if (iconShape == AppIconShape.PILL) Modifier.size(width = 88.dp, height = 64.dp)
-                    else Modifier.size(72.dp)).clip(iconBackgroundShape(iconShape))
+                modifier = (if (iconShape == AppIconShape.PILL) Modifier.size(width = 80.dp, height = 58.dp)
+                    else Modifier.size(64.dp)).clip(iconBackgroundShape(iconShape))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 SongMeldIcon(
                     id = SongMeldIconId.MusicNote,
                     contentDescription = null,
-                    size = 34.dp,
+                    size = 30.dp,
                     appearance = appearance,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
@@ -112,8 +112,8 @@ fun IconAppearanceScreen(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().toggleable(
@@ -132,7 +132,7 @@ fun IconAppearanceScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(checked = appearance.fill >= 0.5f, onCheckedChange = null)
+                    SongMeldSwitch(checked = appearance.fill >= 0.5f, onCheckedChange = null)
                 }
                 SafeIconSlider(
                     title = stringResource(R.string.settings_icon_weight),
