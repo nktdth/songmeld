@@ -31,8 +31,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,9 +40,6 @@ import androidx.compose.material3.Surface
 import moe.ktandth.songmeld.ui.components.SongMeldSwitch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -170,13 +165,14 @@ fun AppearanceSettingsScreen(
     onThemeChanged: (AppTheme) -> Unit,
     onDynamicColorChanged: (Boolean) -> Unit,
     onOpenIconAppearance: () -> Unit,
-    onInterfaceOptionsChanged: (InterfaceOptions) -> Unit,
-    onResetAppearance: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val options = LocalInterfaceOptions.current
-    var showReset by rememberSaveable { mutableStateOf(false) }
+    val darkModeActive = when (theme) {
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+    }
     SettingsPageScaffold(title = R.string.settings_appearance, onBack = onBack, modifier = modifier) { innerPadding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
@@ -187,7 +183,7 @@ fun AppearanceSettingsScreen(
             SettingsSectionTitle(stringResource(R.string.settings_theme))
             val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                SettingsToggle(
+                if (darkModeActive) SettingsToggle(
                     title = stringResource(R.string.settings_amoled_black),
                     description = stringResource(R.string.settings_amoled_black_description),
                     icon = SongMeldIconId.DarkMode,
@@ -209,10 +205,10 @@ fun AppearanceSettingsScreen(
                     accentIndex = 0,
                     checked = dynamicAvailable && dynamicColorEnabled,
                     enabled = dynamicAvailable,
-                    shape = RoundedCornerShape(
+                    shape = if (darkModeActive) RoundedCornerShape(
                         topStart = 8.dp, topEnd = 8.dp,
                         bottomStart = 28.dp, bottomEnd = 28.dp,
-                    ),
+                    ) else RoundedCornerShape(28.dp),
                     onCheckedChange = onDynamicColorChanged,
                 )
             }
@@ -225,55 +221,8 @@ fun AppearanceSettingsScreen(
                 shape = RoundedCornerShape(28.dp),
                 onClick = onOpenIconAppearance,
             )
-            SettingsSectionTitle(stringResource(R.string.settings_library_display))
-            SettingsToggle(
-                title = stringResource(R.string.settings_compact_library),
-                description = stringResource(R.string.settings_compact_library_summary),
-                icon = SongMeldIconId.LibraryMusic,
-                accentIndex = 1,
-                checked = options.compactLibrary,
-                onCheckedChange = { onInterfaceOptionsChanged(options.copy(compactLibrary = it)) },
-            )
-            SettingsSectionTitle(stringResource(R.string.settings_motion))
-            SettingsToggle(
-                title = stringResource(R.string.settings_reduce_motion),
-                description = stringResource(R.string.settings_reduce_motion_summary),
-                icon = SongMeldIconId.SettingsBrightness,
-                checked = options.reduceMotion,
-                onCheckedChange = { onInterfaceOptionsChanged(options.copy(reduceMotion = it)) },
-            )
-            Surface(
-                onClick = { showReset = true },
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-            ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    SongMeldIcon(SongMeldIconId.Refresh, null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant, size = 28.dp)
-                    Text(stringResource(R.string.settings_reset_appearance),
-                        style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                }
-            }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(14.dp))
         }
-    }
-    if (showReset) {
-        AlertDialog(
-            onDismissRequest = { showReset = false },
-            title = { Text(stringResource(R.string.settings_reset_appearance)) },
-            text = { Text(stringResource(R.string.settings_reset_appearance_body)) },
-            confirmButton = { TextButton(onClick = { onResetAppearance(); showReset = false }) {
-                Text(stringResource(R.string.settings_reset_confirm))
-            } },
-            dismissButton = { TextButton(onClick = { showReset = false }) {
-                Text(stringResource(R.string.settings_cancel))
-            } },
-        )
     }
 }
 
@@ -363,6 +312,8 @@ private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
                         modifier = Modifier
                             .width(tileWidth)
                             .height(52.dp)
+                            // Clip the pressed/long-pressed ripple as well as the selected pill.
+                            .clip(CircleShape)
                             .selectable(
                                 selected = isSelected,
                                 role = Role.RadioButton,
