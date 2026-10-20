@@ -302,7 +302,7 @@ private fun SongRow(
     Row(
         modifier = modifier
             .clickable(onClickLabel = detailsLabel, onClick = onClick)
-            .heightIn(min = if (compact) 60.dp else 72.dp)
+            .heightIn(min = if (compact) 68.dp else 80.dp)
             .padding(horizontal = 10.dp, vertical = if (compact) 6.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -361,7 +361,7 @@ private fun SongArtwork(
     }
     Box(
         modifier = Modifier
-            .size(if (LocalInterfaceOptions.current.compactLibrary) 40.dp else 48.dp)
+            .size(if (LocalInterfaceOptions.current.compactLibrary) 48.dp else 56.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center,
@@ -379,7 +379,7 @@ private fun SongArtwork(
                 id = SongMeldIconId.MusicNote,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                size = 24.dp,
+                size = 28.dp,
             )
         }
     }
@@ -469,7 +469,7 @@ private fun LibraryMessage(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Surface(
-                modifier = Modifier.size(80.dp),
+                modifier = Modifier.size(96.dp),
                 shape = songMeldIconShape(),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -478,7 +478,7 @@ private fun LibraryMessage(
                     SongMeldIcon(
                         id = icon,
                         contentDescription = null,
-                        size = 36.dp,
+                        size = 44.dp,
                     )
                 }
             }

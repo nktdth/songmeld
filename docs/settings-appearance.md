@@ -12,8 +12,8 @@ Album-art placeholder shape remains independent of interface-icon background sha
 - Dynamic color: enabled on Android 12+; older devices show the existing explanation.
 - Icon appearance: keeps its separate editor. The selected background shape has a
   visible name. The fill switch uses toggleable semantics for TalkBack.
-- Compact library: 40 dp artwork, 60 dp minimum row and 6 dp vertical padding;
-  standard library: 48 dp artwork, 72 dp minimum row and 8 dp vertical padding.
+- Compact library: 48 dp artwork, 68 dp minimum row and 6 dp vertical padding;
+  standard library: 56 dp artwork, 80 dp minimum row and 8 dp vertical padding.
   Row height can expand with system text size.
 - Reduced motion: disables decorative theme/preview transitions and the in-app
   header entrance; skips the Compose launch intro and extra splash exit delay on

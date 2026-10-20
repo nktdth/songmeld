@@ -36,8 +36,8 @@ internal fun AppearancePreview(compact: Boolean) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                        Box(Modifier.size(if (compact) 40.dp else 48.dp), contentAlignment = Alignment.Center) {
-                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 24.dp)
+                        Box(Modifier.size(if (compact) 48.dp else 56.dp), contentAlignment = Alignment.Center) {
+                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 28.dp)
                         }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
