@@ -118,48 +118,68 @@ fun SettingsScreen(
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SettingsPageScaffold(
-        title = R.string.settings_title,
-        onBack = onBack,
-        modifier = modifier,
-    ) { innerPadding ->
+    val scheme = MaterialTheme.colorScheme
+    val themeDescription = stringResource(
+        R.string.settings_appearance_current,
+        stringResource(themeLabel(theme)),
+        stringResource(
+            if (dynamicColorEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                R.string.settings_palette_dynamic else R.string.settings_palette_warm
+        ),
+    )
+    SettingsPageScaffold(title = R.string.settings_title, onBack = onBack, modifier = modifier) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+            modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
+                .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // Rounded grouped surfaces and bright circular icon containers are inspired by v1.
-            ColorfulSettingsEntry(
-                title = stringResource(R.string.settings_appearance),
-                description = stringResource(
-                    R.string.settings_appearance_current,
-                    stringResource(themeLabel(theme)),
-                    stringResource(if (dynamicColorEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                        R.string.settings_palette_dynamic else R.string.settings_palette_warm),
-                ),
-                icon = SongMeldIconId.Palette,
-                accent = settingsAccent(0),
-                shape = RoundedCornerShape(
-                    topStart = 28.dp, topEnd = 28.dp,
-                    bottomStart = 10.dp, bottomEnd = 10.dp,
-                ),
-                onClick = onOpenAppearance,
-            )
-            ColorfulSettingsEntry(
-                title = stringResource(R.string.settings_about),
-                description = stringResource(R.string.settings_about_description),
-                icon = SongMeldIconId.Info,
-                accent = settingsAccent(1),
-                shape = RoundedCornerShape(
-                    topStart = 10.dp, topEnd = 10.dp,
-                    bottomStart = 28.dp, bottomEnd = 28.dp,
-                ),
-                onClick = onOpenAbout,
-            )
+            // A calm, branded overview before the interactive settings groups.
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(32.dp),
+                color = scheme.primaryContainer,
+                contentColor = scheme.onPrimaryContainer,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(22.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(18.dp),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold)
+                        Text(themeDescription, style = MaterialTheme.typography.bodyLarge)
+                    }
+                    Surface(shape = RoundedCornerShape(24.dp), color = scheme.onPrimaryContainer.copy(alpha = 0.12f)) {
+                        Box(Modifier.size(74.dp), contentAlignment = Alignment.Center) {
+                            SongMeldIcon(SongMeldIconId.Palette, null, size = 40.dp)
+                        }
+                    }
+                }
+            }
+            SettingsSectionTitle(stringResource(R.string.settings_title))
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                ColorfulSettingsEntry(
+                    title = stringResource(R.string.settings_appearance),
+                    description = themeDescription,
+                    icon = SongMeldIconId.Palette,
+                    accent = settingsAccent(0),
+                    shape = RoundedCornerShape(
+                        topStart = 28.dp, topEnd = 28.dp, bottomStart = 8.dp, bottomEnd = 8.dp,
+                    ),
+                    onClick = onOpenAppearance,
+                )
+                ColorfulSettingsEntry(
+                    title = stringResource(R.string.settings_about),
+                    description = stringResource(R.string.settings_about_description),
+                    icon = SongMeldIconId.Info,
+                    accent = settingsAccent(1),
+                    shape = RoundedCornerShape(
+                        topStart = 8.dp, topEnd = 8.dp, bottomStart = 28.dp, bottomEnd = 28.dp,
+                    ),
+                    onClick = onOpenAbout,
+                )
+            }
             Spacer(Modifier.height(16.dp))
         }
     }
@@ -183,19 +203,25 @@ fun AppearanceSettingsScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
                 .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             AppearancePreview(options.compactLibrary)
             SettingsSectionTitle(stringResource(R.string.settings_theme))
             ThemeChoices(theme, onThemeChanged)
-            Text(stringResource(R.string.settings_theme_description),
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp))
+            Text(
+                stringResource(R.string.settings_theme_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            )
             val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
             SettingsToggle(
                 title = stringResource(R.string.settings_dynamic_color),
-                description = stringResource(if (dynamicAvailable) R.string.settings_dynamic_color_description
-                    else R.string.settings_dynamic_color_unavailable),
+                description = stringResource(
+                    if (dynamicAvailable) R.string.settings_dynamic_color_description
+                    else R.string.settings_dynamic_color_unavailable
+                ),
+                icon = SongMeldIconId.Palette,
                 checked = dynamicAvailable && dynamicColorEnabled,
                 enabled = dynamicAvailable,
                 onCheckedChange = onDynamicColorChanged,
@@ -204,13 +230,16 @@ fun AppearanceSettingsScreen(
             ColorfulSettingsEntry(
                 title = stringResource(R.string.settings_icon_appearance),
                 description = stringResource(R.string.settings_icon_appearance_summary),
-                icon = SongMeldIconId.MusicNote, accent = settingsAccent(2),
-                shape = RoundedCornerShape(28.dp), onClick = onOpenIconAppearance,
+                icon = SongMeldIconId.MusicNote,
+                accent = settingsAccent(2),
+                shape = RoundedCornerShape(28.dp),
+                onClick = onOpenIconAppearance,
             )
             SettingsSectionTitle(stringResource(R.string.settings_library_display))
             SettingsToggle(
                 title = stringResource(R.string.settings_compact_library),
                 description = stringResource(R.string.settings_compact_library_summary),
+                icon = SongMeldIconId.LibraryMusic,
                 checked = options.compactLibrary,
                 onCheckedChange = { onInterfaceOptionsChanged(options.copy(compactLibrary = it)) },
             )
@@ -218,13 +247,28 @@ fun AppearanceSettingsScreen(
             SettingsToggle(
                 title = stringResource(R.string.settings_reduce_motion),
                 description = stringResource(R.string.settings_reduce_motion_summary),
+                icon = SongMeldIconId.SettingsBrightness,
                 checked = options.reduceMotion,
                 onCheckedChange = { onInterfaceOptionsChanged(options.copy(reduceMotion = it)) },
             )
-            TextButton(onClick = { showReset = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.settings_reset_appearance))
+            Surface(
+                onClick = { showReset = true },
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            ) {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    SongMeldIcon(SongMeldIconId.Refresh, null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant, size = 28.dp)
+                    Text(stringResource(R.string.settings_reset_appearance),
+                        style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                }
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(20.dp))
         }
     }
     if (showReset) {
@@ -244,22 +288,29 @@ fun AppearanceSettingsScreen(
 
 @Composable
 private fun SettingsToggle(
-    title: String, description: String, checked: Boolean,
-    enabled: Boolean = true, onCheckedChange: (Boolean) -> Unit,
+    title: String,
+    description: String,
+    checked: Boolean,
+    icon: SongMeldIconId? = null,
+    enabled: Boolean = true,
+    onCheckedChange: (Boolean) -> Unit,
 ) {
-    val motion = LocalDecorativeMotionEnabled.current
-    Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
+    Surface(
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth()
-                .animateContentSize(animationSpec = if (motion) tween(200) else snap())
                 .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
-                .padding(horizontal = 18.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            if (icon != null) SettingsIconCircle(icon, settingsAccent(2))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text(description, style = MaterialTheme.typography.bodySmall,
+                Text(description, style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Switch(checked = checked, onCheckedChange = null, enabled = enabled)
@@ -303,17 +354,14 @@ private fun themeIcon(theme: AppTheme): SongMeldIconId = when (theme) {
 
 private data class SettingsAccent(val background: Color, val foreground: Color)
 
-/** Inspired by SongMeld v1's colorful settings icons, with light/dark aware palettes. */
+/** Tonal icon containers always follow the active M3 theme and dynamic wallpaper color. */
 @Composable
 private fun settingsAccent(index: Int): SettingsAccent {
-    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val colors = MaterialTheme.colorScheme
     return when (index) {
-        0 -> if (dark) SettingsAccent(Color(0xFFE7A2BC), Color(0xFF431127))
-             else SettingsAccent(Color(0xFFFFD6E6), Color(0xFF7A173F))
-        1 -> if (dark) SettingsAccent(Color(0xFF98D2CD), Color(0xFF103C39))
-             else SettingsAccent(Color(0xFFC9F0EC), Color(0xFF175B57))
-        else -> if (dark) SettingsAccent(Color(0xFFE8C184), Color(0xFF3D2906))
-                else SettingsAccent(Color(0xFFFFE0AA), Color(0xFF6A4300))
+        0 -> SettingsAccent(colors.primaryContainer, colors.onPrimaryContainer)
+        1 -> SettingsAccent(colors.secondaryContainer, colors.onSecondaryContainer)
+        else -> SettingsAccent(colors.tertiaryContainer, colors.onTertiaryContainer)
     }
 }
 
@@ -360,7 +408,7 @@ private fun ColorfulSettingsEntry(
                 )
                 Text(
                     text = description,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -378,10 +426,10 @@ private fun ColorfulSettingsEntry(
 private fun SettingsSectionTitle(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleSmall,
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 18.dp, top = 8.dp, bottom = 2.dp),
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(start = 14.dp, top = 18.dp, bottom = 6.dp),
     )
 }
 
@@ -414,7 +462,7 @@ private fun ThemeTile(
         ),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp, horizontal = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -427,7 +475,7 @@ private fun ThemeTile(
             )
             Text(
                 title,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 color = if (selected) colors.onPrimaryContainer else colors.onSurface,
