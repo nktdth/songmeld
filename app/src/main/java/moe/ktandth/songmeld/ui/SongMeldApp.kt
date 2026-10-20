@@ -50,7 +50,6 @@ import moe.ktandth.songmeld.ui.icons.AppIconShape
 import moe.ktandth.songmeld.ui.icons.IconReference
 import moe.ktandth.songmeld.ui.settings.IconAppearanceScreen
 import moe.ktandth.songmeld.ui.settings.IconPickerScreen
-import moe.ktandth.songmeld.ui.settings.InterfaceOptions
 import moe.ktandth.songmeld.ui.settings.AppTheme
 import moe.ktandth.songmeld.ui.settings.SettingsPageScaffold
 import moe.ktandth.songmeld.ui.settings.AppearanceSettingsScreen
@@ -67,8 +66,6 @@ import moe.ktandth.songmeld.ui.songs.SongsScreen
 @Composable
 fun SongMeldApp(
     theme: AppTheme,
-    onInterfaceOptionsChanged: (InterfaceOptions) -> Unit,
-    onResetAppearance: () -> Unit,
     dynamicColorEnabled: Boolean,
     amoledBlackEnabled: Boolean,
     onAmoledBlackChanged: (Boolean) -> Unit,
@@ -226,8 +223,6 @@ fun SongMeldApp(
                 SongMeldPage.APPEARANCE -> key("appearance") {
                     AppearanceSettingsScreen(
                         theme = theme,
-                        onInterfaceOptionsChanged = onInterfaceOptionsChanged,
-                        onResetAppearance = onResetAppearance,
                         dynamicColorEnabled = dynamicColorEnabled,
                         amoledBlackEnabled = amoledBlackEnabled,
                         onAmoledBlackChanged = onAmoledBlackChanged,
