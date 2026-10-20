@@ -152,16 +152,6 @@
     <string name="settings_palette_amoled">Đen AMOLED</string>
     <string name="settings_palette_dynamic">Màu hình nền</string>
     <string name="settings_palette_warm">Màu cam ấm</string>
-    <string name="settings_library_display">Hiển thị thư viện</string>
-    <string name="settings_compact_library">Danh sách nhạc gọn</string>
-    <string name="settings_compact_library_summary">Ảnh bìa nhỏ hơn và khoảng cách gọn hơn để xem được nhiều bài hát.</string>
-    <string name="settings_motion">Chuyển động</string>
-    <string name="settings_reduce_motion">Giảm chuyển động</string>
-    <string name="settings_reduce_motion_summary">Giảm hiệu ứng logo và chuyển động trang trí trong ứng dụng.</string>
-    <string name="settings_reset_appearance">Khôi phục giao diện mặc định</string>
-    <string name="settings_reset_appearance_body">Đặt chủ đề theo hệ thống, bật màu động, đưa biểu tượng và danh sách nhạc về kiểu mặc định. Tùy chọn giảm chuyển động được giữ lại.</string>
-    <string name="settings_reset_confirm">Khôi phục</string>
-    <string name="settings_cancel">Hủy</string>
     <string name="settings_icon_selected_shape">Đang chọn: %1$s</string>
     <string name="icon_pack_mdi">MDI</string>
     <string name="icon_pack_flutter">Flutter</string>
