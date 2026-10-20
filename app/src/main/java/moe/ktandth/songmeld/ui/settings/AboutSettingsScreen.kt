@@ -112,11 +112,11 @@ private fun AboutHero(version: String) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Surface(shape = RoundedCornerShape(36.dp), color = colors.primaryContainer) {
+        Surface(shape = RoundedCornerShape(30.dp), color = colors.primaryContainer) {
             Image(painterResource(R.drawable.songmeld_logo), contentDescription = null,
-                modifier = Modifier.size(128.dp).padding(20.dp))
+                modifier = Modifier.size(108.dp).padding(17.dp))
         }
         Text(
             buildAnnotatedString {
@@ -148,13 +148,13 @@ private fun AboutLinkRow(
     title: String, summary: String, icon: SongMeldIconId,
     shape: RoundedCornerShape = RoundedCornerShape(28.dp), onClick: () -> Unit,
 ) {
-    Surface(onClick = onClick, shape = shape, color = MaterialTheme.colorScheme.surfaceContainer) {
-        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically,
+    Surface(onClick = onClick, shape = shape, color = MaterialTheme.colorScheme.surfaceContainerLow) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                Box(Modifier.size(52.dp), contentAlignment = Alignment.Center) {
-                    SongMeldIcon(icon, contentDescription = null, size = 28.dp)
+                Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                    SongMeldIcon(icon, contentDescription = null, size = 24.dp)
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -162,7 +162,7 @@ private fun AboutLinkRow(
                 Text(summary, style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            SongMeldIcon(SongMeldIconId.ChevronRight, contentDescription = null, size = 24.dp)
+            SongMeldIcon(SongMeldIconId.ChevronRight, contentDescription = null, size = 20.dp)
         }
     }
 }
