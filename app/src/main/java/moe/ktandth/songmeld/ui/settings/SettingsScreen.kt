@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.snap
@@ -33,12 +32,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,21 +48,19 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
 
 /**
- * Reusable Material 3 top app bar for Settings and its child pages.
- * The Scaffold owns both the toolbar and the scrollable content to avoid double status-bar insets.
+ * Settings v1 inspired: a compact, fixed-height title bar on all settings pages.
+ * A single Scaffold owns system insets, so content does not pad the status bar twice.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,21 +70,16 @@ fun SettingsPageScaffold(
     modifier: Modifier = Modifier,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
-        modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(title),
+                        stringResource(title),
+                        style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        fontSize = if (title == R.string.settings_title) {
-                            (30f - 8f * scrollBehavior.state.collapsedFraction).sp
-                        } else {
-                            (28f - 6f * scrollBehavior.state.collapsedFraction).sp
-                        },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -98,10 +89,10 @@ fun SettingsPageScaffold(
                         SongMeldIcon(
                             id = SongMeldIconId.ArrowBack,
                             contentDescription = stringResource(R.string.settings_back),
+                            size = 24.dp,
                         )
                     }
                 },
-                scrollBehavior = scrollBehavior,
             )
         },
         content = content,
@@ -118,7 +109,6 @@ fun SettingsScreen(
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scheme = MaterialTheme.colorScheme
     val themeDescription = stringResource(
         R.string.settings_appearance_current,
         stringResource(themeLabel(theme)),
@@ -127,60 +117,34 @@ fun SettingsScreen(
                 R.string.settings_palette_dynamic else R.string.settings_palette_warm
         ),
     )
-    SettingsPageScaffold(title = R.string.settings_title, onBack = onBack, modifier = modifier) { innerPadding ->
+    SettingsPageScaffold(title = R.string.settings_title, onBack = onBack, modifier = modifier) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
-                .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 14.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // A calm, branded overview before the interactive settings groups.
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(32.dp),
-                color = scheme.primaryContainer,
-                contentColor = scheme.onPrimaryContainer,
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(22.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(18.dp),
-                ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold)
-                        Text(themeDescription, style = MaterialTheme.typography.bodyLarge)
-                    }
-                    Surface(shape = RoundedCornerShape(24.dp), color = scheme.onPrimaryContainer.copy(alpha = 0.12f)) {
-                        Box(Modifier.size(74.dp), contentAlignment = Alignment.Center) {
-                            SongMeldIcon(SongMeldIconId.Palette, null, size = 40.dp)
-                        }
-                    }
-                }
-            }
-            SettingsSectionTitle(stringResource(R.string.settings_title))
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                ColorfulSettingsEntry(
-                    title = stringResource(R.string.settings_appearance),
-                    description = themeDescription,
-                    icon = SongMeldIconId.Palette,
-                    accent = settingsAccent(0),
-                    shape = RoundedCornerShape(
-                        topStart = 28.dp, topEnd = 28.dp, bottomStart = 8.dp, bottomEnd = 8.dp,
-                    ),
-                    onClick = onOpenAppearance,
-                )
-                ColorfulSettingsEntry(
-                    title = stringResource(R.string.settings_about),
-                    description = stringResource(R.string.settings_about_description),
-                    icon = SongMeldIconId.Info,
-                    accent = settingsAccent(1),
-                    shape = RoundedCornerShape(
-                        topStart = 8.dp, topEnd = 8.dp, bottomStart = 28.dp, bottomEnd = 28.dp,
-                    ),
-                    onClick = onOpenAbout,
-                )
-            }
-            Spacer(Modifier.height(16.dp))
+            // SongMeld-v1 section hierarchy, without a large decorative hero.
+            SettingsSectionTitle(stringResource(R.string.settings_preferences_section))
+            ColorfulSettingsEntry(
+                title = stringResource(R.string.settings_appearance),
+                description = themeDescription,
+                icon = SongMeldIconId.Palette,
+                accent = settingsAccent(0),
+                shape = RoundedCornerShape(28.dp),
+                onClick = onOpenAppearance,
+            )
+            Spacer(Modifier.height(12.dp))
+            SettingsSectionTitle(stringResource(R.string.settings_songmeld_section))
+            ColorfulSettingsEntry(
+                title = stringResource(R.string.settings_about),
+                description = stringResource(R.string.settings_about_description),
+                icon = SongMeldIconId.Info,
+                accent = settingsAccent(1),
+                shape = RoundedCornerShape(28.dp),
+                onClick = onOpenAbout,
+            )
+            Spacer(Modifier.height(20.dp))
         }
     }
 }
@@ -203,7 +167,7 @@ fun AppearanceSettingsScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
                 .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             AppearancePreview(options.compactLibrary)
             SettingsSectionTitle(stringResource(R.string.settings_theme))
@@ -212,7 +176,7 @@ fun AppearanceSettingsScreen(
                 stringResource(R.string.settings_theme_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
             )
             val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
             SettingsToggle(
@@ -255,10 +219,10 @@ fun AppearanceSettingsScreen(
                 onClick = { showReset = true },
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
             ) {
                 Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp),
+                    Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -297,15 +261,15 @@ private fun SettingsToggle(
 ) {
     Surface(
         shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth()
                 .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 13.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (icon != null) SettingsIconCircle(icon, settingsAccent(2))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -354,27 +318,30 @@ private fun themeIcon(theme: AppTheme): SongMeldIconId = when (theme) {
 
 private data class SettingsAccent(val background: Color, val foreground: Color)
 
-/** Tonal icon containers always follow the active M3 theme and dynamic wallpaper color. */
+/** Restores SongMeld-v1's soft pastel icon accents, adjusted for light/dark contrast. */
 @Composable
 private fun settingsAccent(index: Int): SettingsAccent {
-    val colors = MaterialTheme.colorScheme
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     return when (index) {
-        0 -> SettingsAccent(colors.primaryContainer, colors.onPrimaryContainer)
-        1 -> SettingsAccent(colors.secondaryContainer, colors.onSecondaryContainer)
-        else -> SettingsAccent(colors.tertiaryContainer, colors.onTertiaryContainer)
+        0 -> if (dark) SettingsAccent(Color(0xFFE7A2BC), Color(0xFF431127))
+             else SettingsAccent(Color(0xFFFFD6E6), Color(0xFF7A173F))
+        1 -> if (dark) SettingsAccent(Color(0xFF98D2CD), Color(0xFF103C39))
+             else SettingsAccent(Color(0xFFC9F0EC), Color(0xFF175B57))
+        else -> if (dark) SettingsAccent(Color(0xFFE8C184), Color(0xFF3D2906))
+                else SettingsAccent(Color(0xFFFFE0AA), Color(0xFF6A4300))
     }
 }
 
 @Composable
 private fun SettingsIconCircle(icon: SongMeldIconId, accent: SettingsAccent) {
     Surface(
-        modifier = Modifier.size(56.dp),
+        modifier = Modifier.size(50.dp),
         shape = CircleShape,
         color = accent.background,
         contentColor = accent.foreground,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            SongMeldIcon(id = icon, contentDescription = null, size = 28.dp)
+            SongMeldIcon(id = icon, contentDescription = null, size = 26.dp)
         }
     }
 }
@@ -395,9 +362,9 @@ private fun ColorfulSettingsEntry(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 18.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             SettingsIconCircle(icon, accent)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -416,7 +383,7 @@ private fun ColorfulSettingsEntry(
                 id = SongMeldIconId.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                size = 24.dp,
+                size = 20.dp,
             )
         }
     }
@@ -429,7 +396,7 @@ private fun SettingsSectionTitle(title: String) {
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(start = 14.dp, top = 18.dp, bottom = 6.dp),
+        modifier = Modifier.padding(start = 8.dp, top = 12.dp, bottom = 2.dp),
     )
 }
 
@@ -449,7 +416,7 @@ private fun ThemeTile(
         animationSpec = if (motion) tween(220) else snap(), label = "Theme tile color",
     )
     val iconScale by animateFloatAsState(
-        if (selected) 1.08f else 1f,
+        if (selected) 1.04f else 1f,
         animationSpec = if (motion) tween(220) else snap(), label = "Theme icon emphasis",
     )
     Surface(
@@ -462,20 +429,20 @@ private fun ThemeTile(
         ),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp, horizontal = 6.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             SongMeldIcon(
                 id = icon,
                 contentDescription = null,
-                size = 34.dp,
+                size = 28.dp,
                 modifier = Modifier.graphicsLayer { scaleX = iconScale; scaleY = iconScale },
                 tint = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
             )
             Text(
                 title,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 color = if (selected) colors.onPrimaryContainer else colors.onSurface,
