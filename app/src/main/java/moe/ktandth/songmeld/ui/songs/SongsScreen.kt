@@ -266,7 +266,7 @@ private fun SongList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(songItemShape(index, songs.size))
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow),
             )
         }
     }
@@ -274,18 +274,18 @@ private fun SongList(
 
 /** Keep the outer 24dp corners while gently rounding the seams between songs. */
 private fun songItemShape(index: Int, count: Int): RoundedCornerShape = when {
-    count == 1 -> RoundedCornerShape(24.dp)
+    count == 1 -> RoundedCornerShape(22.dp)
     index == 0 -> RoundedCornerShape(
-        topStart = 24.dp,
-        topEnd = 24.dp,
+        topStart = 22.dp,
+        topEnd = 22.dp,
         bottomStart = 6.dp,
         bottomEnd = 6.dp,
     )
     index == count - 1 -> RoundedCornerShape(
         topStart = 6.dp,
         topEnd = 6.dp,
-        bottomStart = 24.dp,
-        bottomEnd = 24.dp,
+        bottomStart = 22.dp,
+        bottomEnd = 22.dp,
     )
     else -> RoundedCornerShape(6.dp)
 }
@@ -302,8 +302,8 @@ private fun SongRow(
     Row(
         modifier = modifier
             .clickable(onClickLabel = detailsLabel, onClick = onClick)
-            .heightIn(min = if (compact) 68.dp else 80.dp)
-            .padding(horizontal = 10.dp, vertical = if (compact) 6.dp else 8.dp),
+            .heightIn(min = if (compact) 64.dp else 72.dp)
+            .padding(horizontal = 12.dp, vertical = if (compact) 6.dp else 7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SongArtwork(song = song, artworkLoader = artworkLoader)
@@ -361,8 +361,8 @@ private fun SongArtwork(
     }
     Box(
         modifier = Modifier
-            .size(if (LocalInterfaceOptions.current.compactLibrary) 48.dp else 56.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .size(if (LocalInterfaceOptions.current.compactLibrary) 44.dp else 50.dp)
+            .clip(RoundedCornerShape(11.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center,
     ) {
