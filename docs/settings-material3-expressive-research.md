@@ -75,6 +75,15 @@ The three-mode **System / Light / Dark** selector now follows the compact SongMe
 - When the app/system disables decorative motion, the selection switches without sliding animation.
 - Appearance preferences, persistence callbacks and theme handling are otherwise unchanged.
 
+## Theme layout and AMOLED black option
+
+- Shortened the segmented theme's first label from **Theo hệ thống** to **Hệ thống**; both outer and animated selected-pill surfaces use full pill shapes.
+- The segmented selector now precedes the **Chủ đề** heading, with no redundant theme explanation.
+- **Chủ đề** is one connected two-row group: AMOLED black first, Android 12+ dynamic wallpaper colors second. The latter remains disabled below Android 12.
+- `AppearancePreferences.amoledBlackEnabled` persists the AMOLED preference (default off). Reset Appearance clears it.
+- `SongMeldTheme` preserves existing static/wallpaper accents but uses `#000000` for dark-mode background and surface and nearly-black elevation containers when AMOLED is enabled. AMOLED does not override Light mode, including System when the device is currently light.
+- Activity/app callbacks update Compose theme immediately; the Settings summary reflects an active AMOLED dark appearance.
+
 ## Validation checklist
 
 - [x] Review existing navigation and state callbacks
