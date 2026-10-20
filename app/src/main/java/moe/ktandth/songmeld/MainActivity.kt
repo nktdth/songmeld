@@ -95,6 +95,9 @@ class MainActivity : ComponentActivity() {
             var dynamicColorEnabled by remember {
                 mutableStateOf(appearancePreferences.dynamicColorEnabled)
             }
+            var amoledBlackEnabled by remember {
+                mutableStateOf(appearancePreferences.amoledBlackEnabled)
+            }
             var symbols by remember { mutableStateOf(appearancePreferences.symbols) }
             var iconShape by remember { mutableStateOf(appearancePreferences.iconShape) }
             var selectedIcon by remember { mutableStateOf(appearancePreferences.iconPickerSelection) }
@@ -113,7 +116,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            SongMeldTheme(darkTheme = darkTheme, dynamicColor = dynamicColorEnabled) {
+            SongMeldTheme(
+                darkTheme = darkTheme,
+                dynamicColor = dynamicColorEnabled,
+                amoledBlack = amoledBlackEnabled,
+            ) {
                 SongMeldRoot(
                     playComposeIntro = animate && Build.VERSION.SDK_INT < Build.VERSION_CODES.S,
                     theme = theme,
@@ -126,11 +133,17 @@ class MainActivity : ComponentActivity() {
                         appearancePreferences.resetVisualAppearance()
                         theme = appearancePreferences.theme
                         dynamicColorEnabled = appearancePreferences.dynamicColorEnabled
+                        amoledBlackEnabled = appearancePreferences.amoledBlackEnabled
                         symbols = appearancePreferences.symbols
                         iconShape = appearancePreferences.iconShape
                         interfaceOptions = appearancePreferences.interfaceOptions
                     },
                     dynamicColorEnabled = dynamicColorEnabled,
+                    amoledBlackEnabled = amoledBlackEnabled,
+                    onAmoledBlackChanged = { enabled ->
+                        amoledBlackEnabled = enabled
+                        appearancePreferences.setAmoledBlackEnabled(enabled)
+                    },
                     symbols = symbols,
                     iconShape = iconShape,
                     selectedIcon = selectedIcon,
@@ -168,6 +181,8 @@ private fun SongMeldRoot(
     onInterfaceOptionsChanged: (InterfaceOptions) -> Unit,
     onResetAppearance: () -> Unit,
     dynamicColorEnabled: Boolean,
+    amoledBlackEnabled: Boolean,
+    onAmoledBlackChanged: (Boolean) -> Unit,
     symbols: MaterialSymbolAppearance,
     iconShape: AppIconShape,
     selectedIcon: IconReference?,
@@ -200,6 +215,8 @@ private fun SongMeldRoot(
                 onInterfaceOptionsChanged = onInterfaceOptionsChanged,
                 onResetAppearance = onResetAppearance,
                 dynamicColorEnabled = dynamicColorEnabled,
+                amoledBlackEnabled = amoledBlackEnabled,
+                onAmoledBlackChanged = onAmoledBlackChanged,
                 symbols = symbols,
                 iconShape = iconShape,
                 selectedIcon = selectedIcon,
