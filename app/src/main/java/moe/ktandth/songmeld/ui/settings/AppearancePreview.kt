@@ -22,22 +22,22 @@ import moe.ktandth.songmeld.ui.icons.SongMeldIconId
 @Composable
 internal fun AppearancePreview(compact: Boolean) {
     val motion = LocalDecorativeMotionEnabled.current
-    Surface(shape = RoundedCornerShape(32.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+    Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerLow) {
         Column(Modifier.fillMaxWidth()
             .animateContentSize(animationSpec = if (motion) tween(220) else snap())
-            .padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.settings_live_preview),
-                style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold)
-            Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface) {
-                Row(Modifier.fillMaxWidth().padding(if (compact) 10.dp else 16.dp),
+            Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.surface) {
+                Row(Modifier.fillMaxWidth().padding(if (compact) 10.dp else 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                        Box(Modifier.size(if (compact) 48.dp else 56.dp), contentAlignment = Alignment.Center) {
-                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 28.dp)
+                        Box(Modifier.size(if (compact) 44.dp else 50.dp), contentAlignment = Alignment.Center) {
+                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 24.dp)
                         }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
