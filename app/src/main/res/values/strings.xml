@@ -149,6 +149,7 @@
     <string name="song_unknown_album">Album chưa xác định</string>
     <string name="library_summary_sort">%1$s · %2$s</string>
     <string name="settings_appearance_current">%1$s · %2$s</string>
+    <string name="settings_palette_amoled">Đen AMOLED</string>
     <string name="settings_palette_dynamic">Màu hình nền</string>
     <string name="settings_palette_warm">Màu cam ấm</string>
     <string name="settings_library_display">Hiển thị thư viện</string>
