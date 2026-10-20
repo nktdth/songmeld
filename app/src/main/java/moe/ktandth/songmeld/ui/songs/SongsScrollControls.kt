@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.text.Normalizer
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import moe.ktandth.songmeld.R
@@ -128,13 +129,15 @@ internal fun SongsFastScrollbar(
                         val next = ((positionY - latestThumbPx / 2f) / travelPx).coerceIn(0f, 1f)
                         val currentSongs = latestSongs
                         val maxTarget = (latestCount - latestVisibleCount).coerceAtLeast(0)
-                        val target = (next * maxTarget).roundToInt().coerceIn(0, maxTarget)
-                        if (latestSort == SongSort.TITLE && currentSongs.isNotEmpty()) {
-                            letter = fastScrollSection(
-                                currentSongs[target.coerceAtMost(currentSongs.lastIndex)].title
-                            )
+                        val target = if (latestSort == SongSort.TITLE && currentSongs.isNotEmpty()) {
+                            // Use the complete title range for the preview even at the end.
+                            val titleIndex = (next * currentSongs.lastIndex).roundToInt()
+                                .coerceIn(0, currentSongs.lastIndex)
+                            letter = fastScrollSection(currentSongs[titleIndex].title)
+                            titleIndex
                         } else {
                             letter = null
+                            (next * maxTarget).roundToInt().coerceIn(0, maxTarget)
                         }
                         listState.requestScrollToItem(target)
                     }
