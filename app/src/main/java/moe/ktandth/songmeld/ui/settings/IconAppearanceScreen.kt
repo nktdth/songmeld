@@ -72,7 +72,7 @@ fun IconAppearanceScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -84,20 +84,20 @@ fun IconAppearanceScreen(
                 id = SongMeldIconId.MusicNote,
                 contentDescription = null,
                 appearance = appearance,
-                size = 58.dp,
+                size = 50.dp,
                 tint = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.size(18.dp))
             Box(
-                modifier = (if (iconShape == AppIconShape.PILL) Modifier.size(width = 96.dp, height = 72.dp)
-                    else Modifier.size(82.dp)).clip(iconBackgroundShape(iconShape))
+                modifier = (if (iconShape == AppIconShape.PILL) Modifier.size(width = 88.dp, height = 64.dp)
+                    else Modifier.size(72.dp)).clip(iconBackgroundShape(iconShape))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 SongMeldIcon(
                     id = SongMeldIconId.MusicNote,
                     contentDescription = null,
-                    size = 40.dp,
+                    size = 34.dp,
                     appearance = appearance,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
@@ -109,7 +109,7 @@ fun IconAppearanceScreen(
 
         Card(
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
@@ -181,10 +181,10 @@ fun IconAppearanceScreen(
                             val selected = shape == iconShape
                             val label = stringResource(shapeLabel(shape))
                             Box(
-                                modifier = Modifier.weight(1f).height(80.dp)
+                                modifier = Modifier.weight(1f).height(72.dp)
                                     .clip(RoundedCornerShape(18.dp))
                                     .background(if (selected) MaterialTheme.colorScheme.primaryContainer
-                                        else MaterialTheme.colorScheme.surfaceContainer)
+                                        else MaterialTheme.colorScheme.surfaceContainerLow)
                                     .selectable(selected = selected, role = Role.RadioButton) {
                                         onIconShapeChanged(shape)
                                     }
