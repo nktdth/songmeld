@@ -27,29 +27,6 @@ class AppearancePreferences(context: Context) {
         Context.MODE_PRIVATE,
     )
 
-    val interfaceOptions: InterfaceOptions
-        get() = InterfaceOptions(
-            reduceMotion = preferences.getBoolean(KEY_REDUCE_MOTION, false),
-            compactLibrary = preferences.getBoolean(KEY_COMPACT_LIBRARY, false),
-        )
-
-    fun setInterfaceOptions(options: InterfaceOptions) {
-        preferences.edit()
-            .putBoolean(KEY_REDUCE_MOTION, options.reduceMotion)
-            .putBoolean(KEY_COMPACT_LIBRARY, options.compactLibrary)
-            .apply()
-    }
-
-    /** Preserve motion accessibility preference and the separate catalog test selection. */
-    fun resetVisualAppearance() {
-        preferences.edit()
-            .remove(KEY_THEME).remove(KEY_DYNAMIC_COLOR).remove(KEY_AMOLED_BLACK)
-            .remove(KEY_ICON_STYLE).remove(KEY_ICON_FILL).remove(KEY_ICON_WEIGHT)
-            .remove(KEY_ICON_GRADE).remove(KEY_ICON_OPTICAL_SIZE).remove(KEY_ICON_SHAPE)
-            .remove(KEY_COMPACT_LIBRARY)
-            .apply()
-    }
-
     val theme: AppTheme
         get() = AppTheme.fromPreference(preferences.getString(KEY_THEME, null))
 
@@ -124,8 +101,6 @@ class AppearancePreferences(context: Context) {
     }
 
     private companion object {
-        const val KEY_REDUCE_MOTION = "reduce_motion"
-        const val KEY_COMPACT_LIBRARY = "compact_library"
         const val KEY_SELECTED_ICON_PACK = "selected_icon_pack"
         const val KEY_SELECTED_ICON_CODEPOINT = "selected_icon_codepoint"
         const val KEY_THEME = "theme"
