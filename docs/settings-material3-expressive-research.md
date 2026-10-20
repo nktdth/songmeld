@@ -84,6 +84,17 @@ The three-mode **System / Light / Dark** selector now follows the compact SongMe
 - `SongMeldTheme` preserves existing static/wallpaper accents but uses `#000000` for dark-mode background and surface and nearly-black elevation containers when AMOLED is enabled. AMOLED does not override Light mode, including System when the device is currently light.
 - Activity/app callbacks update Compose theme immediately; the Settings summary reflects an active AMOLED dark appearance.
 
+## Shared toggle thumb and app-wide density pass
+
+The owner requested a less oversized baseline and explicit on/off visual state on toggles.
+
+- Added a reusable `ui/components/SongMeldSwitch.kt` which renders a Material Symbols **check ✓** in the thumb when on and a **close ×** in the thumb when off, using the Material 3 `Switch.thumbContent` / `SwitchDefaults.IconSize` APIs.
+- Wired this component into Appearance toggles (AMOLED, Dynamic Color, Compact Library, Reduce Motion) and the icon-appearance Fill preference. The parent row retains one accessible `Role.Switch` click target instead of adding a competing clickable child.
+- Rebalanced app-wide typography toward standard Material 3: `titleMedium` 18→16sp, `bodyLarge` 18→16sp, `bodyMedium` 16→14sp and `bodySmall` 14→13sp. Other titles/labels were reduced slightly, keeping Android font scaling.
+- Reduced decorative/presentation sizes in Settings, About, Icon Appearance, icon catalog, informational pages and the main SongMeld header. Interactive app-bar buttons still use large touch targets.
+- Local-song row minimum heights now **68dp normal / 60dp compact** and album artwork **46dp / 42dp**, with more restrained padding and grouped corner radii.
+- No device-build success is implied by static checking. After `installDebug`, verify both switch states, disabled Dynamic Color (below Android 12), font scaling and no clipping of song metadata.
+
 ## Validation checklist
 
 - [x] Review existing navigation and state callbacks
