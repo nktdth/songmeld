@@ -16,6 +16,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -60,6 +70,7 @@ import moe.ktandth.songmeld.ui.settings.LicenseDocument
 import moe.ktandth.songmeld.ui.settings.ChangelogScreen
 import moe.ktandth.songmeld.ui.settings.TermsScreen
 import moe.ktandth.songmeld.ui.settings.SettingsScreen
+import moe.ktandth.songmeld.ui.settings.LocalDecorativeMotionEnabled
 import moe.ktandth.songmeld.ui.songs.MusicPermissionScreen
 import moe.ktandth.songmeld.ui.songs.SongsScreen
 
@@ -177,14 +188,47 @@ fun SongMeldApp(
     }
 
     val pageStateHolder = rememberSaveableStateHolder()
-    val pageKey = if (currentPage == SongMeldPage.LICENSE_DETAIL) {
-        "${currentPage.name}:${selectedLicense.name}"
-    } else currentPage.name
-    pageStateHolder.SaveableStateProvider(pageKey) {
-        if (currentPage != SongMeldPage.LIBRARY) {
+    val motion = LocalDecorativeMotionEnabled.current
+    // Shared-axis-inspired navigation: incoming page advances from the right,
+    // while Back reverses the parallax. Only a change of destination animates.
+    // Keep saveable state *inside* each animated destination so outgoing and
+    // incoming screens coexist briefly without losing the library scroll.
+    AnimatedContent(
+        targetState = currentPage,
+        modifier = Modifier.fillMaxSize(),
+        contentKey = { it },
+        transitionSpec = {
+            if (!motion) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else {
+                val goingBack = targetState == initialState.parent ||
+                    targetState.depth < initialState.depth
+                val easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+                val enter = slideInHorizontally(
+                    initialOffsetX = { if (goingBack) -it / 6 else it / 4 },
+                    animationSpec = tween(durationMillis = 320, easing = easing),
+                ) + fadeIn(animationSpec = tween(durationMillis = 240))
+                val exit = slideOutHorizontally(
+                    targetOffsetX = { if (goingBack) it / 4 else -it / 6 },
+                    animationSpec = tween(durationMillis = 320, easing = easing),
+                ) + fadeOut(animationSpec = tween(durationMillis = 180))
+                (enter togetherWith exit).apply {
+                    // On push, the new page is in front; on pop, the old detail
+                    // page glides off over its returning parent.
+                    targetContentZIndex = if (goingBack) 0f else 1f
+                }
+            }
+        },
+        label = "SongMeld page navigation",
+    ) { page ->
+        val pageKey = if (page == SongMeldPage.LICENSE_DETAIL) {
+            "${page.name}:${selectedLicense.name}"
+        } else page.name
+        pageStateHolder.SaveableStateProvider(pageKey) {
+            if (page != SongMeldPage.LIBRARY) {
             // Own Scaffold per destination: collapsing app bars must receive nested scroll directly
             // from their content. Keeping the library screen out of this branch avoids double insets.
-            when (currentPage) {
+            when (page) {
                 SongMeldPage.ICON_PICKER -> key("icon_picker") {
                     SettingsPageScaffold(
                         title = R.string.icon_browse_title,
@@ -322,6 +366,7 @@ fun SongMeldApp(
                 }
             }
         }
+        }
     }
 }
 
@@ -329,6 +374,15 @@ fun SongMeldApp(
 private enum class SongMeldPage {
     LIBRARY, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER,
     LICENSES, LICENSE_DETAIL, CHANGELOG, TERMS;
+
+    val depth: Int
+        get() = when (this) {
+            LIBRARY -> 0
+            SETTINGS -> 1
+            APPEARANCE, ABOUT -> 2
+            ICON_APPEARANCE, LICENSES, CHANGELOG, TERMS -> 3
+            ICON_PICKER, LICENSE_DETAIL -> 4
+        }
 
     val parent: SongMeldPage
         get() = when (this) {
