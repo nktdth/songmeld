@@ -32,14 +32,13 @@ class MediaStoreSongRepository(
             arrayOf(MediaStore.Audio.Media.GENRE)
         } else emptyArray<String>()
 
-        /*        */
 
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
         val sortOrder = "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE ASC"
         val collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
         coroutineContext.ensureActive()
-        context.contentResolver.query(
+        val localSongs = context.contentResolver.query(
             collection,
             projection,
             selection,
@@ -110,5 +109,46 @@ class MediaStoreSongRepository(
                 }
             }
         } ?: throw IOException("MediaStore query returned no cursor")
+
+        // Android 8–10 keeps genres in a separate MediaStore collection.
+        // A failed or unavailable provider must never hide the song library.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            val genreByAudioId = legacyGenreNames()
+            localSongs.map { song ->
+                if (song.genre == null) song.copy(genre = genreByAudioId[song.id]) else song
+            }
+        } else localSongs
+    }
+
+    private fun legacyGenreNames(): Map<Long, String> {
+        val result = mutableMapOf<Long, String>()
+        val provider = context.contentResolver
+        runCatching {
+            provider.query(
+                MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Audio.Genres._ID, MediaStore.Audio.Genres.NAME),
+                null, null, null,
+            )?.use { genres ->
+                val idIdx = genres.getColumnIndexOrThrow(MediaStore.Audio.Genres._ID)
+                val nameIdx = genres.getColumnIndexOrThrow(MediaStore.Audio.Genres.NAME)
+                while (genres.moveToNext()) {
+                    val name = genres.getString(nameIdx)?.takeIf { it.isNotBlank() } ?: continue
+                    val genreId = genres.getLong(idIdx)
+                    runCatching {
+                        provider.query(
+                            MediaStore.Audio.Genres.Members.getContentUri("external", genreId),
+                            arrayOf(MediaStore.Audio.Genres.Members.AUDIO_ID),
+                            null, null, null,
+                        )?.use { members ->
+                            val songIdIdx = members.getColumnIndexOrThrow(MediaStore.Audio.Genres.Members.AUDIO_ID)
+                            while (members.moveToNext()) {
+                                result.putIfAbsent(members.getLong(songIdIdx), name)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result
     }
 }
