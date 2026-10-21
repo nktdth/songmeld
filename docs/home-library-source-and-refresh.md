@@ -17,6 +17,16 @@
 - **Duration groups:** under 3m, 3–5m, 5–10m, 10m+. Adjacent groups do not overlap.
 - **Folder semantics:** these are subfolders containing songs already indexed by MediaStore; this is not an arbitrary Storage Access Framework folder importer or a manually managed playlist.
 
+## Build fix after owner testing
+
+A local `./gradlew :app:assembleDebug :app:testDebugUnitTest` attempt reported Kotlin compile errors in two files. Follow-up fixes on the same PR:
+
+- `MediaStoreSongRepository.kt`: explicitly type the MediaStore result `List<Song>` and `buildList<Song>` to resolve Kotlin 2.4's failed inference and its cascading member-resolution errors.
+- `SongsScreen.kt`: replace `PullToRefreshDefaults.LoadingIndicator` and the unavailable `ExperimentalMaterial3ExpressiveApi` with the supported `PullToRefreshDefaults.Indicator` and standard `CircularProgressIndicator` for initial load. The current Material 3 dependency does not expose the newer expressive indicator; the pull gesture, rounded container and theme colors remain functional. The more expressive component can be revisited when its public API is available in this project's dependency version.
+- The initial `git fetch` remote-tracking lock conflict was nonfatal: `git pull --ff-only` advanced the checked-out feature branch.
+
+**These follow-up edits are statically checked but not locally compiled** in the assistant environment (no Android SDK). The Android device build/test remains required.
+
 ## Validation
 
 - Added `LibraryScopesTest.kt` (4 unit tests): persistence round-tripping, invalid saved values, duration boundaries and Vietnamese normalization.
