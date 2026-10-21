@@ -1,6 +1,13 @@
 package moe.ktandth.songmeld.ui.settings
 
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
@@ -182,19 +189,49 @@ fun AppearanceSettingsScreen(
             ThemeChoices(theme, onThemeChanged)
             SettingsSectionTitle(stringResource(R.string.settings_theme))
             val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (darkModeActive) SettingsToggle(
-                    title = stringResource(R.string.settings_amoled_black),
-                    description = stringResource(R.string.settings_amoled_black_description),
-                    icon = SongMeldIconId.DarkMode,
-                    checked = amoledBlackEnabled,
-                    accentIndex = 1,
-                    shape = RoundedCornerShape(
-                        topStart = 28.dp, topEnd = 28.dp,
-                        bottomStart = 8.dp, bottomEnd = 8.dp,
-                    ),
-                    onCheckedChange = onAmoledBlackChanged,
-                )
+            val motion = LocalDecorativeMotionEnabled.current
+            // Keep the section mounted while the conditional row collapses.
+            // Animate the shared edge's corner radius in step with its height.
+            val dynamicTopCorner by animateDpAsState(
+                targetValue = if (darkModeActive) 8.dp else 28.dp,
+                animationSpec = if (motion) {
+                    tween(durationMillis = 270, easing = FastOutSlowInEasing)
+                } else snap(),
+                label = "Dynamic color card top corners",
+            )
+            Column {
+                AnimatedVisibility(
+                    visible = darkModeActive,
+                    enter = if (motion) {
+                        expandVertically(
+                            expandFrom = Alignment.Top,
+                            animationSpec = tween(durationMillis = 270, easing = FastOutSlowInEasing),
+                        ) + fadeIn(animationSpec = tween(durationMillis = 180, delayMillis = 50))
+                    } else EnterTransition.None,
+                    exit = if (motion) {
+                        shrinkVertically(
+                            shrinkTowards = Alignment.Top,
+                            animationSpec = tween(durationMillis = 270, easing = FastOutSlowInEasing),
+                        ) + fadeOut(animationSpec = tween(durationMillis = 160))
+                    } else ExitTransition.None,
+                ) {
+                    Column {
+                        SettingsToggle(
+                            title = stringResource(R.string.settings_amoled_black),
+                            description = stringResource(R.string.settings_amoled_black_description),
+                            icon = SongMeldIconId.DarkMode,
+                            checked = amoledBlackEnabled,
+                            accentIndex = 1,
+                            shape = RoundedCornerShape(
+                                topStart = 28.dp, topEnd = 28.dp,
+                                bottomStart = 8.dp, bottomEnd = 8.dp,
+                            ),
+                            onCheckedChange = onAmoledBlackChanged,
+                        )
+                        // Animate the gap away with the row to avoid a last-frame jump.
+                        Spacer(Modifier.height(4.dp))
+                    }
+                }
                 SettingsToggle(
                     title = stringResource(R.string.settings_dynamic_color),
                     description = stringResource(
@@ -205,10 +242,12 @@ fun AppearanceSettingsScreen(
                     accentIndex = 0,
                     checked = dynamicAvailable && dynamicColorEnabled,
                     enabled = dynamicAvailable,
-                    shape = if (darkModeActive) RoundedCornerShape(
-                        topStart = 8.dp, topEnd = 8.dp,
-                        bottomStart = 28.dp, bottomEnd = 28.dp,
-                    ) else RoundedCornerShape(28.dp),
+                    shape = RoundedCornerShape(
+                        topStart = dynamicTopCorner,
+                        topEnd = dynamicTopCorner,
+                        bottomStart = 28.dp,
+                        bottomEnd = 28.dp,
+                    ),
                     onCheckedChange = onDynamicColorChanged,
                 )
             }
