@@ -2,6 +2,7 @@ package moe.ktandth.songmeld.data.local
 
 import android.content.ContentUris
 import android.content.Context
+import android.os.Build
 import android.provider.MediaStore
 import moe.ktandth.songmeld.R
 import java.io.IOException
@@ -24,7 +25,14 @@ class MediaStoreSongRepository(
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DATE_MODIFIED,
-        )
+            MediaStore.Audio.Media.YEAR,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Audio.Media.RELATIVE_PATH
+            else MediaStore.Audio.Media.DATA,
+        ) + if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            arrayOf(MediaStore.Audio.Media.GENRE)
+        } else emptyArray<String>()
+
+        /*        */
 
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
         val sortOrder = "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE ASC"
@@ -46,6 +54,13 @@ class MediaStoreSongRepository(
             val dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
             val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val dateModifiedColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
+            val yearColumn = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
+            val folderColumn = cursor.getColumnIndex(
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Audio.Media.RELATIVE_PATH
+                else MediaStore.Audio.Media.DATA
+            )
+            val genreColumn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                cursor.getColumnIndex(MediaStore.Audio.Media.GENRE) else -1
 
             buildList {
                 while (cursor.moveToNext()) {
@@ -65,6 +80,16 @@ class MediaStoreSongRepository(
                     val dateAdded = cursor.getLong(dateAddedColumn).coerceAtLeast(0L)
                     val albumId = cursor.getLong(albumIdColumn).takeIf { it > 0L }
                     val dateModified = cursor.getLong(dateModifiedColumn).coerceAtLeast(0L)
+                    val year = if (yearColumn >= 0 && !cursor.isNull(yearColumn))
+                        cursor.getInt(yearColumn).takeIf { it in 1000..3000 } else null
+                    val folder = if (folderColumn >= 0) cursor.getString(folderColumn)
+                        ?.takeIf { it.isNotBlank() }?.let {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) it.trimEnd('/')
+                            else it.substringBeforeLast('/', "").trimEnd('/')
+                        } else null
+                    val genre = if (genreColumn >= 0) cursor.getString(genreColumn)
+                        ?.trim()?.takeIf { it.isNotBlank() && it != MediaStore.UNKNOWN_STRING }
+                        else null
 
                     add(
                         Song(
@@ -77,6 +102,9 @@ class MediaStoreSongRepository(
                             dateAddedSeconds = dateAdded,
                             albumId = albumId,
                             dateModifiedSeconds = dateModified,
+                            folderPath = folder,
+                            genre = genre,
+                            year = year,
                         )
                     )
                 }
