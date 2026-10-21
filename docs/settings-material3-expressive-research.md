@@ -113,6 +113,28 @@ The previous conditional `if (darkModeActive)` removed the AMOLED row instantly 
 
 **Chosen implementation for SongMeld:** one `AnimatedVisibility` for the AMOLED row using 270ms vertical expansion/collapse and brief crossfading, while keeping the entire 4dp inter-row gap inside the animated content. This prevents the spacer from disappearing abruptly after the animation. The Dynamic Color row stays mounted and its top corner radius animates from 8dp (connected pair) to 28dp (solo card) on the same 270ms timeline. The behavior works when Android system Dark Mode changes in System mode, and respects `LocalDecorativeMotionEnabled` with immediate transitions when Android animations are disabled. No external implementation was copied.
 
+## Navigation transitions — v1 Settings and related pages
+
+Design research (referenced from [nyas1's Material You app list](https://github.com/nyas1/Material-You-app-list)):
+
+- [PixelPlayer / Transitions.kt](https://github.com/PixelPlayerHQ/PixelPlayer/blob/main/app/src/main/java/com/theveloper/pixelplay/presentation/navigation/Transitions.kt): separate forward and pop enter/exit transitions using horizontal movement and fades; SongMeld uses a more restrained distance.
+- [Chocola / Navigation.kt](https://github.com/sosauce/Chocola/blob/main/app/src/main/java/com/sosauce/chocola/app/navigation/Navigation.kt): navigation-layer transition configuration, including reverse motion when popping.
+- [Rhythm / RhythmNavigation.kt](https://github.com/cromaguy/Rhythm/blob/main/app/src/main/java/chromahub/rhythm/app/shared/presentation/navigation/RhythmNavigation.kt): animated screen changes and an explicit Settings route transition.
+- [Android Compose animation guide](https://developer.android.com/develop/ui/compose/animation/composables-modifiers): `AnimatedContent` uses its content-lambda target key and `transitionSpec` to coordinate enter/exit animations; outgoing and incoming content coexist during the transition.
+
+Implementation in `SongMeldApp.kt`:
+
+- **Forward navigation:** slide the incoming page in from the right by about one-quarter of its width with a fade-in; the outgoing page recedes left by one-sixth.
+- **Back navigation:** reverse the direction: the previous parent arrives from the left by one-sixth; the outgoing detail leaves to the right by one-quarter.
+- Duration: **320ms** for movement, with a Material-style emphasized easing curve and shorter fades. These are *subtle parallax* transitions, not full-width page swipes.
+- The transition direction is derived from the known screen hierarchy (`SongMeldPage.parent` and `depth`), so both toolbar arrow and Android Back follow the same reverse effect.
+- Keep `rememberSaveableStateHolder().SaveableStateProvider` **inside** each animated destination to preserve song list position and settings state, including when the outgoing and incoming pages render together.
+- Only destination changes animate. Switching theme, toggling AMOLED/Dynamic Color, or reloading the song list does not animate the entire screen.
+- Respect Android animator settings: when `LocalDecorativeMotionEnabled` is false, navigation changes immediately without decorative transitions.
+- Built on Compose already in use; no Navigation dependency added and no external implementation copied.
+
+Manual QA: Library → Settings → Appearance → Icon Appearance → Icon Catalog and each Back arrow; Settings → About → Licenses → license detail and Back; Terms / Changelog; Android system Back; saved library scroll position after returning; repeat quick navigation; Android animations off and rotation.
+
 ## Validation checklist
 
 - [x] Review existing navigation and state callbacks
