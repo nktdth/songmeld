@@ -15,4 +15,9 @@ internal data class LibraryLoadState(
 }
 
 /** Attach query identity to asynchronous results; old queries must not flash under new text. */
-internal data class LibraryQueryResult(val query: String, val sort: SongSort, val songs: List<Song>)
+internal data class LibraryQueryResult(
+    val query: String,
+    val sort: SongSort,
+    val scope: LibraryScope,
+    val songs: List<Song>,
+)
