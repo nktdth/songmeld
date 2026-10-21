@@ -197,7 +197,7 @@ fun SongsScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         SongMeldIcon(SongMeldIconId.Sort, null, size = 21.dp)
-                        Text(stringResource(R.string.library_sort), style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(R.string.library_sort_short), style = MaterialTheme.typography.labelLarge)
                         SongMeldIcon(SongMeldIconId.ArrowDropDown, null, size = 20.dp)
                     }
                 }
