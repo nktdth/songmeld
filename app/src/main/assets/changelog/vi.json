@@ -12,7 +12,9 @@
           "Tìm kiếm nhạc tiếng Việt không dấu, đếm kết quả và lưu lựa chọn sắp xếp bài hát.",
           "Chạm bài hát để xem thông tin; thêm nút quét lại và thao tác nhanh ở trạng thái trống.",
           "Bổ sung Giới thiệu, Giấy phép, Lịch sử thay đổi và Điều khoản sử dụng; hỗ trợ đọc tài liệu ngoại tuyến.",
-          "Thêm thanh cuộn nhanh, nhãn A–Z và nút cuộn về đầu thư viện."
+          "Thêm thanh cuộn nhanh, nhãn A–Z và nút cuộn về đầu thư viện.",
+          "Vuốt xuống để quét lại thư viện với chỉ báo tải Material 3 Expressive.",
+          "Chọn nguồn bài hát theo thư mục, nghệ sĩ, thể loại, năm và nhóm thời lượng; sắp xếp riêng theo tên, ngày thêm, ngày sửa hoặc độ dài."
         ],
         "improved": [
           "Gom nhà phát triển trong một khối, làm nổi bật người đầu tiên. Mỗi nhóm hiển thị tối đa 5 người và có popup xem đầy đủ; áp dụng cả với người đóng góp.",
