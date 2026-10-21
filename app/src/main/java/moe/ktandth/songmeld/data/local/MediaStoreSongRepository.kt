@@ -38,7 +38,7 @@ class MediaStoreSongRepository(
         val collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
         coroutineContext.ensureActive()
-        val localSongs = context.contentResolver.query(
+        val localSongs: List<Song> = context.contentResolver.query(
             collection,
             projection,
             selection,
@@ -61,7 +61,7 @@ class MediaStoreSongRepository(
             val genreColumn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
                 cursor.getColumnIndex(MediaStore.Audio.Media.GENRE) else -1
 
-            buildList {
+            buildList<Song> {
                 while (cursor.moveToNext()) {
                     coroutineContext.ensureActive()
                     val id = cursor.getLong(idColumn)
