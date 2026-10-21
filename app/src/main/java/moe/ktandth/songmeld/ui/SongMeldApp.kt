@@ -226,146 +226,146 @@ fun SongMeldApp(
         } else page.name
         pageStateHolder.SaveableStateProvider(pageKey) {
             if (page != SongMeldPage.LIBRARY) {
-            // Own Scaffold per destination: collapsing app bars must receive nested scroll directly
-            // from their content. Keeping the library screen out of this branch avoids double insets.
-            when (page) {
-                SongMeldPage.ICON_PICKER -> key("icon_picker") {
-                    SettingsPageScaffold(
-                        title = R.string.icon_browse_title,
-                        onBack = { navigateBack() },
-                    ) { innerPadding ->
-                        IconPickerScreen(
-                            modifier = Modifier.fillMaxSize()
-                                .padding(innerPadding)
-                                .consumeWindowInsets(innerPadding),
-                            appearance = symbols,
-                            selected = selectedIcon,
-                            onSelected = onSelectedIconChanged,
+                // Own Scaffold per destination: collapsing app bars must receive nested scroll directly
+                // from their content. Keeping the library screen out of this branch avoids double insets.
+                when (page) {
+                    SongMeldPage.ICON_PICKER -> key("icon_picker") {
+                        SettingsPageScaffold(
+                            title = R.string.icon_browse_title,
+                            onBack = { navigateBack() },
+                        ) { innerPadding ->
+                            IconPickerScreen(
+                                modifier = Modifier.fillMaxSize()
+                                    .padding(innerPadding)
+                                    .consumeWindowInsets(innerPadding),
+                                appearance = symbols,
+                                selected = selectedIcon,
+                                onSelected = onSelectedIconChanged,
+                            )
+                        }
+                    }
+
+                    SongMeldPage.ICON_APPEARANCE -> key("icon_appearance") {
+                        SettingsPageScaffold(
+                            title = R.string.settings_icon_appearance,
+                            onBack = { navigateBack() },
+                        ) { innerPadding ->
+                            IconAppearanceScreen(
+                                modifier = Modifier.fillMaxSize()
+                                    .padding(innerPadding)
+                                    .consumeWindowInsets(innerPadding),
+                                appearance = symbols,
+                                iconShape = iconShape,
+                                onAppearanceChanged = onSymbolsChanged,
+                                onIconShapeChanged = onIconShapeChanged,
+                                onBrowseIcons = { currentPage = SongMeldPage.ICON_PICKER },
+                                selectedCatalogIcon = selectedIcon,
+                            )
+                        }
+                    }
+
+                    SongMeldPage.APPEARANCE -> key("appearance") {
+                        AppearanceSettingsScreen(
+                            theme = theme,
+                            dynamicColorEnabled = dynamicColorEnabled,
+                            amoledBlackEnabled = amoledBlackEnabled,
+                            onAmoledBlackChanged = onAmoledBlackChanged,
+                            onThemeChanged = onThemeChanged,
+                            onDynamicColorChanged = onDynamicColorChanged,
+                            onOpenIconAppearance = { currentPage = SongMeldPage.ICON_APPEARANCE },
+                            onBack = { navigateBack() },
                         )
                     }
-                }
 
-                SongMeldPage.ICON_APPEARANCE -> key("icon_appearance") {
-                    SettingsPageScaffold(
-                        title = R.string.settings_icon_appearance,
-                        onBack = { navigateBack() },
-                    ) { innerPadding ->
-                        IconAppearanceScreen(
-                            modifier = Modifier.fillMaxSize()
-                                .padding(innerPadding)
-                                .consumeWindowInsets(innerPadding),
-                            appearance = symbols,
-                            iconShape = iconShape,
-                            onAppearanceChanged = onSymbolsChanged,
-                            onIconShapeChanged = onIconShapeChanged,
-                            onBrowseIcons = { currentPage = SongMeldPage.ICON_PICKER },
-                            selectedCatalogIcon = selectedIcon,
+                    SongMeldPage.ABOUT -> key("about") {
+                        AboutSettingsScreen(
+                            onBack = { navigateBack() },
+                            onOpenLicenses = { currentPage = SongMeldPage.LICENSES },
+                            onOpenChangelog = { currentPage = SongMeldPage.CHANGELOG },
+                            onOpenTerms = { currentPage = SongMeldPage.TERMS },
                         )
                     }
-                }
 
-                SongMeldPage.APPEARANCE -> key("appearance") {
-                    AppearanceSettingsScreen(
-                        theme = theme,
-                        dynamicColorEnabled = dynamicColorEnabled,
-                        amoledBlackEnabled = amoledBlackEnabled,
-                        onAmoledBlackChanged = onAmoledBlackChanged,
-                        onThemeChanged = onThemeChanged,
-                        onDynamicColorChanged = onDynamicColorChanged,
-                        onOpenIconAppearance = { currentPage = SongMeldPage.ICON_APPEARANCE },
-                        onBack = { navigateBack() },
-                    )
-                }
+                    SongMeldPage.LICENSES -> key("licenses") {
+                        LicensesScreen(onBack = { navigateBack() }, onOpenLicense = {
+                            selectedLicense = it
+                            currentPage = SongMeldPage.LICENSE_DETAIL
+                        })
+                    }
+                    SongMeldPage.LICENSE_DETAIL -> key(selectedLicense) {
+                        LicenseDetailScreen(document = selectedLicense, onBack = { navigateBack() })
+                    }
+                    SongMeldPage.CHANGELOG -> key("changelog") {
+                        ChangelogScreen(onBack = { navigateBack() })
+                    }
+                    SongMeldPage.TERMS -> key("terms") {
+                        TermsScreen(onBack = { navigateBack() })
+                    }
+                    SongMeldPage.SETTINGS -> key("settings") {
+                        SettingsScreen(
+                            theme = theme,
+                            dynamicColorEnabled = dynamicColorEnabled,
+                            amoledBlackEnabled = amoledBlackEnabled,
+                            onBack = { navigateBack() },
+                            onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
+                            onOpenAbout = { currentPage = SongMeldPage.ABOUT },
+                        )
+                    }
 
-                SongMeldPage.ABOUT -> key("about") {
-                    AboutSettingsScreen(
-                        onBack = { navigateBack() },
-                        onOpenLicenses = { currentPage = SongMeldPage.LICENSES },
-                        onOpenChangelog = { currentPage = SongMeldPage.CHANGELOG },
-                        onOpenTerms = { currentPage = SongMeldPage.TERMS },
-                    )
+                    SongMeldPage.LIBRARY -> Unit // Handled by the outer branch.
                 }
+            } else {
+                // Capture only on mounting this destination; recomposition must not cancel the entrance.
+                val animateHeader = remember { !libraryWasShown }
+                SideEffect { libraryWasShown = true }
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = { SongMeldHeader(animateEntrance = animateHeader,
+                        onOpenSettings = { currentPage = SongMeldPage.SETTINGS }) },
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .consumeWindowInsets(innerPadding),
+                    ) {
+                        if (!permissionGranted) {
+                            val showSettingsAction = permissionRequestedBefore &&
+                                activity != null &&
+                                !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
 
-                SongMeldPage.LICENSES -> key("licenses") {
-                    LicensesScreen(onBack = { navigateBack() }, onOpenLicense = {
-                        selectedLicense = it
-                        currentPage = SongMeldPage.LICENSE_DETAIL
-                    })
+                            MusicPermissionScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                showSettingsAction = showSettingsAction,
+                                onRequestPermission = {
+                                    permissionRequestedBefore = true
+                                    permissionPreferences.edit()
+                                        .putBoolean("audio_permission_requested", true)
+                                        .apply()
+                                    permissionLauncher.launch(permission)
+                                },
+                                onOpenSettings = {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                            data = Uri.fromParts("package", context.packageName, null)
+                                        }
+                                    )
+                                },
+                            )
+                        } else {
+                            SongsScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                songs = libraryState.songs,
+                                isLoading = libraryState.loading && !libraryState.hasLoaded,
+                                isRefreshing = libraryState.loading && libraryState.hasLoaded,
+                                refreshFailed = libraryState.error && libraryState.hasLoaded,
+                                errorMessage = if (libraryState.error && !libraryState.hasLoaded) "load_error" else null,
+                                onRetry = { refreshKey++ },
+                            )
+                        }
+                    }
                 }
-                SongMeldPage.LICENSE_DETAIL -> key(selectedLicense) {
-                    LicenseDetailScreen(document = selectedLicense, onBack = { navigateBack() })
-                }
-                SongMeldPage.CHANGELOG -> key("changelog") {
-                    ChangelogScreen(onBack = { navigateBack() })
-                }
-                SongMeldPage.TERMS -> key("terms") {
-                    TermsScreen(onBack = { navigateBack() })
-                }
-                SongMeldPage.SETTINGS -> key("settings") {
-                    SettingsScreen(
-                        theme = theme,
-                        dynamicColorEnabled = dynamicColorEnabled,
-                        amoledBlackEnabled = amoledBlackEnabled,
-                        onBack = { navigateBack() },
-                        onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
-                        onOpenAbout = { currentPage = SongMeldPage.ABOUT },
-                    )
-                }
-
-                SongMeldPage.LIBRARY -> Unit // Handled by the outer branch.
             }
-        } else {
-            // Capture only on mounting this destination; recomposition must not cancel the entrance.
-            val animateHeader = remember { !libraryWasShown }
-            SideEffect { libraryWasShown = true }
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = { SongMeldHeader(animateEntrance = animateHeader,
-                    onOpenSettings = { currentPage = SongMeldPage.SETTINGS }) },
-            ) { innerPadding ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .consumeWindowInsets(innerPadding),
-                ) {
-                    if (!permissionGranted) {
-                        val showSettingsAction = permissionRequestedBefore &&
-                            activity != null &&
-                            !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
-
-                        MusicPermissionScreen(
-                            modifier = Modifier.fillMaxSize(),
-                            showSettingsAction = showSettingsAction,
-                            onRequestPermission = {
-                                permissionRequestedBefore = true
-                                permissionPreferences.edit()
-                                    .putBoolean("audio_permission_requested", true)
-                                    .apply()
-                                permissionLauncher.launch(permission)
-                            },
-                            onOpenSettings = {
-                                context.startActivity(
-                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                        data = Uri.fromParts("package", context.packageName, null)
-                                    }
-                                )
-                            },
-                        )
-                    } else {
-                        SongsScreen(
-                            modifier = Modifier.fillMaxSize(),
-                            songs = libraryState.songs,
-                            isLoading = libraryState.loading && !libraryState.hasLoaded,
-                            isRefreshing = libraryState.loading && libraryState.hasLoaded,
-                            refreshFailed = libraryState.error && libraryState.hasLoaded,
-                            errorMessage = if (libraryState.error && !libraryState.hasLoaded) "load_error" else null,
-                            onRetry = { refreshKey++ },
-                        )
-                    }
-                }
-            }
-        }
         }
     }
 }
