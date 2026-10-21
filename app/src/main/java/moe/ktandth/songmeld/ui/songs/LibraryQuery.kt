@@ -43,10 +43,10 @@ internal fun parseLibraryScope(key: String): LibraryScope = when {
     key.startsWith("artist:") -> LibraryScope.Artist(key.removePrefix("artist:"))
     key.startsWith("genre:") -> LibraryScope.Genre(key.removePrefix("genre:"))
     key.startsWith("year:") -> key.removePrefix("year:").toIntOrNull()
-        ?.let(LibraryScope::Year) ?: LibraryScope.AllSongs
+        ?.let { LibraryScope.Year(it) } ?: LibraryScope.AllSongs
     key.startsWith("duration:") -> DurationBucket.entries
         .firstOrNull { it.name == key.removePrefix("duration:") }
-        ?.let(LibraryScope::Duration) ?: LibraryScope.AllSongs
+        ?.let { LibraryScope.Duration(it) } ?: LibraryScope.AllSongs
     else -> LibraryScope.AllSongs
 }
 
