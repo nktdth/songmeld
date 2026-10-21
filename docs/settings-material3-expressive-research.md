@@ -102,6 +102,17 @@ The owner requested a less oversized baseline and explicit on/off visual state o
 - The theme selector clips pressed and long-pressed indications to fully rounded `CircleShape`, not just the selected pill.
 - AMOLED appears only when the effective theme is dark: explicitly Dark, or System when Android is in dark mode. Its saved preference survives switching temporarily to Light.
 - Dynamic Color remains accessible by itself in Light mode and uses a fully rounded single row.
+## AMOLED row expand/collapse motion
+
+The previous conditional `if (darkModeActive)` removed the AMOLED row instantly when switching Light / Dark. We reviewed implementation patterns from three M3/M3 Expressive Compose repositories:
+
+- [Rhythm Settings search](https://github.com/cromaguy/Rhythm/blob/main/app/src/main/java/chromahub/rhythm/app/shared/presentation/screens/settings/SettingsSearch.kt) uses `AnimatedVisibility` with vertical expand/shrink and fade.
+- [PixelPlayer's LibraryActionRow](https://github.com/PixelPlayerHQ/PixelPlayer/blob/main/app/src/main/java/com/theveloper/pixelplay/presentation/components/subcomps/LibraryActionRow.kt) combines conditional visibility and animated layout transitions.
+- [Chocola SettingsPlayback](https://github.com/sosauce/Chocola/blob/main/app/src/main/java/com/sosauce/chocola/feature/settings/presentation/SettingsPlayback.kt) conditionally reveals settings rows using `AnimatedVisibility`.
+- Android official documentation: [Animation modifiers and composables](https://developer.android.com/develop/ui/compose/animation/composables-modifiers).
+
+**Chosen implementation for SongMeld:** one `AnimatedVisibility` for the AMOLED row using 270ms vertical expansion/collapse and brief crossfading, while keeping the entire 4dp inter-row gap inside the animated content. This prevents the spacer from disappearing abruptly after the animation. The Dynamic Color row stays mounted and its top corner radius animates from 8dp (connected pair) to 28dp (solo card) on the same 270ms timeline. The behavior works when Android system Dark Mode changes in System mode, and respects `LocalDecorativeMotionEnabled` with immediate transitions when Android animations are disabled. No external implementation was copied.
+
 ## Validation checklist
 
 - [x] Review existing navigation and state callbacks
