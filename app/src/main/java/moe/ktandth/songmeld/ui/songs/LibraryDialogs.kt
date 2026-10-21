@@ -27,6 +27,9 @@ internal fun SongSort.label(): Int = when (this) {
     SongSort.TITLE -> R.string.library_sort_title
     SongSort.ARTIST -> R.string.library_sort_artist
     SongSort.NEWEST -> R.string.library_sort_newest
+    SongSort.MODIFIED -> R.string.library_sort_modified
+    SongSort.OLDEST -> R.string.library_sort_oldest
+    SongSort.SHORTEST -> R.string.library_sort_shortest
     SongSort.LONGEST -> R.string.library_sort_longest
 }
 
