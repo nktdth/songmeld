@@ -147,6 +147,7 @@
     <string name="library_source_empty_body">Hãy thử đổi nguồn bài hát hoặc tìm kiếm.</string>
     <string name="library_source_reset">Hiện tất cả bài hát</string>
     <string name="library_sort">Sắp xếp bài hát</string>
+    <string name="library_sort_short">Sắp xếp</string>
     <string name="library_sort_title">Tên bài hát (A–Z)</string>
     <string name="library_sort_artist">Nghệ sĩ (A–Z)</string>
     <string name="library_sort_newest">Mới thêm gần đây</string>
