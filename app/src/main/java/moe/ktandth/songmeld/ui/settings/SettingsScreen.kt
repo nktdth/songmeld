@@ -212,7 +212,7 @@ fun AppearanceSettingsScreen(
                         shrinkVertically(
                             shrinkTowards = Alignment.Top,
                             animationSpec = tween(durationMillis = 270, easing = FastOutSlowInEasing),
-                        ) + fadeOut(animationSpec = tween(durationMillis = 160))
+                        ) + fadeOut(animationSpec = tween(durationMillis = 230))
                     } else ExitTransition.None,
                 ) {
                     Column {
