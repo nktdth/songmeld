@@ -3,26 +3,38 @@
     {
       "version": "0.1.0",
       "status": "development",
-      "lastUpdated": "2026-10-19",
-      "changes": [
-        "Xây dựng thư viện bài hát trên thiết bị và tìm kiếm nhạc.",
-        "Thêm tùy chọn giao diện sáng, tối, theo hệ thống và màu động trên Android 12 trở lên.",
-        "Tùy chỉnh kiểu biểu tượng và khám phá danh mục biểu tượng ngoại tuyến.",
-        "Thiết kế trang Giới thiệu với logo, phiên bản và thông tin nhà phát triển; ghi nhận người đóng góp riêng.",
-        "Bổ sung trang giấy phép, lịch sử thay đổi và điều khoản sử dụng.",
-        "Tìm kiếm nhạc tiếng Việt không dấu, đếm kết quả và lưu lựa chọn sắp xếp bài hát.",
-        "Chạm bài hát để xem thông tin; thêm nút quét lại và thao tác nhanh ở trạng thái trống.",
-        "Giữ nội dung tìm kiếm và vị trí cuộn khi quay lại từ Cài đặt; cải thiện màn hình xin quyền ở cỡ chữ lớn.",
-        "Thêm xem trước giao diện, danh sách nhạc gọn và tùy chọn giảm chuyển động trang trí.",
-        "Cải thiện lựa chọn chủ đề ở cỡ chữ lớn, thêm khôi phục giao diện mặc định và tên hình nền biểu tượng đang chọn.",
-        "Cải thiện trình chọn biểu tượng: tìm nhiều từ hoặc mã Unicode, thử lại khi lỗi và cuộn được cùng bàn phím.",
-        "Khắc phục trạng thái tải khi đổi bộ biểu tượng, bảo vệ dữ liệu lựa chọn cũ và bản ghi danh mục không hợp lệ.",
-        "Tự cập nhật thư viện khi nhạc trên máy thay đổi và khi quay lại ứng dụng.",
-        "Giữ danh sách trong lúc quét lại, hiển thị tiến trình và cho thử lại nếu cập nhật thất bại.",
-        "Giảm bộ nhớ giải mã ảnh bìa quá dài/rộng, giới hạn tác vụ đồng thời và tránh phát lại hiệu ứng logo khi quay từ Cài đặt.",
-        "Đồng bộ nội dung tiếng Việt mặc định, loại bỏ bộ chuỗi cũ bị trùng và cải thiện khoảng trống khi mở bàn phím.",
-        "Tăng cỡ chữ, biểu tượng và nền bao trên các trang; nới ảnh bìa, lưới biểu tượng và bố cục lựa chọn để dễ đọc hơn."
-      ]
+      "lastUpdated": "2026-10-22",
+      "changes": {
+        "added": [
+          "Xây dựng thư viện bài hát trên thiết bị và tìm kiếm nhạc.",
+          "Thêm tùy chọn sáng, tối, hệ thống, nền đen AMOLED và màu động trên Android 12 trở lên.",
+          "Tùy chỉnh kiểu biểu tượng và khám phá danh mục biểu tượng ngoại tuyến.",
+          "Tìm kiếm nhạc tiếng Việt không dấu, đếm kết quả và lưu lựa chọn sắp xếp bài hát.",
+          "Chạm bài hát để xem thông tin; thêm nút quét lại và thao tác nhanh ở trạng thái trống.",
+          "Bổ sung Giới thiệu, Giấy phép, Lịch sử thay đổi và Điều khoản sử dụng; hỗ trợ đọc tài liệu ngoại tuyến.",
+          "Thêm thanh cuộn nhanh, nhãn A–Z và nút cuộn về đầu thư viện."
+        ],
+        "improved": [
+          "Gom nhà phát triển trong một khối, làm nổi bật người đầu tiên. Mỗi nhóm hiển thị tối đa 5 người và có popup xem đầy đủ; áp dụng cả với người đóng góp.",
+          "Chia lịch sử thay đổi theo chủ đề, thêm biểu tượng, màu nhấn và hiệu ứng mở rộng, thu gọn phiên bản.",
+          "Sắp xếp lại trang giấy phép, hỗ trợ chọn văn bản và sao chép toàn văn; điều khoản được trình bày thành các mục đánh số.",
+          "Tinh chỉnh cỡ chữ, thẻ và biểu tượng trong Cài đặt để cân đối hơn; bộ chọn chủ đề nằm ngang với nền chọn bo tròn.",
+          "Thêm hiệu ứng chuyển trang tiến/lùi và thu gọn tùy chọn AMOLED; tôn trọng cài đặt tắt hoạt ảnh của Android.",
+          "Cải thiện trình chọn biểu tượng: tìm nhiều từ hoặc mã Unicode, thử lại khi lỗi và cuộn được cùng bàn phím.",
+          "Tự cập nhật thư viện khi nhạc trên máy thay đổi và khi quay lại ứng dụng.",
+          "Giữ danh sách trong lúc quét lại, hiển thị tiến trình và cho thử lại nếu cập nhật thất bại."
+        ],
+        "fixed": [
+          "Giữ nội dung tìm kiếm và vị trí cuộn khi quay lại từ Cài đặt; cải thiện màn hình xin quyền ở cỡ chữ lớn.",
+          "Khắc phục trạng thái tải khi đổi bộ biểu tượng, bảo vệ dữ liệu lựa chọn cũ và bản ghi danh mục không hợp lệ.",
+          "Giảm bộ nhớ giải mã ảnh bìa quá dài/rộng, giới hạn tác vụ đồng thời và tránh phát lại hiệu ứng logo khi quay từ Cài đặt.",
+          "Đồng bộ nội dung tiếng Việt mặc định, loại bỏ bộ chuỗi cũ bị trùng và cải thiện khoảng trống khi mở bàn phím.",
+          "Sửa nền nhấn giữ của bộ chọn sáng/tối để luôn nằm trong góc bo tròn."
+        ],
+        "removed": [
+          "Tạm bỏ xem trước giao diện, danh sách nhạc gọn, giảm chuyển động riêng và khôi phục giao diện; vẫn giữ khôi phục tùy chỉnh biểu tượng."
+        ]
+      }
     }
   ]
 }

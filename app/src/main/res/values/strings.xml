@@ -80,15 +80,11 @@
     <string name="settings_icon_shape_clover">Cỏ bốn lá</string>
     <string name="about_description">Chăm chút từng bản nhạc.\nBộ công cụ chỉnh sửa thông tin, lời bài hát và tải nhạc.</string>
     <string name="about_development">Đang phát triển</string>
-    <string name="about_app_section">Ứng dụng</string>
     <string name="about_license">Giấy phép</string>
     <string name="about_license_name">GNU General Public License v3.0</string>
     <string name="about_source">Mã nguồn</string>
     <string name="about_source_summary">Khám phá SongMeld trên GitHub</string>
-    <string name="about_primary_developers">Nhà phát triển chính</string>
-    <string name="about_secondary_developers">Nhà phát triển phụ</string>
     <string name="about_contributors">Người đóng góp</string>
-    <string name="about_secondary_empty">Chưa có nhà phát triển phụ.</string>
     <string name="about_contributors_empty">Chưa có người đóng góp được ghi nhận.</string>
     <string name="about_contributors_summary">Cảm ơn những đóng góp về ý tưởng, báo lỗi và pull request cho SongMeld.</string>
     <string name="about_primary_detail">Khởi tạo, thiết kế và phát triển SongMeld</string>
@@ -99,7 +95,6 @@
     <string name="about_footer">Metadata · Editing · Lyrics · Download\nCảm ơn bạn đã đồng hành cùng SongMeld ♡</string>
     <string name="about_close">Đóng</string>
     <string name="about_link_unavailable">Không tìm thấy ứng dụng để mở liên kết này.</string>
-    <string name="about_avatar">Ảnh đại diện của %1$s</string>
     <string name="info_licenses">Giấy phép</string>
     <string name="info_licenses_summary">SongMeld và các tài nguyên nguồn mở</string>
     <string name="info_licenses_intro">SongMeld được xây dựng cùng các tài nguyên nguồn mở. Chạm vào từng mục để đọc giấy phép gốc, kể cả khi ngoại tuyến.</string>
@@ -159,4 +154,22 @@
     <string name="icon_static_font_note">Bộ này dùng phông tĩnh; các tùy chọn độ đậm và tô kín chỉ áp dụng cho Material Symbols.</string>
     <string name="library_refreshing">Đang quét lại thư viện…</string>
     <string name="library_refresh_error">Chưa cập nhật được thư viện. Đang hiển thị kết quả từ lần quét trước.</string>
+    <string name="about_developers">Nhà phát triển</string>
+    <string name="about_developers_empty">Chưa có nhà phát triển được ghi nhận.</string>
+    <string name="about_project_section">Cùng xây dựng SongMeld</string>
+    <string name="about_people_view_all">Xem tất cả %1$d người</string>
+    <string name="info_open_source">Được xây dựng cùng nguồn mở</string>
+    <string name="info_original_document">Văn bản gốc · Có sẵn ngoại tuyến</string>
+    <string name="info_copy_document">Sao chép toàn văn</string>
+    <string name="info_copied">Đã sao chép giấy phép.</string>
+    <string name="info_changelog_heading">SongMeld có gì mới?</string>
+    <string name="info_change_count">%1$d thay đổi</string>
+    <string name="info_expanded">Đã mở rộng</string>
+    <string name="info_collapsed">Đã thu gọn</string>
+    <string name="changelog_added">Đã thêm</string>
+    <string name="changelog_improved">Cải tiến</string>
+    <string name="changelog_fixed">Sửa lỗi</string>
+    <string name="changelog_removed">Đã loại bỏ</string>
+    <string name="changelog_other">Thay đổi khác</string>
+    <string name="terms_heading">Sử dụng SongMeld</string>
 </resources>
