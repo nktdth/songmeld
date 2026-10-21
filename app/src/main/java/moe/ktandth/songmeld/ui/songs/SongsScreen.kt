@@ -31,8 +31,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -82,7 +81,7 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SongsScreen(
     songs: List<Song>,
@@ -249,7 +248,7 @@ fun SongsScreen(
             modifier = Modifier.weight(1f).fillMaxWidth(),
             state = pullState,
             indicator = {
-                PullToRefreshDefaults.LoadingIndicator(
+                PullToRefreshDefaults.Indicator(
                     modifier = Modifier.align(Alignment.TopCenter),
                     state = pullState,
                     isRefreshing = isRefreshing,
@@ -504,7 +503,6 @@ private fun SongArtwork(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LoadingState() {
     Box(
@@ -512,7 +510,7 @@ private fun LoadingState() {
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            LoadingIndicator()
+            CircularProgressIndicator()
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.loading_music),
