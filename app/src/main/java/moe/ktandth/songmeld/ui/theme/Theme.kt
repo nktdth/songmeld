@@ -2,7 +2,7 @@ package moe.ktandth.songmeld.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -66,10 +66,29 @@ private val SongMeldDarkColors = darkColorScheme(
     outlineVariant = Color(0xFF5B473C),
 )
 
+/**
+ * Keep wallpaper/static accent colors while turning the dark theme's base surfaces
+ * truly black for AMOLED panels. Slightly raised containers retain elevation hierarchy
+ * and readable contrast instead of making all settings cards indistinguishable.
+ */
+internal fun amoledColorScheme(scheme: androidx.compose.material3.ColorScheme) = scheme.copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceDim = Color.Black,
+    surfaceBright = Color(0xFF202020),
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color(0xFF080808),
+    surfaceContainer = Color(0xFF101010),
+    surfaceContainerHigh = Color(0xFF191919),
+    surfaceContainerHighest = Color(0xFF252525),
+    surfaceVariant = Color(0xFF242424),
+)
+
 @Composable
 fun SongMeldTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
+    amoledBlack: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
@@ -83,8 +102,9 @@ fun SongMeldTheme(
         else -> SongMeldLightColors
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
+    // Keep SongMeld's palette and type while inheriting Google's official Expressive motion.
+    MaterialExpressiveTheme(
+        colorScheme = if (darkTheme && amoledBlack) amoledColorScheme(colorScheme) else colorScheme,
         typography = SongMeldTypography,
         content = content,
     )

@@ -35,10 +35,7 @@ import moe.ktandth.songmeld.ui.icons.LocalMaterialSymbolAppearance
 import moe.ktandth.songmeld.ui.icons.LocalSongMeldIconShape
 import moe.ktandth.songmeld.ui.settings.AppTheme
 import moe.ktandth.songmeld.ui.settings.AppearancePreferences
-import moe.ktandth.songmeld.ui.settings.InterfaceOptions
-import moe.ktandth.songmeld.ui.settings.LocalInterfaceOptions
 import moe.ktandth.songmeld.ui.settings.LocalDecorativeMotionEnabled
-import moe.ktandth.songmeld.ui.settings.decorativeMotionEnabled
 import moe.ktandth.songmeld.ui.splash.SongMeldSplashIntro
 import moe.ktandth.songmeld.ui.theme.SongMeldTheme
 
@@ -66,9 +63,8 @@ class MainActivity : ComponentActivity() {
         }
 
         val appearancePreferences = AppearancePreferences(applicationContext)
-        val animate = savedInstanceState == null && decorativeMotionEnabled(
-            appearancePreferences.interfaceOptions.reduceMotion, ValueAnimator.areAnimatorsEnabled(),
-        )
+        // Respect Android's animator scale without offering an app-specific motion toggle.
+        val animate = savedInstanceState == null && ValueAnimator.areAnimatorsEnabled()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && animate) {
             // Android 12+: animate the badge in the platform splash; do not
             // restart it in Compose or the rotation will visibly jump.
@@ -90,10 +86,12 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            var interfaceOptions by remember { mutableStateOf(appearancePreferences.interfaceOptions) }
             var theme by remember { mutableStateOf(appearancePreferences.theme) }
             var dynamicColorEnabled by remember {
                 mutableStateOf(appearancePreferences.dynamicColorEnabled)
+            }
+            var amoledBlackEnabled by remember {
+                mutableStateOf(appearancePreferences.amoledBlackEnabled)
             }
             var symbols by remember { mutableStateOf(appearancePreferences.symbols) }
             var iconShape by remember { mutableStateOf(appearancePreferences.iconShape) }
@@ -113,24 +111,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            SongMeldTheme(darkTheme = darkTheme, dynamicColor = dynamicColorEnabled) {
+            SongMeldTheme(
+                darkTheme = darkTheme,
+                dynamicColor = dynamicColorEnabled,
+                amoledBlack = amoledBlackEnabled,
+            ) {
                 SongMeldRoot(
                     playComposeIntro = animate && Build.VERSION.SDK_INT < Build.VERSION_CODES.S,
                     theme = theme,
-                    interfaceOptions = interfaceOptions,
-                    onInterfaceOptionsChanged = { options ->
-                        interfaceOptions = options
-                        appearancePreferences.setInterfaceOptions(options)
-                    },
-                    onResetAppearance = {
-                        appearancePreferences.resetVisualAppearance()
-                        theme = appearancePreferences.theme
-                        dynamicColorEnabled = appearancePreferences.dynamicColorEnabled
-                        symbols = appearancePreferences.symbols
-                        iconShape = appearancePreferences.iconShape
-                        interfaceOptions = appearancePreferences.interfaceOptions
-                    },
                     dynamicColorEnabled = dynamicColorEnabled,
+                    amoledBlackEnabled = amoledBlackEnabled,
+                    onAmoledBlackChanged = { enabled ->
+                        amoledBlackEnabled = enabled
+                        appearancePreferences.setAmoledBlackEnabled(enabled)
+                    },
                     symbols = symbols,
                     iconShape = iconShape,
                     selectedIcon = selectedIcon,
@@ -164,10 +158,9 @@ class MainActivity : ComponentActivity() {
 private fun SongMeldRoot(
     playComposeIntro: Boolean,
     theme: AppTheme,
-    interfaceOptions: InterfaceOptions,
-    onInterfaceOptionsChanged: (InterfaceOptions) -> Unit,
-    onResetAppearance: () -> Unit,
     dynamicColorEnabled: Boolean,
+    amoledBlackEnabled: Boolean,
+    onAmoledBlackChanged: (Boolean) -> Unit,
     symbols: MaterialSymbolAppearance,
     iconShape: AppIconShape,
     selectedIcon: IconReference?,
@@ -187,19 +180,16 @@ private fun SongMeldRoot(
     }
 
     CompositionLocalProvider(
-        LocalInterfaceOptions provides interfaceOptions,
-        LocalDecorativeMotionEnabled provides decorativeMotionEnabled(
-            interfaceOptions.reduceMotion, ValueAnimator.areAnimatorsEnabled(),
-        ),
+        LocalDecorativeMotionEnabled provides ValueAnimator.areAnimatorsEnabled(),
         LocalMaterialSymbolAppearance provides symbols,
         LocalSongMeldIconShape provides iconShape,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             SongMeldApp(
                 theme = theme,
-                onInterfaceOptionsChanged = onInterfaceOptionsChanged,
-                onResetAppearance = onResetAppearance,
                 dynamicColorEnabled = dynamicColorEnabled,
+                amoledBlackEnabled = amoledBlackEnabled,
+                onAmoledBlackChanged = onAmoledBlackChanged,
                 symbols = symbols,
                 iconShape = iconShape,
                 selectedIcon = selectedIcon,

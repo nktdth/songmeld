@@ -30,7 +30,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import moe.ktandth.songmeld.ui.components.SongMeldSwitch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -72,7 +72,7 @@ fun IconAppearanceScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -84,20 +84,20 @@ fun IconAppearanceScreen(
                 id = SongMeldIconId.MusicNote,
                 contentDescription = null,
                 appearance = appearance,
-                size = 58.dp,
+                size = 44.dp,
                 tint = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.size(14.dp))
             Box(
-                modifier = (if (iconShape == AppIconShape.PILL) Modifier.size(width = 96.dp, height = 72.dp)
-                    else Modifier.size(82.dp)).clip(iconBackgroundShape(iconShape))
+                modifier = (if (iconShape == AppIconShape.PILL) Modifier.size(width = 80.dp, height = 58.dp)
+                    else Modifier.size(64.dp)).clip(iconBackgroundShape(iconShape))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 SongMeldIcon(
                     id = SongMeldIconId.MusicNote,
                     contentDescription = null,
-                    size = 40.dp,
+                    size = 30.dp,
                     appearance = appearance,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
@@ -112,8 +112,8 @@ fun IconAppearanceScreen(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().toggleable(
@@ -128,11 +128,11 @@ fun IconAppearanceScreen(
                         Text(stringResource(R.string.settings_icon_fill), style = MaterialTheme.typography.titleMedium)
                         Text(
                             stringResource(R.string.settings_icon_fill_summary),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(checked = appearance.fill >= 0.5f, onCheckedChange = null)
+                    SongMeldSwitch(checked = appearance.fill >= 0.5f, onCheckedChange = null)
                 }
                 SafeIconSlider(
                     title = stringResource(R.string.settings_icon_weight),
@@ -171,7 +171,7 @@ fun IconAppearanceScreen(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 AppIconShape.entries.chunked(4).forEach { rowShapes ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -181,7 +181,7 @@ fun IconAppearanceScreen(
                             val selected = shape == iconShape
                             val label = stringResource(shapeLabel(shape))
                             Box(
-                                modifier = Modifier.weight(1f).height(80.dp)
+                                modifier = Modifier.weight(1f).height(64.dp)
                                     .clip(RoundedCornerShape(18.dp))
                                     .background(if (selected) MaterialTheme.colorScheme.primaryContainer
                                         else MaterialTheme.colorScheme.surfaceContainerLow)
@@ -192,8 +192,8 @@ fun IconAppearanceScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Box(
-                                    modifier = (if (shape == AppIconShape.PILL) Modifier.size(width = 52.dp, height = 32.dp)
-                                        else Modifier.size(47.dp))
+                                    modifier = (if (shape == AppIconShape.PILL) Modifier.size(width = 46.dp, height = 28.dp)
+                                        else Modifier.size(42.dp))
                                         .clip(iconBackgroundShape(shape))
                                         .background(if (selected) MaterialTheme.colorScheme.primary
                                             else MaterialTheme.colorScheme.tertiary),
@@ -259,9 +259,9 @@ private fun IconStyleChoices(
                             else MaterialTheme.colorScheme.onSurface,
                         border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
                     ) {
-                        Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically,
+                        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 32.dp,
+                            SongMeldIcon(SongMeldIconId.MusicNote, null, size = 28.dp,
                                 appearance = appearance.copy(style = style))
                             Text(stringResource(iconStyleLabel(style)), modifier = Modifier.weight(1f),
                                 style = MaterialTheme.typography.titleMedium,
@@ -318,7 +318,7 @@ private fun SettingsIconGroupTitle(title: String) {
     Text(title, modifier = Modifier.padding(start = 12.dp, top = 4.dp),
         color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.SemiBold,
-        style = MaterialTheme.typography.titleSmall)
+        style = MaterialTheme.typography.titleMedium)
 }
 
 private fun shapeLabel(shape: AppIconShape): Int = when (shape) {

@@ -60,7 +60,7 @@ fun SongMeldHeader(onOpenSettings: () -> Unit, modifier: Modifier = Modifier, an
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(start = 20.dp, end = 12.dp, top = 8.dp, bottom = 10.dp),
+            .padding(start = 16.dp, end = 12.dp, top = 6.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -166,7 +166,7 @@ private fun SongMeldWordmark(modifier: Modifier = Modifier, animateEntrance: Boo
                     append("Meld")
                 }
             },
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             maxLines = 1,
         )
 
@@ -177,7 +177,7 @@ private fun SongMeldWordmark(modifier: Modifier = Modifier, animateEntrance: Boo
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .size(24.dp)
+                .size(22.dp)
                 .alpha(badgeAlpha.value)
                 .graphicsLayer {
                     scaleX = badgeScale.value

@@ -64,8 +64,9 @@ data class MaterialSymbolAppearance(
  */
 enum class SongMeldIconId(val codepoint: Int) {
     Sort(0xE164), History(0xE889), Description(0xE873),
+    Add(0xE145), AutoAwesome(0xE65F), Build(0xE869), Remove(0xE15B),
     License(0xE90E), Code(0xE86F), Volunteer(0xEA70),
-    ArrowBack(0xE5C4), ChevronRight(0xE5CC), Close(0xE5CD),
+    ArrowBack(0xE5C4), ArrowUpward(0xE5D8), ArrowDropDown(0xE5C5), ChevronRight(0xE5CC), Check(0xE5CA), Close(0xE5CD),
     FolderOpen(0xE2C8), Info(0xE88E), LibraryMusic(0xE030),
     Lock(0xE897), MoreVert(0xE5D4), MusicNote(0xE405),
     Palette(0xE40A), Refresh(0xE5D5), Search(0xE8B6),
@@ -83,7 +84,7 @@ fun SongMeldIcon(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
-    size: Dp = 26.dp,
+    size: Dp = 24.dp,
     appearance: MaterialSymbolAppearance = LocalMaterialSymbolAppearance.current,
 ) {
     SongMeldIconGlyph(

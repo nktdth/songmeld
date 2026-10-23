@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -27,10 +28,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -64,16 +72,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.ui.icons.SongMeldIconId
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
 import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
 import moe.ktandth.songmeld.ui.theme.SongMeldCodeStyle
-import moe.ktandth.songmeld.ui.settings.LocalInterfaceOptions
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SongsScreen(
     songs: List<Song>,
@@ -95,12 +104,17 @@ fun SongsScreen(
             it.name == preferences.getString("sort", null)
         } ?: SongSort.TITLE)
     }
-    var sortOpen by rememberSaveable { mutableStateOf(false) }
+    var sortOpen by remember { mutableStateOf(false) }
+    var sourceOpen by remember { mutableStateOf(false) }
+    var sourceKey by rememberSaveable {
+        mutableStateOf(preferences.getString("source", "all") ?: "all")
+    }
+    val source = remember(sourceKey) { parseLibraryScope(sourceKey) }
     var selectedSongId by rememberSaveable { mutableStateOf<Long?>(null) }
     val listState = rememberLazyListState()
-    var previousView by rememberSaveable { mutableStateOf(query + "\u0000" + sort.name) }
-    LaunchedEffect(query, sort) {
-        val view = query + "\u0000" + sort.name
+    var previousView by rememberSaveable { mutableStateOf(query + "\u0000" + sort.name + "\u0000" + sourceKey) }
+    LaunchedEffect(query, sort, sourceKey) {
+        val view = query + "\u0000" + sort.name + "\u0000" + sourceKey
         if (previousView != view) {
             listState.scrollToItem(0)
             previousView = view
@@ -110,81 +124,170 @@ fun SongsScreen(
         LocalSongArtworkLoader(context.applicationContext)
     }
     // Preserve the same view during a rescan, but never display another query's results.
-    val queryResult by produceState<LibraryQueryResult?>(null, songs, query, sort) {
-        val found = withContext(Dispatchers.Default) { querySongs(songs, query, sort) }
-        value = LibraryQueryResult(query, sort, found)
+    val queryResult by produceState<LibraryQueryResult?>(null, songs, query, sort, source) {
+        val found = withContext(Dispatchers.Default) { querySongs(songs, query, sort, source) }
+        value = LibraryQueryResult(query, sort, source, found)
     }
-    val results = queryResult?.takeIf { it.query == query && it.sort == sort }?.songs
+    val results = queryResult?.takeIf {
+        it.query == query && it.sort == sort && it.scope == source
+    }?.songs
+    val pullState = rememberPullToRefreshState()
 
     Column(modifier = modifier.fillMaxSize().imePadding()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stringResource(R.string.songs_title),
-                modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
-            IconButton(onClick = onRetry, enabled = !isLoading && !isRefreshing) {
-                SongMeldIcon(SongMeldIconId.Refresh, stringResource(R.string.library_refresh))
-            }
-            IconButton(onClick = { focusManager.clearFocus(); sortOpen = true },
-                enabled = !isLoading && errorMessage == null && songs.isNotEmpty()) {
-                SongMeldIcon(SongMeldIconId.Sort, stringResource(R.string.library_sort))
-            }
         }
         val summary = when {
             isLoading -> stringResource(R.string.loading_music)
             isRefreshing -> stringResource(R.string.library_refreshing)
             errorMessage != null -> stringResource(R.string.load_error_title)
-            query.isNotBlank() && results != null -> stringResource(R.string.library_result_count, results.size, songs.size)
+            results != null && (query.isNotBlank() || source != LibraryScope.AllSongs) ->
+                stringResource(R.string.library_result_count, results.size, songs.size)
             else -> pluralStringResource(R.plurals.song_count, songs.size, songs.size)
         }
-        val summaryWithSort = if (!isLoading && errorMessage == null && songs.isNotEmpty()) {
-            stringResource(R.string.library_summary_sort, summary, stringResource(sort.label()))
-        } else summary
-        Text(summaryWithSort, modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(summary, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+        // Source on the left, independent ordering on the right — inspired by SongMeld-v1.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Surface(
+                onClick = { focusManager.clearFocus(); sourceOpen = true },
+                enabled = !isLoading && errorMessage == null && songs.isNotEmpty(),
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(22.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
+                Row(
+                    modifier = Modifier.heightIn(min = 48.dp).padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    SongMeldIcon(SongMeldIconId.LibraryMusic, null, size = 21.dp)
+                    Text(
+                        text = source.displayLabel(),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
+                    SongMeldIcon(SongMeldIconId.ArrowDropDown, null, size = 20.dp)
+                }
+            }
+            Box {
+                Surface(
+                    onClick = { focusManager.clearFocus(); sortOpen = true },
+                    enabled = !isLoading && errorMessage == null && songs.isNotEmpty(),
+                    shape = RoundedCornerShape(22.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                ) {
+                    Row(
+                        Modifier.heightIn(min = 48.dp).padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        SongMeldIcon(SongMeldIconId.Sort, null, size = 21.dp)
+                        Text(stringResource(R.string.library_sort_short), style = MaterialTheme.typography.labelLarge)
+                        SongMeldIcon(SongMeldIconId.ArrowDropDown, null, size = 20.dp)
+                    }
+                }
+                DropdownMenu(
+                    expanded = sortOpen,
+                    onDismissRequest = { sortOpen = false },
+                ) {
+                    SongSort.entries.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(option.label())) },
+                            leadingIcon = {
+                                if (option == sort) SongMeldIcon(SongMeldIconId.Check, null, size = 21.dp)
+                                else SongMeldIcon(SongMeldIconId.Sort, null, size = 20.dp)
+                            },
+                            onClick = {
+                                sort = option
+                                preferences.edit().putString("sort", option.name).apply()
+                                sortOpen = false
+                            },
+                        )
+                    }
+                }
+            }
+        }
         SongSearchBar(
             query = query,
             onQueryChange = { query = it },
             focusManager = focusManager,
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        if (isRefreshing) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
-            Spacer(Modifier.height(8.dp))
-        }
+        Spacer(modifier = Modifier.height(8.dp))
         if (refreshFailed) {
-            Surface(shape = RoundedCornerShape(20.dp),
+            Surface(
+                shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.errorContainer,
                 contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+            ) {
                 Column(Modifier.fillMaxWidth().padding(14.dp)) {
-                    Text(stringResource(R.string.library_refresh_error), style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.library_refresh_error),
+                        style = MaterialTheme.typography.bodySmall)
                     TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
                 }
             }
         }
-        when {
-            isLoading -> LoadingState()
-            errorMessage != null -> ErrorState(onRetry = onRetry)
-            songs.isEmpty() -> EmptyLibraryState(onRefresh = onRetry, refreshing = isRefreshing)
-            results == null -> LoadingState()
-            results.isEmpty() -> EmptySearchState(query = query, onClear = { query = ""; focusManager.clearFocus() })
-            else -> SongList(songs = results, artworkLoader = artworkLoader, state = listState,
-                onSongClick = { focusManager.clearFocus(); selectedSongId = it.id })
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { if (!isLoading && !isRefreshing) onRetry() },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            state = pullState,
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    state = pullState,
+                    isRefreshing = isRefreshing,
+                )
+            },
+        ) {
+            when {
+                isLoading -> LoadingState()
+                errorMessage != null -> ErrorState(onRetry = onRetry)
+                songs.isEmpty() -> EmptyLibraryState()
+                results == null -> LoadingState()
+                results.isEmpty() && query.isNotBlank() ->
+                    EmptySearchState(query = query, onClear = {
+                        query = ""; focusManager.clearFocus()
+                    })
+                results.isEmpty() -> EmptySourceState(onReset = {
+                    sourceKey = LibraryScope.AllSongs.key()
+                    preferences.edit().putString("source", sourceKey).apply()
+                })
+                else -> SongList(
+                    songs = results, artworkLoader = artworkLoader, state = listState,
+                    sort = sort,
+                    onSongClick = { focusManager.clearFocus(); selectedSongId = it.id },
+                )
+            }
         }
     }
-    if (sortOpen) {
-        SongSortDialog(selected = sort, onDismiss = { sortOpen = false }, onSelected = {
-            sort = it
-            preferences.edit().putString("sort", it.name).apply()
-            sortOpen = false
-        })
+    if (sourceOpen) {
+        LibrarySourceSheet(
+            songs = songs,
+            selected = source,
+            onSelect = {
+                sourceKey = it.key()
+                preferences.edit().putString("source", sourceKey).apply()
+                sourceOpen = false
+            },
+            onDismiss = { sourceOpen = false },
+        )
     }
     val selectedSong = songs.firstOrNull { it.id == selectedSongId }
     if (selectedSong != null && !isLoading && errorMessage == null) {
@@ -246,46 +349,61 @@ private fun SongList(
     songs: List<Song>,
     artworkLoader: LocalSongArtworkLoader,
     state: LazyListState,
+    sort: SongSort,
     onSongClick: (Song) -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        state = state,
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        itemsIndexed(
-            items = songs,
-            key = { _, song -> song.id },
-            contentType = { _, _ -> "song" },
-        ) { index, song ->
-            SongRow(
-                song = song,
-                artworkLoader = artworkLoader,
-                onClick = { onSongClick(song) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(songItemShape(index, songs.size))
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = state,
+            // The floating scroll action must not cover the last library entry.
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 88.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            itemsIndexed(
+                items = songs,
+                key = { _, song -> song.id },
+                contentType = { _, _ -> "song" },
+            ) { index, song ->
+                SongRow(
+                    song = song,
+                    artworkLoader = artworkLoader,
+                    onClick = { onSongClick(song) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(songItemShape(index, songs.size))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                )
+            }
         }
+        SongsFastScrollbar(
+            listState = state,
+            songs = songs,
+            sort = sort,
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+        )
+        SongsScrollToTopFab(
+            listState = state,
+            modifier = Modifier.align(Alignment.BottomEnd)
+                .padding(end = 28.dp, bottom = 18.dp),
+        )
     }
 }
 
 /** Keep the outer 24dp corners while gently rounding the seams between songs. */
 private fun songItemShape(index: Int, count: Int): RoundedCornerShape = when {
-    count == 1 -> RoundedCornerShape(24.dp)
+    count == 1 -> RoundedCornerShape(20.dp)
     index == 0 -> RoundedCornerShape(
-        topStart = 24.dp,
-        topEnd = 24.dp,
+        topStart = 20.dp,
+        topEnd = 20.dp,
         bottomStart = 6.dp,
         bottomEnd = 6.dp,
     )
     index == count - 1 -> RoundedCornerShape(
         topStart = 6.dp,
         topEnd = 6.dp,
-        bottomStart = 24.dp,
-        bottomEnd = 24.dp,
+        bottomStart = 20.dp,
+        bottomEnd = 20.dp,
     )
     else -> RoundedCornerShape(6.dp)
 }
@@ -298,12 +416,11 @@ private fun SongRow(
     modifier: Modifier = Modifier,
 ) {
     val detailsLabel = stringResource(R.string.song_details)
-    val compact = LocalInterfaceOptions.current.compactLibrary
     Row(
         modifier = modifier
             .clickable(onClickLabel = detailsLabel, onClick = onClick)
-            .heightIn(min = if (compact) 68.dp else 80.dp)
-            .padding(horizontal = 10.dp, vertical = if (compact) 6.dp else 8.dp),
+            .heightIn(min = 68.dp)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SongArtwork(song = song, artworkLoader = artworkLoader)
@@ -361,8 +478,8 @@ private fun SongArtwork(
     }
     Box(
         modifier = Modifier
-            .size(if (LocalInterfaceOptions.current.compactLibrary) 48.dp else 56.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .size(46.dp)
+            .clip(RoundedCornerShape(11.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center,
     ) {
@@ -386,13 +503,14 @@ private fun SongArtwork(
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private fun LoadingState() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator()
+            LoadingIndicator()
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.loading_music),
@@ -403,12 +521,26 @@ private fun LoadingState() {
 }
 
 @Composable
-private fun EmptyLibraryState(onRefresh: () -> Unit, refreshing: Boolean) {
+private fun EmptyLibraryState() {
     LibraryMessage(
         icon = SongMeldIconId.LibraryMusic,
         title = stringResource(R.string.empty_library_title),
         body = stringResource(R.string.empty_library_body),
-        action = { FilledTonalButton(onClick = onRefresh, enabled = !refreshing) { Text(stringResource(R.string.library_refresh)) } },
+        action = { Text(stringResource(R.string.library_pull_refresh_hint),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary) },
+    )
+}
+
+@Composable
+private fun EmptySourceState(onReset: () -> Unit) {
+    LibraryMessage(
+        icon = SongMeldIconId.SearchOff,
+        title = stringResource(R.string.library_source_empty_title),
+        body = stringResource(R.string.library_source_empty_body),
+        action = { FilledTonalButton(onClick = onReset) {
+            Text(stringResource(R.string.library_source_reset))
+        } },
     )
 }
 

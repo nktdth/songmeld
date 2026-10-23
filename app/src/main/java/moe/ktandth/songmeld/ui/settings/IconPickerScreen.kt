@@ -182,9 +182,9 @@ private fun SelectedIconPreview(selected: IconReference?, name: String?, appeara
             horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-                Box(Modifier.size(68.dp), contentAlignment = Alignment.Center) {
-                    if (selected != null) CatalogIcon(selected, null, size = 38.dp, appearance = appearance)
-                    else SongMeldIcon(SongMeldIconId.MusicNote, null, size = 38.dp)
+                Box(Modifier.size(54.dp), contentAlignment = Alignment.Center) {
+                    if (selected != null) CatalogIcon(selected, null, size = 30.dp, appearance = appearance)
+                    else SongMeldIcon(SongMeldIconId.MusicNote, null, size = 30.dp)
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -204,10 +204,10 @@ private fun IconChoice(entry: CatalogIconEntry, active: Boolean, appearance: Mat
         Modifier.clip(RoundedCornerShape(16.dp))
             .background(if (active) colors.primaryContainer else colors.surfaceContainerLow)
             .selectable(selected = active, role = Role.RadioButton, onClick = onClick)
-            .heightIn(min = 100.dp).padding(horizontal = 4.dp, vertical = 12.dp),
+            .heightIn(min = 88.dp).padding(horizontal = 4.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        CatalogIcon(entry.reference, null, size = 36.dp, appearance = appearance,
+        CatalogIcon(entry.reference, null, size = 28.dp, appearance = appearance,
             tint = if (active) colors.onPrimaryContainer else colors.onSurface)
         Text(entry.name.replace('_', ' ').replace('-', ' '), maxLines = 2, overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.labelMedium,

@@ -15,7 +15,8 @@ internal data class AboutPerson(
 )
 
 internal object AboutCredits {
-    val primaryDevelopers = listOf(
+    // Display order is intentional: the first person is featured in the same group.
+    val developers = listOf(
         AboutPerson(
             name = "ktandth",
             contribution = R.string.about_primary_detail,
@@ -24,8 +25,7 @@ internal object AboutCredits {
             email = "nkt@ktandth.moe",
         ),
     )
-    // Add people here only after their ongoing developer role has been confirmed.
-    val secondaryDevelopers: List<AboutPerson> = emptyList()
+    // Add confirmed developers to the list above, after the project creator.
     // Idea authors, bug reporters and PR authors are credited separately here.
     val contributors: List<AboutPerson> = emptyList()
 }
