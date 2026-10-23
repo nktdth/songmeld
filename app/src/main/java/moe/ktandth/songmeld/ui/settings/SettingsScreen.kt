@@ -10,13 +10,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,18 +24,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.snap
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -300,86 +295,34 @@ private fun SettingsToggle(
 }
 
 /**
- * SongMeld-v1's single horizontal theme selector, upgraded with Material Symbols
- * and a sliding selected-pill indicator. The three hit targets remain 56dp tall.
+ * Keep SongMeld's three Vietnamese theme choices but delegate selection visuals,
+ * touch states and accessibility to the official Material 3 segmented control.
  */
 @Composable
 private fun ThemeChoices(selected: AppTheme, onSelected: (AppTheme) -> Unit) {
-    val colors = MaterialTheme.colorScheme
-    val motion = LocalDecorativeMotionEnabled.current
     val modes = AppTheme.entries
-    val selectedIndex = modes.indexOf(selected).coerceAtLeast(0)
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CircleShape,
-        color = colors.surfaceContainerLow,
-    ) {
-        BoxWithConstraints(Modifier.fillMaxWidth().padding(5.dp)) {
-            val gap = 4.dp
-            val tileWidth = (maxWidth - gap * (modes.size - 1)) / modes.size
-            val offset by animateDpAsState(
-                targetValue = (tileWidth + gap) * selectedIndex,
-                animationSpec = if (motion) {
-                    tween(durationMillis = 270, easing = FastOutSlowInEasing)
-                } else snap(),
-                label = "Sliding theme selection",
-            )
-
-            // Draw the animated pill underneath the three labeled buttons.
-            Box(
-                modifier = Modifier
-                    .offset(x = offset)
-                    .width(tileWidth)
-                    .height(52.dp)
-                    .clip(CircleShape)
-                    .background(colors.primaryContainer),
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth().selectableGroup(),
-                horizontalArrangement = Arrangement.spacedBy(gap),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                modes.forEach { theme ->
-                    val isSelected = theme == selected
-                    val itemColor by animateColorAsState(
-                        targetValue = if (isSelected) colors.onPrimaryContainer else colors.onSurfaceVariant,
-                        animationSpec = if (motion) tween(180) else snap(),
-                        label = "Theme mode content",
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        modes.forEachIndexed { index, theme ->
+            SegmentedButton(
+                selected = theme == selected,
+                onClick = { if (theme != selected) onSelected(theme) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
+                icon = {
+                    SongMeldIcon(
+                        id = themeIcon(theme),
+                        contentDescription = null,
+                        size = SegmentedButtonDefaults.IconSize,
                     )
-                    Row(
-                        modifier = Modifier
-                            .width(tileWidth)
-                            .height(52.dp)
-                            // Clip the pressed/long-pressed ripple as well as the selected pill.
-                            .clip(CircleShape)
-                            .selectable(
-                                selected = isSelected,
-                                role = Role.RadioButton,
-                                onClick = { if (!isSelected) onSelected(theme) },
-                            )
-                            .padding(horizontal = 5.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        SongMeldIcon(
-                            id = themeIcon(theme),
-                            contentDescription = null,
-                            tint = itemColor,
-                            size = 20.dp,
-                        )
-                        Spacer(Modifier.width(5.dp))
-                        Text(
-                            text = stringResource(themeLabel(theme)),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = itemColor,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-            }
+                },
+                label = {
+                    Text(
+                        text = stringResource(themeLabel(theme)),
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+            )
         }
     }
 }

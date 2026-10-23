@@ -19,8 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -31,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
@@ -44,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -189,6 +189,9 @@ fun SongMeldApp(
 
     val pageStateHolder = rememberSaveableStateHolder()
     val motion = LocalDecorativeMotionEnabled.current
+    // The official Expressive spatial/effects springs replace fixed-duration easing.
+    val spatialMotion = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
+    val effectsMotion = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
     // Shared-axis-inspired navigation: incoming page advances from the right,
     // while Back reverses the parallax. Only a change of destination animates.
     // Keep saveable state *inside* each animated destination so outgoing and
@@ -203,15 +206,14 @@ fun SongMeldApp(
             } else {
                 val goingBack = targetState == initialState.parent ||
                     targetState.depth < initialState.depth
-                val easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
                 val enter = slideInHorizontally(
                     initialOffsetX = { if (goingBack) -it / 6 else it / 4 },
-                    animationSpec = tween(durationMillis = 320, easing = easing),
-                ) + fadeIn(animationSpec = tween(durationMillis = 240))
+                    animationSpec = spatialMotion,
+                ) + fadeIn(animationSpec = effectsMotion)
                 val exit = slideOutHorizontally(
                     targetOffsetX = { if (goingBack) it / 4 else -it / 6 },
-                    animationSpec = tween(durationMillis = 320, easing = easing),
-                ) + fadeOut(animationSpec = tween(durationMillis = 180))
+                    animationSpec = spatialMotion,
+                ) + fadeOut(animationSpec = effectsMotion)
                 (enter togetherWith exit).apply {
                     // On push, the new page is in front; on pop, the old detail
                     // page glides off over its returning parent.
