@@ -427,14 +427,19 @@ fun SongMeldApp(
                                 refreshFailed = libraryState.error && libraryState.hasLoaded,
                                 errorMessage = if (libraryState.error && !libraryState.hasLoaded) "load_error" else null,
                                 onRetry = { refreshKey++ },
+                                onAddSong = { currentPage = SongMeldPage.DOWNLOAD_ADD },
+                                onDownloads = { currentPage = SongMeldPage.DOWNLOADS },
                             )
                         }
-
-                        SongMeldDownloadFab(
-                            onAddSong = { currentPage = SongMeldPage.DOWNLOAD_ADD },
-                            onDownloads = { currentPage = SongMeldPage.DOWNLOADS },
-                            modifier = Modifier.align(Alignment.BottomEnd),
-                        )
+                        if (!permissionGranted) {
+                            // Access to downloading a link does not require audio-library read access.
+                            SongMeldDownloadFab(
+                                onAddSong = { currentPage = SongMeldPage.DOWNLOAD_ADD },
+                                onDownloads = { currentPage = SongMeldPage.DOWNLOADS },
+                                modifier = Modifier.align(Alignment.BottomEnd)
+                                    .padding(end = 16.dp, bottom = 16.dp),
+                            )
+                        }
                     }
                 }
             }
