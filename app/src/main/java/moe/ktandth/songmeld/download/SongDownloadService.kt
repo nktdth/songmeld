@@ -1,5 +1,8 @@
 package moe.ktandth.songmeld.download
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -147,7 +150,14 @@ class SongDownloadService : Service() {
     }
 
     private fun updateNotification(title: String, progress: Float?) {
-        manager.notify(NOTIFICATION_ID, notification(title, progress))
+        // Android 13+: foreground work is still allowed when notification permission is denied,
+        // but extra notification updates must respect that permission.
+        if (Build.VERSION.SDK_INT < 33 ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            manager.notify(NOTIFICATION_ID, notification(title, progress))
+        }
     }
 
     override fun onDestroy() {

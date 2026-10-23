@@ -2,6 +2,12 @@ package moe.ktandth.songmeld.ui.download
 
 import android.content.ClipboardManager
 import android.content.Context
+import android.Manifest
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -73,7 +79,22 @@ fun AddSongScreen(
     var failure by remember { mutableStateOf<String?>(null) }
     var preview by remember { mutableStateOf<TrackPreview?>(null) }
     var selectedFormatId by remember { mutableStateOf<String?>(null) }
+    val notifyPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // Permission is optional: proceed even when the user declines notifications.
+        preview?.let { onQueue(it, selectedFormatId) }
+    }
     val provider = detectDownloadProvider(url)
+    fun queueDownload() {
+        val selectedPreview = preview ?: return
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notifyPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else onQueue(selectedPreview, selectedFormatId)
+    }
 
     fun inspect() {
         val submitted = url.trim()
@@ -232,7 +253,7 @@ fun AddSongScreen(
                 item {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { onQueue(track, selectedFormatId) },
+                        onClick = ::queueDownload,
                         enabled = !busy && selectedFormatId != null,
                     ) {
                         SongMeldIcon(SongMeldIconId.Download, null, size = 20.dp)
