@@ -357,7 +357,7 @@ private fun SongList(
             modifier = Modifier.fillMaxSize(),
             state = state,
             // The floating scroll action must not cover the last library entry.
-            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 88.dp),
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 170.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             itemsIndexed(
@@ -385,7 +385,7 @@ private fun SongList(
         SongsScrollToTopFab(
             listState = state,
             modifier = Modifier.align(Alignment.BottomEnd)
-                .padding(end = 28.dp, bottom = 18.dp),
+                .padding(end = 28.dp, bottom = 100.dp),
         )
     }
 }
