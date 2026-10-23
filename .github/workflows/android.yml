@@ -24,12 +24,15 @@ jobs:
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # The Ubuntu image already supplies Android command-line tools. The older
-      # setup-android action invokes a removed SDK package named "tools".
+      # The runner has Android command-line tools, but sdkmanager is not on PATH.
+      # Look up the installed binary rather than depending on one tool version.
       - name: Install Android 37 platform
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install "platforms;android-37" "build-tools;37.0.0"
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDK_MANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -path '*/bin/sdkmanager' | head -n 1)"
+          test -n "$SDK_MANAGER"
+          yes | "$SDK_MANAGER" --licenses > /dev/null || true
+          "$SDK_MANAGER" --install "platforms;android-37" "build-tools;37.0.0"
 
       - name: Assemble, unit test and lint
         run: ./gradlew --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
