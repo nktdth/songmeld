@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.DocumentsContract
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -26,6 +27,8 @@ internal object AudioFileSaver {
     ): Uri {
         val filename = safeFilename(audio.title) + "." + audio.format.extension
         val preferences = DownloadPreferences(context.applicationContext)
+        val customTree = preferences.customTreeUri?.let(Uri::parse)
+        // SAF roots are user-chosen; their content is saved directly in that folder.
         val sourceFolder = if (preferences.folderPolicy == DownloadFolderPolicy.BY_SOURCE)
             "/" + audio.provider.displayName.replace(" ", "") else ""
         val connection = (URL(audio.streamUrl).openConnection() as HttpURLConnection).apply {
@@ -35,6 +38,7 @@ internal object AudioFileSaver {
             instanceFollowRedirects = true
         }
         var outputUri: Uri? = null
+        val usesMediaStore = customTree == null && Build.VERSION.SDK_INT >= 29
         var published = false
         var legacyFile: File? = null
         try {
@@ -44,7 +48,13 @@ internal object AudioFileSaver {
             )
             val contentLength = connection.contentLengthLong.takeIf { it > 0 }
             val resolver = context.contentResolver
-            if (Build.VERSION.SDK_INT >= 29) {
+            if (customTree != null) {
+                val directoryId = DocumentsContract.getTreeDocumentId(customTree)
+                val directory = DocumentsContract.buildDocumentUriUsingTree(customTree, directoryId)
+                outputUri = DocumentsContract.createDocument(
+                    resolver, directory, audio.format.mimeType, filename
+                ) ?: throw IOException("Không thể tạo tệp trong thư mục đã chọn.")
+            } else if (usesMediaStore) {
                 val values = ContentValues().apply {
                     put(MediaStore.Audio.Media.DISPLAY_NAME, filename)
                     put(MediaStore.Audio.Media.MIME_TYPE, audio.format.mimeType)
@@ -94,7 +104,7 @@ internal object AudioFileSaver {
             if (contentLength != null && written < contentLength) {
                 throw IOException("Tệp tải về không đầy đủ.")
             }
-            if (Build.VERSION.SDK_INT >= 29) {
+            if (usesMediaStore) {
                 resolver.update(destination, ContentValues().apply {
                     put(MediaStore.Audio.Media.IS_PENDING, 0)
                 }, null, null)
@@ -111,11 +121,8 @@ internal object AudioFileSaver {
         } finally {
             connection.disconnect()
             if (!published) {
-                if (Build.VERSION.SDK_INT >= 29) {
-                    outputUri?.let { runCatching { context.contentResolver.delete(it, null, null) } }
-                } else {
-                    legacyFile?.delete()
-                }
+                if (legacyFile != null) legacyFile?.delete()
+                else outputUri?.let { runCatching { context.contentResolver.delete(it, null, null) } }
             }
         }
     }

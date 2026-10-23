@@ -207,7 +207,11 @@
     <string name="download_settings_storage">Lưu trữ</string>
     <string name="download_folder_single">Lưu chung</string>
     <string name="download_folder_sources">Nhóm theo nguồn</string>
-    <string name="download_settings_storage_note">Android 10 trở lên: Music/SongMeld. Android 8–9: thư mục nhạc riêng của ứng dụng.</string>
+    <string name="download_settings_storage_note">Mặc định Android 10+: Music/SongMeld; Android 8–9: thư mục nhạc riêng ứng dụng. Nếu chọn thư mục khác, tệp sẽ được lưu ngay tại đó và không chia theo nguồn.</string>
+    <string name="download_custom_folder">Chọn thư mục khác</string>
+    <string name="download_custom_folder_default">Dùng thư mục mặc định của SongMeld</string>
+    <string name="download_custom_folder_selected">Đang dùng thư mục do anh chọn (SAF)</string>
+    <string name="download_custom_folder_reset">Trở về thư mục mặc định</string>
     <string name="download_settings_behavior">Mạng và thông báo</string>
     <string name="download_wifi_only">Chỉ tải qua Wi-Fi</string>
     <string name="download_wifi_only_description">Không bắt đầu tải khi chỉ có dữ liệu di động hoặc chưa kết nối Wi-Fi.</string>

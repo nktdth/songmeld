@@ -71,3 +71,7 @@ screens, now expose actual supported behavior:
 
 New settings apply to subsequent downloads. Format conversion, playlist, and
 parallel downloads are deliberately not presented as functioning toggles.
+
+Custom folders: a system OpenDocumentTree picker grants a persistable SAF URI;
+files are created directly in that directory without broad storage permissions.
+The optional per-source grouping is only applied to SongMeld's default folder.

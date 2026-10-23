@@ -1,5 +1,11 @@
 package moe.ktandth.songmeld.ui.settings
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -54,6 +61,20 @@ fun DownloadSettingsScreen(onBack: () -> Unit) {
     var folder by remember { mutableStateOf(preferences.folderPolicy) }
     var wifiOnly by remember { mutableStateOf(preferences.wifiOnly) }
     var notifyCompletion by remember { mutableStateOf(preferences.completionNotifications) }
+    var customTree by remember { mutableStateOf(preferences.customTreeUri) }
+    var directoryError by remember { mutableStateOf<String?>(null) }
+    val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+                preferences.customTreeUri = uri.toString()
+                customTree = uri.toString()
+                directoryError = null
+            }.onFailure { directoryError = "Không thể lưu quyền truy cập thư mục. Hãy chọn lại." }
+        }
+    }
 
     SettingsPageScaffold(title = R.string.download_settings_title, onBack = onBack) { innerPadding ->
         Column(
@@ -165,6 +186,29 @@ fun DownloadSettingsScreen(onBack: () -> Unit) {
                     }
                 }
             }
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.download_custom_folder)) },
+                supportingContent = {
+                    Text(
+                        if (customTree == null) stringResource(R.string.download_custom_folder_default)
+                        else stringResource(R.string.download_custom_folder_selected)
+                    )
+                },
+                modifier = Modifier.clickable { folderPicker.launch(customTree?.let(Uri::parse)) },
+                colors = androidx.compose.material3.ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+            )
+            if (customTree != null) {
+                TextButton(onClick = {
+                    preferences.customTreeUri = null
+                    customTree = null
+                    directoryError = null
+                }) {
+                    Text(stringResource(R.string.download_custom_folder_reset))
+                }
+            }
+            directoryError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             Text(
                 stringResource(R.string.download_settings_storage_note),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

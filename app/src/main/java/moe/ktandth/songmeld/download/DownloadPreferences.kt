@@ -26,6 +26,16 @@ class DownloadPreferences(context: Context) {
         get() = enumOrDefault(storage.getString("folder", null), DownloadFolderPolicy.SINGLE)
         set(value) { storage.edit().putString("folder", value.name).apply() }
 
+    /** SAF URI with persistable user-granted read/write permission; null uses MediaStore. */
+    var customTreeUri: String?
+        get() = storage.getString("custom_tree_uri", null)
+        set(value) {
+            storage.edit().apply {
+                if (value == null) remove("custom_tree_uri")
+                else putString("custom_tree_uri", value)
+            }.apply()
+        }
+
     var wifiOnly: Boolean
         get() = storage.getBoolean("wifi_only", false)
         set(value) { storage.edit().putBoolean("wifi_only", value).apply() }
