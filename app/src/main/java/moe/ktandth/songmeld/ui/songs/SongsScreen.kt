@@ -31,7 +31,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -81,7 +82,7 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SongsScreen(
     songs: List<Song>,
@@ -248,12 +249,10 @@ fun SongsScreen(
             modifier = Modifier.weight(1f).fillMaxWidth(),
             state = pullState,
             indicator = {
-                PullToRefreshDefaults.Indicator(
+                PullToRefreshDefaults.LoadingIndicator(
                     modifier = Modifier.align(Alignment.TopCenter),
                     state = pullState,
                     isRefreshing = isRefreshing,
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             },
         ) {
@@ -504,13 +503,14 @@ private fun SongArtwork(
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private fun LoadingState() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator()
+            LoadingIndicator()
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.loading_music),

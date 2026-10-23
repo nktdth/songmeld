@@ -2,7 +2,7 @@ package moe.ktandth.songmeld.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -102,7 +102,8 @@ fun SongMeldTheme(
         else -> SongMeldLightColors
     }
 
-    MaterialTheme(
+    // Keep SongMeld's palette and type while inheriting Google's official Expressive motion.
+    MaterialExpressiveTheme(
         colorScheme = if (darkTheme && amoledBlack) amoledColorScheme(colorScheme) else colorScheme,
         typography = SongMeldTypography,
         content = content,
