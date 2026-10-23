@@ -283,14 +283,14 @@ fun SongsScreen(
             }
         }
     }
-    Row(
+    // A single bottom-end anchored Column owns both FABs and their expanding menu.
+    // Unlike the previous parent Row, changes in menu width cannot move the + button.
+    SongMeldDownloadFab(
         modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        SongsScrollToTopFab(listState = listState)
-        SongMeldDownloadFab(onAddSong = onAddSong, onDownloads = onDownloads)
-    }
+        onAddSong = onAddSong,
+        onDownloads = onDownloads,
+        scrollAction = { SongsScrollToTopFab(listState = listState) },
+    )
     }
     if (sourceOpen) {
         LibrarySourceSheet(

@@ -220,7 +220,7 @@ private val FastScrollBubbleShape = GenericShape { size, _ ->
     close()
 }
 
-/** The old v1 scroll-to-top FAB without the unimplemented Add Songs menu. */
+/** SongMeld-v1 scroll action: composed in the same bottom row as the Add FAB. */
 @Composable
 internal fun SongsScrollToTopFab(
     listState: LazyListState,
@@ -282,12 +282,9 @@ internal fun SongsScrollToTopFab(
     val fab: @Composable () -> Unit = {
         FloatingActionButton(
             onClick = { scope.launch { listState.animateScrollToItem(0) } },
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
             Row(
-                Modifier.padding(horizontal = 14.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Modifier.padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 SongMeldIcon(
@@ -301,8 +298,13 @@ internal fun SongsScrollToTopFab(
                         enter = expandHorizontally(tween(170)),
                         exit = shrinkHorizontally(tween(150)),
                     ) {
-                        Text(stringResource(R.string.songs_scroll_top_label),
-                            style = MaterialTheme.typography.labelLarge)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                stringResource(R.string.songs_scroll_top_label),
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        }
                     }
                 }
             }
@@ -312,8 +314,8 @@ internal fun SongsScrollToTopFab(
         AnimatedVisibility(
             visible = visible,
             modifier = modifier,
-            enter = fadeIn(tween(150)) + scaleIn(initialScale = 0.9f, animationSpec = tween(180)),
-            exit = fadeOut(tween(110)) + scaleOut(targetScale = 0.9f, animationSpec = tween(140)),
+            enter = fadeIn(tween(120)) + scaleIn(initialScale = 0.92f, animationSpec = tween(150)),
+            exit = fadeOut(tween(100)) + scaleOut(targetScale = 0.92f, animationSpec = tween(120)),
         ) { fab() }
     } else if (visible) {
         Box(modifier) { fab() }

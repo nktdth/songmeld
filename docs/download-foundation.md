@@ -75,3 +75,27 @@ parallel downloads are deliberately not presented as functioning toggles.
 Custom folders: a system OpenDocumentTree picker grants a persistable SAF URI;
 files are created directly in that directory without broad storage permissions.
 The optional per-source grouping is only applied to SongMeld's default folder.
+
+## FAB visual parity with SongMeld-v1 (follow-up)
+
+The older v1 `SongsActionFab.kt` uses a **single end-aligned Column** containing
+an `AnimatedVisibility` action area and **one bottom Row** containing Scroll-to-top
+and Add. The previous M3E `FloatingActionButtonMenu` was measured in the same
+parent Row as the scroll action. Its width changed with the labels, visibly moving
+the scroll FAB far to the left and changing bottom alignment between states.
+
+The FAB implementation now ports the original composition and its exact timings:
+- Main Add FAB scales to 1.06 with spring damping 0.58/stiffness 420;
+  plus icon rotates 45° using damping 0.62/stiffness 430.
+- Actions slide up by a quarter-height and scale from 0.78 using the same v1
+  springs, exiting with 120/160/150-ms fade, slide and scale to 0.82.
+- Bottom Row uses CenterVertically alignment and 12dp spacing, with the native
+  M3 FAB and ExtendedFAB containers and 6dp fixed ExtendedFAB elevation.
+- Scroll-to-top uses original 16dp horizontal icon inset, 8dp expanded label gap,
+  and 120/150-ms entrance and 100/120-ms exit.
+
+The action area has two ExtendedFAB options (links and downloads) rather than the
+single legacy option; this preserves the functional download history. No custom
+colors or overlay backgrounds are imposed on the native Material FABs. This
+intentionally uses v1's exact motion instead of M3E FAB Menu motion because the
+user specifically requested the original bounce, arrangement and background.
