@@ -2,10 +2,10 @@ package moe.ktandth.songmeld.ui.components
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.runtime.Composable
@@ -35,8 +35,13 @@ fun SongMeldDownloadFab(
     // V1's plus icon rotates into an X; native M3E animates the menu items and FAB shape.
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
-        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec<Float>(),
+        animationSpec = spring(dampingRatio = 0.62f, stiffness = 430f),
         label = "downloadFabPlusRotation",
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (expanded) 1.06f else 1f,
+        animationSpec = spring(dampingRatio = 0.58f, stiffness = 420f),
+        label = "downloadFabScale",
     )
     FloatingActionButtonMenu(
         modifier = modifier,
@@ -45,6 +50,7 @@ fun SongMeldDownloadFab(
             ToggleFloatingActionButton(
                 checked = expanded,
                 onCheckedChange = { expanded = it },
+                modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale },
             ) {
                 SongMeldIcon(
                     id = SongMeldIconId.Add,
