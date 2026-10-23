@@ -25,6 +25,9 @@ internal object AudioFileSaver {
         onProgress: (Long, Long?) -> Unit,
     ): Uri {
         val filename = safeFilename(audio.title) + "." + audio.format.extension
+        val preferences = DownloadPreferences(context.applicationContext)
+        val sourceFolder = if (preferences.folderPolicy == DownloadFolderPolicy.BY_SOURCE)
+            "/" + audio.provider.displayName.replace(" ", "") else ""
         val connection = (URL(audio.streamUrl).openConnection() as HttpURLConnection).apply {
             connectTimeout = 20_000
             readTimeout = 30_000
@@ -47,7 +50,7 @@ internal object AudioFileSaver {
                     put(MediaStore.Audio.Media.MIME_TYPE, audio.format.mimeType)
                     put(MediaStore.Audio.Media.TITLE, audio.title)
                     put(MediaStore.Audio.Media.ARTIST, audio.uploader)
-                    put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/SongMeld")
+                    put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/SongMeld" + sourceFolder)
                     put(MediaStore.Audio.Media.IS_MUSIC, 1)
                     put(MediaStore.Audio.Media.IS_PENDING, 1)
                 }
@@ -57,7 +60,7 @@ internal object AudioFileSaver {
                 // API 26–28: app-specific external music directory, no broad storage permission.
                 val dir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
                     ?: throw IOException("Bộ nhớ ngoài không khả dụng.")
-                val appDir = File(dir, "SongMeld").apply { mkdirs() }
+                val appDir = File(dir, "SongMeld" + sourceFolder).apply { mkdirs() }
                 legacyFile = File(appDir, filename)
                 if (legacyFile!!.exists()) {
                     legacyFile = File(appDir, System.currentTimeMillis().toString() + "-" + filename)

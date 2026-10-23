@@ -54,3 +54,20 @@ Run:
 Exercise an authorized test track on each provider, verify playback in a
 separate audio app, correct MIME/extension, cancellation cleanup, duplicate
 names, network errors and rotation. No DRM/subscription/geo access bypass.
+
+## Functional settings and native FAB row
+
+The library Scroll-to-top FAB is now to the **left** of the Add/Download FAB in
+the same bottom-end row. The plus rotates 45 degrees into an X, reminiscent of
+SongMeld-v1, while the menu uses Google's native M3 Expressive transitions.
+
+Settings → Download Settings, plus settings actions in the Add Song and Downloads
+screens, now expose actual supported behavior:
+- Highest bitrate, lowest bitrate, or manual choice before each download.
+- Preferred M4A/AAC or Opus/WebM when available, with source fallback.
+- A flat `Music/SongMeld` folder or provider subfolders.
+- Wi-Fi-only admission check on the network the device is using.
+- Optional completion alert; active foreground-service notifications still run.
+
+New settings apply to subsequent downloads. Format conversion, playlist, and
+parallel downloads are deliberately not presented as functioning toggles.

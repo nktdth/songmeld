@@ -14,6 +14,7 @@ import org.schabi.newpipe.extractor.stream.DeliveryMethod
 import org.schabi.newpipe.extractor.stream.StreamInfo
 
 data class ResolvedAudio(
+    val provider: DownloadProvider,
     val title: String,
     val uploader: String,
     val streamUrl: String,
@@ -71,6 +72,7 @@ object NewPipeAudioResolver {
                 ?: streams.maxByOrNull { it.second.bitrateKbps ?: 0 }
                 ?: throw IOException("Không tìm thấy định dạng âm thanh khả dụng.")
             ResolvedAudio(
+                provider = preview.provider,
                 title = info.name.ifBlank { preview.title },
                 uploader = info.uploaderName.orEmpty(),
                 streamUrl = match.first.content,

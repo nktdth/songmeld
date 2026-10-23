@@ -8,6 +8,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import java.io.IOException
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
@@ -90,6 +93,10 @@ class SongDownloadService : Service() {
         activeJob = scope.launch {
             DownloadRepository.update(id) { it.copy(status = DownloadStatus.PREPARING) }
             try {
+                val preferences = DownloadPreferences(applicationContext)
+                if (preferences.wifiOnly && !hasWifiConnection()) {
+                    throw IOException("Đã bật Chỉ Wi-Fi. Hãy kết nối Wi-Fi để bắt đầu tải.")
+                }
                 updateNotification("Đang đọc thông tin bài hát", null)
                 // Resolve a fresh media URL here because signed URLs can expire between preview
                 // and queue execution.
@@ -110,6 +117,7 @@ class SongDownloadService : Service() {
                 DownloadRepository.update(id) {
                     it.copy(status = DownloadStatus.COMPLETED, progress = 1f, error = null)
                 }
+                if (preferences.completionNotifications) notifyCompletion(id, audio.title)
             } catch (_: CancellationException) {
                 DownloadRepository.update(id) { it.copy(status = DownloadStatus.CANCELED) }
             } catch (failure: Exception) {
@@ -127,6 +135,37 @@ class SongDownloadService : Service() {
             }
         }
     }
+
+    private fun hasWifiConnection(): Boolean {
+        val connectivity = getSystemService(ConnectivityManager::class.java)
+        val network = connectivity.activeNetwork ?: return false
+        return connectivity.getNetworkCapabilities(network)
+            ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+    }
+
+    /** Completion alerts are optional; active foreground progress remains mandatory. */
+    private fun notifyCompletion(taskId: String, title: String) {
+        if (!canNotify()) return
+        val openIntent = PendingIntent.getActivity(
+            this, 0, Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val finished = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("SongMeld · Đã tải xong")
+            .setContentText(title)
+            .setContentIntent(openIntent)
+            .setOngoing(false)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+        manager.notify(50000 + Math.floorMod(taskId.hashCode(), 20000), finished)
+    }
+
+    private fun canNotify(): Boolean =
+        Build.VERSION.SDK_INT < 33 ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
 
     private fun notification(title: String, progress: Float?): Notification {
         val openIntent = PendingIntent.getActivity(
@@ -152,10 +191,7 @@ class SongDownloadService : Service() {
     private fun updateNotification(title: String, progress: Float?) {
         // Android 13+: foreground work is still allowed when notification permission is denied,
         // but extra notification updates must respect that permission.
-        if (Build.VERSION.SDK_INT < 33 ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
+        if (canNotify()) {
             manager.notify(NOTIFICATION_ID, notification(title, progress))
         }
     }
