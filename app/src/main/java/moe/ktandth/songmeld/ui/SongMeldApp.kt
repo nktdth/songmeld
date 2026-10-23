@@ -78,6 +78,7 @@ import moe.ktandth.songmeld.ui.settings.LicenseDocument
 import moe.ktandth.songmeld.ui.settings.ChangelogScreen
 import moe.ktandth.songmeld.ui.settings.TermsScreen
 import moe.ktandth.songmeld.ui.settings.SettingsScreen
+import moe.ktandth.songmeld.ui.settings.DownloadSettingsScreen
 import moe.ktandth.songmeld.ui.settings.LocalDecorativeMotionEnabled
 import moe.ktandth.songmeld.ui.songs.MusicPermissionScreen
 import moe.ktandth.songmeld.ui.songs.SongsScreen
@@ -115,9 +116,11 @@ fun SongMeldApp(
     var libraryWasShown by rememberSaveable { mutableStateOf(false) }
     // One saveable destination prevents conflicting combinations of page flags.
     var currentPage by rememberSaveable { mutableStateOf(SongMeldPage.LIBRARY) }
+    var downloadSettingsReturnPage by rememberSaveable { mutableStateOf(SongMeldPage.SETTINGS) }
     var selectedLicense by rememberSaveable { mutableStateOf(LicenseDocument.SONGMELD) }
     fun navigateBack() {
-        currentPage = currentPage.parent
+        currentPage = if (currentPage == SongMeldPage.DOWNLOAD_SETTINGS)
+            downloadSettingsReturnPage else currentPage.parent
     }
     BackHandler(enabled = currentPage != SongMeldPage.LIBRARY) { navigateBack() }
     var libraryState by remember { mutableStateOf(LibraryLoadState()) }
@@ -318,13 +321,24 @@ fun SongMeldApp(
                             amoledBlackEnabled = amoledBlackEnabled,
                             onBack = { navigateBack() },
                             onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
+                            onOpenDownloads = {
+                                downloadSettingsReturnPage = SongMeldPage.SETTINGS
+                                currentPage = SongMeldPage.DOWNLOAD_SETTINGS
+                            },
                             onOpenAbout = { currentPage = SongMeldPage.ABOUT },
                         )
                     }
 
+                    SongMeldPage.DOWNLOAD_SETTINGS -> key("download_settings") {
+                        DownloadSettingsScreen(onBack = { navigateBack() })
+                    }
                     SongMeldPage.DOWNLOAD_ADD -> key("download_add") {
                         AddSongScreen(
                             onBack = { navigateBack() },
+                            onOpenSettings = {
+                                downloadSettingsReturnPage = SongMeldPage.DOWNLOAD_ADD
+                                currentPage = SongMeldPage.DOWNLOAD_SETTINGS
+                            },
                             onQueue = { preview, formatId ->
                                 // Avoid duplicate simultaneous downloads of the same source URL.
                                 if (DownloadRepository.tasks.value.none {
@@ -348,6 +362,10 @@ fun SongMeldApp(
                         DownloadActivityScreen(
                             onBack = { navigateBack() },
                             onAddSong = { currentPage = SongMeldPage.DOWNLOAD_ADD },
+                            onOpenSettings = {
+                                downloadSettingsReturnPage = SongMeldPage.DOWNLOADS
+                                currentPage = SongMeldPage.DOWNLOAD_SETTINGS
+                            },
                             onCancel = { id ->
                                 try {
                                     SongDownloadService.cancel(context, id)
@@ -449,14 +467,14 @@ fun SongMeldApp(
 
 /** Parent destinations for the Settings flow; saved/restored as one enum value. */
 private enum class SongMeldPage {
-    LIBRARY, DOWNLOAD_ADD, DOWNLOADS, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER,
+    LIBRARY, DOWNLOAD_ADD, DOWNLOADS, DOWNLOAD_SETTINGS, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER,
     LICENSES, LICENSE_DETAIL, CHANGELOG, TERMS;
 
     val depth: Int
         get() = when (this) {
             LIBRARY -> 0
             DOWNLOAD_ADD, DOWNLOADS, SETTINGS -> 1
-            APPEARANCE, ABOUT -> 2
+            DOWNLOAD_SETTINGS, APPEARANCE, ABOUT -> 2
             ICON_APPEARANCE, LICENSES, CHANGELOG, TERMS -> 3
             ICON_PICKER, LICENSE_DETAIL -> 4
         }
@@ -464,7 +482,7 @@ private enum class SongMeldPage {
     val parent: SongMeldPage
         get() = when (this) {
             LIBRARY, DOWNLOAD_ADD, DOWNLOADS, SETTINGS -> LIBRARY
-            APPEARANCE, ABOUT -> SETTINGS
+            DOWNLOAD_SETTINGS, APPEARANCE, ABOUT -> SETTINGS
             LICENSES, CHANGELOG, TERMS -> ABOUT
             LICENSE_DETAIL -> LICENSES
             ICON_APPEARANCE -> APPEARANCE

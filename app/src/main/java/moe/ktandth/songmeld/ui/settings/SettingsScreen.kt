@@ -107,6 +107,7 @@ fun SettingsScreen(
     amoledBlackEnabled: Boolean,
     onBack: () -> Unit,
     onOpenAppearance: () -> Unit,
+    onOpenDownloads: () -> Unit,
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -142,6 +143,14 @@ fun SettingsScreen(
                 accent = settingsAccent(0),
                 shape = RoundedCornerShape(28.dp),
                 onClick = onOpenAppearance,
+            )
+            ColorfulSettingsEntry(
+                title = stringResource(R.string.download_settings_title),
+                description = stringResource(R.string.download_settings_summary),
+                icon = SongMeldIconId.Download,
+                accent = settingsAccent(2),
+                shape = RoundedCornerShape(28.dp),
+                onClick = onOpenDownloads,
             )
             Spacer(Modifier.height(12.dp))
             SettingsSectionTitle(stringResource(R.string.settings_songmeld_section))

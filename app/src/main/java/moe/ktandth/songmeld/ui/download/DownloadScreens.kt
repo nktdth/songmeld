@@ -53,8 +53,10 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import moe.ktandth.songmeld.download.DownloadRepository
+import moe.ktandth.songmeld.download.DownloadPreferences
 import moe.ktandth.songmeld.download.DownloadStatus
 import moe.ktandth.songmeld.download.DownloadTask
+import moe.ktandth.songmeld.download.DownloadQualityPolicy
 import moe.ktandth.songmeld.download.NewPipeAudioResolver
 import moe.ktandth.songmeld.download.TrackPreview
 import moe.ktandth.songmeld.download.detectDownloadProvider
@@ -69,11 +71,13 @@ import moe.ktandth.songmeld.ui.icons.SongMeldIconId
 @Composable
 fun AddSongScreen(
     onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
     onQueue: (TrackPreview, String?) -> Unit,
     initialUrl: String = "",
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val downloadPreferences = remember(context) { DownloadPreferences(context.applicationContext) }
     var url by rememberSaveable { mutableStateOf(initialUrl) }
     var busy by remember { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
@@ -106,7 +110,9 @@ fun AddSongScreen(
             try {
                 val result = NewPipeAudioResolver.preview(submitted)
                 preview = result
-                selectedFormatId = result.formats.maxByOrNull { it.bitrateKbps ?: 0 }?.streamId
+                selectedFormatId = DownloadPreferences.chooseDefaultFormat(
+                    result.formats, downloadPreferences.quality, downloadPreferences.preferredCodec
+                )?.streamId
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
@@ -124,6 +130,11 @@ fun AddSongScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         SongMeldIcon(SongMeldIconId.ArrowBack, "Quay lại")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        SongMeldIcon(SongMeldIconId.Settings, "Cài đặt tải xuống")
                     }
                 },
             )
@@ -263,7 +274,9 @@ fun AddSongScreen(
                 }
                 item {
                     Text(
-                        "Giữ nguyên M4A, WebM/Opus hoặc định dạng nguồn; " +
+                        if (downloadPreferences.quality == DownloadQualityPolicy.ASK_EACH_TIME)
+                            "Đang chọn thủ công. Hãy chọn một định dạng phía trên trước khi tải."
+                        else "Giữ nguyên M4A, WebM/Opus hoặc định dạng nguồn; " +
                             "chưa chuyển mã MP3. Chỉ lưu nội dung anh có quyền tải.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
@@ -279,6 +292,7 @@ fun AddSongScreen(
 fun DownloadActivityScreen(
     onBack: () -> Unit,
     onAddSong: () -> Unit,
+    onOpenSettings: () -> Unit,
     onCancel: (String) -> Unit,
     onRetry: (DownloadTask) -> Unit,
 ) {
@@ -291,6 +305,11 @@ fun DownloadActivityScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         SongMeldIcon(SongMeldIconId.ArrowBack, "Quay lại")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        SongMeldIcon(SongMeldIconId.Settings, "Cài đặt tải xuống")
                     }
                 },
             )
