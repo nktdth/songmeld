@@ -20,6 +20,10 @@ android {
     buildFeatures {
         compose = true
     }
+
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
 }
 
 dependencies {
@@ -33,6 +37,9 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.newpipe.extractor)
+    // NewPipe Extractor uses newer Java APIs on Android 8 through Android 12.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.1.5")
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 
