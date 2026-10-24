@@ -102,10 +102,10 @@ class SongDownloadService : Service() {
                 updateNotification("Đang đọc thông tin bài hát", null)
                 // Resolve a fresh media URL here because signed URLs can expire between preview
                 // and queue execution.
-                val preview = NewPipeAudioResolver.preview(task.sourceUrl, applicationContext)
-                val usesYtDlp = task.provider == DownloadProvider.SOUNDCLOUD &&
-                    (YtDlpFallback.isFallbackFormat(task.requestedFormatId) ||
-                        preview.formats.any { YtDlpFallback.isFallbackFormat(it.streamId) })
+                // yt-dlp is the primary engine across all three sources. NewPipe only
+                // produces direct-stream previews if yt-dlp cannot inspect the track.
+                val preview = SongAudioResolver.preview(applicationContext, task.sourceUrl)
+                val usesYtDlp = preview.formats.any { YtDlpFallback.isFallbackFormat(it.streamId) }
                 val savedAudio: SavedAudio
                 val title: String
                 if (usesYtDlp) {
@@ -117,7 +117,8 @@ class SongDownloadService : Service() {
                     // and transfer. Prefer the original choice only when still offered.
                     val selectedFallbackFormat = task.requestedFormatId
                         ?.takeIf { selected ->
-                            preview.formats.any { it.streamId == selected }
+                            YtDlpFallback.isFallbackFormat(selected) &&
+                                preview.formats.any { it.streamId == selected }
                         } ?: DownloadPreferences.chooseDefaultFormat(
                             preview.formats, preferences.quality, preferences.preferredCodec
                         )?.streamId

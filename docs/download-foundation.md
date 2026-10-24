@@ -137,3 +137,24 @@ New installs now prefer **M4A/AAC** when the source offers it. This is the
 most predictable container for Android music indexing and metadata editing;
 if unavailable, the existing soft-preference policy falls back to any supported
 source audio. Existing user selections remain unchanged.
+
+## Unified source engine, 24 October 2026
+
+SongMeld now treats yt-dlp as the **primary extractor and downloader** for YouTube,
+YouTube Music and SoundCloud (following Seal's architecture). The older NewPipe path
+is retained only as a direct Progressive HTTP fallback when yt-dlp cannot preview
+an eligible track. This fixes the previous conceptual mismatch: NewPipe could return
+HLS streams suitable for playback but SongMeld's HttpURLConnection writer could only
+persist one direct Progressive HTTP URL. yt-dlp is responsible for HLS segment
+collection and handling source-specific headers. ffmpeg is packaged for cases where
+the source format needs container postprocessing; no forced MP3 encoding is enabled.
+
+The UI offers explicit provider formats when available plus an always-present
+`bestaudio` option for manifest/HLS sources. A download task re-resolves the source
+and format identifiers just before transfer. Both engines ultimately pass actual
+file bytes through the same MediaStore/SAF export, including the generic Downloads
+fallback on Android devices that refuse `audio/webm` in the Music collection.
+
+This deliberately follows the **engine architecture**, not GPL-licensed Seal UI
+or source code. It does not imply that every source track is legally or technically
+accessible. Live streaming/download capability must still be tested on device.

@@ -57,7 +57,7 @@ import moe.ktandth.songmeld.download.DownloadPreferences
 import moe.ktandth.songmeld.download.DownloadStatus
 import moe.ktandth.songmeld.download.DownloadTask
 import moe.ktandth.songmeld.download.DownloadQualityPolicy
-import moe.ktandth.songmeld.download.NewPipeAudioResolver
+import moe.ktandth.songmeld.download.SongAudioResolver
 import moe.ktandth.songmeld.download.TrackPreview
 import moe.ktandth.songmeld.download.detectDownloadProvider
 import moe.ktandth.songmeld.ui.icons.SongMeldIcon
@@ -108,7 +108,7 @@ fun AddSongScreen(
             preview = null
             failure = null
             try {
-                val result = NewPipeAudioResolver.preview(submitted, context.applicationContext)
+                val result = SongAudioResolver.preview(context.applicationContext, submitted)
                 preview = result
                 selectedFormatId = DownloadPreferences.chooseDefaultFormat(
                     result.formats, downloadPreferences.quality, downloadPreferences.preferredCodec

@@ -9,11 +9,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Alternative SoundCloud extractor/download engine, reusing the mature library used by
- * Seal and SongMeld-v1. Invoked only when NewPipe cannot resolve an eligible track.
+ * Unified primary audio download engine, inspired by Seal and SongMeld-v1.
  *
- * This downloads source audio as-is to the app cache, then SongMeld's MediaStore/SAF
- * writer imports the real file. No codec transcoding, DRM bypass, or login workaround.
+ * yt-dlp handles SoundCloud HLS and YouTube/YT Music media extraction as well as
+ * download/fragment assembly. A source audio file is imported through SongMeld's
+ * existing MediaStore/SAF writer without transcoding or a misleading extension.
+ * NewPipe remains a direct-stream fallback managed by SongAudioResolver.
  */
 internal object YtDlpFallback {
     const val FORMAT_PREFIX = "ytdlp:"
@@ -31,9 +32,8 @@ internal object YtDlpFallback {
 
     suspend fun preview(context: Context, url: String): TrackPreview =
         withContext(Dispatchers.IO) {
-            if (detectDownloadProvider(url) != DownloadProvider.SOUNDCLOUD) {
-                throw IllegalArgumentException("Bộ tải SoundCloud dự phòng chỉ hỗ trợ URL SoundCloud hợp lệ.")
-            }
+            val provider = detectDownloadProvider(url)
+                ?: throw IllegalArgumentException("Chỉ hỗ trợ liên kết bài hát YouTube, YouTube Music hoặc SoundCloud.")
             YoutubeDL.init(context.applicationContext)
             val info = YoutubeDL.getInfo(
                 YoutubeDLRequest(url).addOption("--no-playlist")
@@ -54,24 +54,22 @@ internal object YtDlpFallback {
                 )
             }.distinctBy { it.streamId }
 
-            // yt-dlp can download sources with no enumerated direct HTTP format
-            // (e.g. delegated HLS). An explicit "auto" choice does not claim a codec.
+            // A native HLS/manifest format might not be present in the list of direct
+            // downloadable files. yt-dlp still understands this audio-only selector.
+            // Always expose it as an option, especially for SoundCloud HLS.
+            val automatic = AudioFormatChoice(
+                streamId = FORMAT_PREFIX + "bestaudio",
+                extension = "auto",
+                bitrateKbps = null,
+                mimeType = "application/octet-stream",
+            )
             TrackPreview(
                 sourceUrl = url,
-                provider = DownloadProvider.SOUNDCLOUD,
-                title = info.title?.takeIf(String::isNotBlank) ?: "Bài hát SoundCloud",
+                provider = provider,
+                title = info.title?.takeIf(String::isNotBlank) ?: "Bài hát",
                 uploader = info.uploader.orEmpty(),
                 durationSeconds = info.duration.toLong().coerceAtLeast(0),
-                formats = formats.ifEmpty {
-                    listOf(
-                        AudioFormatChoice(
-                            streamId = FORMAT_PREFIX + "bestaudio",
-                            extension = "auto",
-                            bitrateKbps = null,
-                            mimeType = "application/octet-stream",
-                        )
-                    )
-                },
+                formats = formats + automatic,
             )
         }
 
@@ -86,8 +84,8 @@ internal object YtDlpFallback {
         requestedFormatId: String?,
         onProgress: (Float) -> Unit,
     ): File = withContext(Dispatchers.IO) {
-        if (detectDownloadProvider(sourceUrl) != DownloadProvider.SOUNDCLOUD) {
-            throw IllegalArgumentException("Liên kết SoundCloud không hợp lệ.")
+        if (detectDownloadProvider(sourceUrl) == null) {
+            throw IllegalArgumentException("Liên kết nhạc không hợp lệ.")
         }
         YoutubeDL.init(context.applicationContext)
         val directory = File(context.cacheDir, "songmeld-yt-dlp/$taskId")
@@ -129,7 +127,7 @@ internal object YtDlpFallback {
         val extension = file.extension.lowercase()
         val mime = mimeTypes[extension] ?: throw IOException("Định dạng yt-dlp trả về không được hỗ trợ.")
         return ResolvedAudio(
-            provider = DownloadProvider.SOUNDCLOUD,
+            provider = preview.provider,
             title = preview.title,
             uploader = preview.uploader,
             streamUrl = "",
