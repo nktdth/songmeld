@@ -75,6 +75,11 @@ fun DownloadSettingsScreen(onBack: () -> Unit) {
     var ytDlpUpdating by remember { mutableStateOf(false) }
     var ytDlpVersion by remember { mutableStateOf(YoutubeDL.version(context.applicationContext)) }
     var ytDlpUpdateMessage by remember { mutableStateOf<String?>(null) }
+    // Resolve localized strings through Compose to track configuration changes.
+    val waitForTasksText = stringResource(R.string.download_engine_wait_for_tasks)
+    val updatedText = stringResource(R.string.download_engine_updated)
+    val currentText = stringResource(R.string.download_engine_current)
+    val updateFailedText = stringResource(R.string.download_engine_update_failed)
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) {
             runCatching {
@@ -261,9 +266,7 @@ fun DownloadSettingsScreen(onBack: () -> Unit) {
                         enabled = !ytDlpUpdating,
                         onClick = {
                             if (DownloadRepository.tasks.value.any { it.isActive }) {
-                                ytDlpUpdateMessage = context.getString(
-                                    R.string.download_engine_wait_for_tasks
-                                )
+                                ytDlpUpdateMessage = waitForTasksText
                             } else {
                                 updateScope.launch {
                                     ytDlpUpdating = true
@@ -277,15 +280,12 @@ fun DownloadSettingsScreen(onBack: () -> Unit) {
                                             )
                                         }
                                         ytDlpVersion = YoutubeDL.version(context.applicationContext)
-                                        ytDlpUpdateMessage = context.getString(
+                                        ytDlpUpdateMessage =
                                             if (result == YoutubeDL.UpdateStatus.DONE)
-                                                R.string.download_engine_updated
-                                            else R.string.download_engine_current
-                                        )
+                                                updatedText else currentText
                                     } catch (error: Exception) {
-                                        ytDlpUpdateMessage = context.getString(
-                                            R.string.download_engine_update_failed
-                                        ) + ": " + (error.message?.take(110) ?: "Lỗi không xác định")
+                                        ytDlpUpdateMessage = updateFailedText + ": " +
+                                            (error.message?.take(110) ?: "Lỗi không xác định")
                                     } finally {
                                         ytDlpUpdating = false
                                     }
