@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import android.provider.DocumentsContract
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.currentCoroutineContext
@@ -27,18 +28,60 @@ internal object AudioFileSaver {
         audio: ResolvedAudio,
         onProgress: (Long, Long?) -> Unit,
     ): SavedAudio {
+        val connection = (URL(audio.streamUrl).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 20_000
+            readTimeout = 30_000
+            setRequestProperty(
+                "User-Agent",
+                "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36"
+            )
+            instanceFollowRedirects = true
+        }
+        try {
+            val code = connection.responseCode
+            if (code !in 200..299) {
+                throw IOException("Nguồn phát từ chối yêu cầu (HTTP $code). Vui lòng thử lại sau.")
+            }
+            return connection.inputStream.use { input ->
+                saveInput(
+                    context, audio, input,
+                    connection.contentLengthLong.takeIf { it > 0 },
+                    onProgress,
+                )
+            }
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    /** Import the original file produced by an alternate source engine. */
+    suspend fun saveFile(
+        context: Context,
+        audio: ResolvedAudio,
+        downloadedFile: File,
+        onProgress: (Long, Long?) -> Unit,
+    ): SavedAudio {
+        if (!downloadedFile.isFile || downloadedFile.length() == 0L) {
+            throw IOException("Bộ tải dự phòng không tạo được tệp âm thanh.")
+        }
+        return downloadedFile.inputStream().use { input ->
+            saveInput(context, audio, input, downloadedFile.length(), onProgress)
+        }
+    }
+
+    private suspend fun saveInput(
+        context: Context,
+        audio: ResolvedAudio,
+        input: InputStream,
+        contentLength: Long?,
+        onProgress: (Long, Long?) -> Unit,
+    ): SavedAudio {
         val filename = safeFilename(audio.title) + "." + audio.format.extension
         val preferences = DownloadPreferences(context.applicationContext)
         val customTree = preferences.customTreeUri?.let(Uri::parse)
         // SAF roots are user-chosen; their content is saved directly in that folder.
         val sourceFolder = if (preferences.folderPolicy == DownloadFolderPolicy.BY_SOURCE)
             "/" + audio.provider.displayName.replace(" ", "") else ""
-        val connection = (URL(audio.streamUrl).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 20_000
-            readTimeout = 30_000
-            setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36")
-            instanceFollowRedirects = true
-        }
         var outputUri: Uri? = null
         val usesMediaStore = customTree == null && Build.VERSION.SDK_INT >= 29
         var folderLabel = if (customTree != null) "Thư mục đã chọn" else
@@ -46,11 +89,6 @@ internal object AudioFileSaver {
         var published = false
         var legacyFile: File? = null
         try {
-            val code = connection.responseCode
-            if (code !in 200..299) throw IOException(
-                "Nguồn phát từ chối yêu cầu (HTTP " + code + "). Vui lòng thử lại sau."
-            )
-            val contentLength = connection.contentLengthLong.takeIf { it > 0 }
             val resolver = context.contentResolver
             if (customTree != null) {
                 val directoryId = DocumentsContract.getTreeDocumentId(customTree)
@@ -106,8 +144,7 @@ internal object AudioFileSaver {
                     ?: throw IOException("Không thể mở tệp đích.")
             var written = 0L
             var lastUpdateAt = 0L
-            connection.inputStream.use { input ->
-                target.buffered().use { output ->
+            target.buffered().use { output ->
                     val buffer = ByteArray(64 * 1024)
                     while (true) {
                         currentCoroutineContext().ensureActive()
@@ -122,7 +159,6 @@ internal object AudioFileSaver {
                         }
                     }
                 }
-            }
             if (written == 0L) throw IOException("Tệp nhận được rỗng.")
             if (contentLength != null && written < contentLength) {
                 throw IOException("Tệp tải về không đầy đủ.")
@@ -142,7 +178,6 @@ internal object AudioFileSaver {
             onProgress(written, contentLength ?: written)
             return SavedAudio(destination, folderLabel)
         } finally {
-            connection.disconnect()
             if (!published) {
                 if (legacyFile != null) legacyFile?.delete()
                 else outputUri?.let { runCatching { context.contentResolver.delete(it, null, null) } }
