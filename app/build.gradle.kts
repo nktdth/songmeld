@@ -21,6 +21,14 @@ android {
         compose = true
     }
 
+    // yt-dlp's bundled Python executable must be extracted from the APK.
+    // AGP 9.4 disallows android:extractNativeLibs in the manifest.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
     }
