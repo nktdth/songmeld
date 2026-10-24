@@ -105,7 +105,7 @@ class SongDownloadService : Service() {
                 // yt-dlp is the primary engine across all three sources. NewPipe only
                 // produces direct-stream previews if yt-dlp cannot inspect the track.
                 val preview = SongAudioResolver.preview(applicationContext, task.sourceUrl)
-                val usesYtDlp = preview.formats.any { YtDlpFallback.isFallbackFormat(it.streamId) }
+                val usesYtDlp = DownloadEnginePolicy.isYtDlpPreview(preview)
                 val savedAudio: SavedAudio
                 val title: String
                 if (usesYtDlp) {
