@@ -113,11 +113,19 @@ class SongDownloadService : Service() {
                     DownloadRepository.update(id) {
                         it.copy(title = title, status = DownloadStatus.DOWNLOADING)
                     }
+                    // Format IDs are provider-generated and can change between inspection
+                    // and transfer. Prefer the original choice only when still offered.
+                    val selectedFallbackFormat = task.requestedFormatId
+                        ?.takeIf { selected ->
+                            preview.formats.any { it.streamId == selected }
+                        } ?: DownloadPreferences.chooseDefaultFormat(
+                            preview.formats, preferences.quality, preferences.preferredCodec
+                        )?.streamId
                     val downloadedFile = YtDlpFallback.download(
                         applicationContext,
                         task.sourceUrl,
                         id,
-                        task.requestedFormatId,
+                        selectedFallbackFormat,
                     ) { progress ->
                         DownloadRepository.update(id) {
                             it.copy(status = DownloadStatus.DOWNLOADING, progress = progress)
