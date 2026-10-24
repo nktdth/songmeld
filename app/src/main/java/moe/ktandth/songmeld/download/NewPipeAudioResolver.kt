@@ -1,5 +1,7 @@
 package moe.ktandth.songmeld.download
 
+import android.content.Context
+
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -36,7 +38,8 @@ object NewPipeAudioResolver {
         }
     }
 
-    suspend fun preview(url: String): TrackPreview = withContext(Dispatchers.IO) {
+    suspend fun preview(url: String, context: Context? = null): TrackPreview =
+        withContext(Dispatchers.IO) {
         val provider = detectDownloadProvider(url)
             ?: throw IllegalArgumentException("Chỉ hỗ trợ liên kết bài hát HTTPS từ YouTube, YouTube Music và SoundCloud.")
         initialize()
@@ -44,9 +47,23 @@ object NewPipeAudioResolver {
         val resolvedUrl = if (provider == DownloadProvider.YOUTUBE_MUSIC)
             url.replaceFirst("https://music.youtube.com/", "https://www.youtube.com/")
         else url
-        val info = StreamInfo.getInfo(resolvedUrl)
+        // NewPipe currently fails on SoundCloud's shifting client_id discovery.
+        // Try the already-established yt-dlp Android engine only for SoundCloud; keep
+        // YouTube and YouTube Music on the existing small NewPipe engine.
+        val info = try {
+            StreamInfo.getInfo(resolvedUrl)
+        } catch (original: Exception) {
+            if (provider != DownloadProvider.SOUNDCLOUD || context == null) throw original
+            return@withContext fallbackSoundCloud(context, url, original)
+        }
         val audio = supportedStreams(info.audioStreams)
         if (audio.isEmpty()) {
+            if (provider == DownloadProvider.SOUNDCLOUD && context != null) {
+                return@withContext fallbackSoundCloud(
+                    context, url,
+                    IOException("NewPipe không cung cấp luồng âm thanh khả dụng.")
+                )
+            }
             throw IOException("Nguồn này không cung cấp luồng âm thanh trực tiếp được hỗ trợ.")
         }
         TrackPreview(
@@ -57,6 +74,23 @@ object NewPipeAudioResolver {
             durationSeconds = info.duration.coerceAtLeast(0),
             formats = audio.map { it.second },
         )
+    }
+
+    private suspend fun fallbackSoundCloud(
+        context: Context,
+        url: String,
+        original: Exception,
+    ): TrackPreview {
+        return try {
+            YtDlpFallback.preview(context, url)
+        } catch (fallback: Exception) {
+            fallback.addSuppressed(original)
+            throw IOException(
+                "SoundCloud tạm thời không thể lấy thông tin qua cả NewPipe và yt-dlp. " +
+                    "Hãy thử liên kết khác hoặc tải từ trang SoundCloud nếu tác giả cho phép.",
+                fallback,
+            )
+        }
     }
 
     suspend fun resolve(preview: TrackPreview, requestedFormatId: String?): ResolvedAudio =

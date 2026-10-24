@@ -62,6 +62,8 @@ class SongDownloadService : Service() {
             }
             ACTION_CANCEL -> intent.getStringExtra(EXTRA_ID)?.let { id ->
                 if (activeId == id) {
+                    // yt-dlp runs a child process; cancelling the coroutine alone is not enough.
+                    YtDlpFallback.cancel(id)
                     activeJob?.cancel()
                 } else {
                     pending.remove(id)
@@ -100,19 +102,61 @@ class SongDownloadService : Service() {
                 updateNotification("Đang đọc thông tin bài hát", null)
                 // Resolve a fresh media URL here because signed URLs can expire between preview
                 // and queue execution.
-                val preview = NewPipeAudioResolver.preview(task.sourceUrl)
-                val audio = NewPipeAudioResolver.resolve(preview, task.requestedFormatId)
-                DownloadRepository.update(id) {
-                    it.copy(title = audio.title, status = DownloadStatus.DOWNLOADING)
-                }
-                updateNotification(audio.title, null)
-                val savedAudio = AudioFileSaver.save(applicationContext, audio) { bytes, total ->
-                    val progress = total?.takeIf { it > 0 }?.let { bytes.toFloat() / it }
+                val preview = NewPipeAudioResolver.preview(task.sourceUrl, applicationContext)
+                val usesYtDlp = task.provider == DownloadProvider.SOUNDCLOUD &&
+                    (YtDlpFallback.isFallbackFormat(task.requestedFormatId) ||
+                        preview.formats.any { YtDlpFallback.isFallbackFormat(it.streamId) })
+                val savedAudio: SavedAudio
+                val title: String
+                if (usesYtDlp) {
+                    title = preview.title
                     DownloadRepository.update(id) {
-                        it.copy(status = DownloadStatus.DOWNLOADING,
-                            downloadedBytes = bytes, totalBytes = total, progress = progress)
+                        it.copy(title = title, status = DownloadStatus.DOWNLOADING)
                     }
-                    updateNotification(audio.title, progress)
+                    val downloadedFile = YtDlpFallback.download(
+                        applicationContext,
+                        task.sourceUrl,
+                        id,
+                        task.requestedFormatId,
+                    ) { progress ->
+                        DownloadRepository.update(id) {
+                            it.copy(status = DownloadStatus.DOWNLOADING, progress = progress)
+                        }
+                        updateNotification(title, progress)
+                    }
+                    try {
+                        val audio = YtDlpFallback.toResolvedAudio(preview, downloadedFile)
+                        DownloadRepository.update(id) {
+                            it.copy(status = DownloadStatus.SAVING)
+                        }
+                        updateNotification("Đang lưu: $title", null)
+                        savedAudio = AudioFileSaver.saveFile(
+                            applicationContext, audio, downloadedFile
+                        ) { bytes, total ->
+                            val progress = total?.takeIf { it > 0 }?.let { bytes.toFloat() / it }
+                            DownloadRepository.update(id) {
+                                it.copy(status = DownloadStatus.SAVING, downloadedBytes = bytes,
+                                    totalBytes = total, progress = progress)
+                            }
+                        }
+                    } finally {
+                        YtDlpFallback.clearTemporaryFiles(applicationContext, id)
+                    }
+                } else {
+                    val audio = NewPipeAudioResolver.resolve(preview, task.requestedFormatId)
+                    title = audio.title
+                    DownloadRepository.update(id) {
+                        it.copy(title = title, status = DownloadStatus.DOWNLOADING)
+                    }
+                    updateNotification(title, null)
+                    savedAudio = AudioFileSaver.save(applicationContext, audio) { bytes, total ->
+                        val progress = total?.takeIf { it > 0 }?.let { bytes.toFloat() / it }
+                        DownloadRepository.update(id) {
+                            it.copy(status = DownloadStatus.DOWNLOADING,
+                                downloadedBytes = bytes, totalBytes = total, progress = progress)
+                        }
+                        updateNotification(title, progress)
+                    }
                 }
                 DownloadRepository.update(id) {
                     it.copy(
@@ -122,13 +166,19 @@ class SongDownloadService : Service() {
                         savedFolder = savedAudio.folderLabel,
                     )
                 }
-                if (preferences.completionNotifications) notifyCompletion(id, audio.title)
+                if (preferences.completionNotifications) notifyCompletion(id, title)
             } catch (_: CancellationException) {
                 DownloadRepository.update(id) { it.copy(status = DownloadStatus.CANCELED) }
             } catch (failure: Exception) {
                 DownloadRepository.update(id) {
-                    it.copy(status = DownloadStatus.FAILED,
-                        error = failure.message?.take(240) ?: "Không thể tải bài hát.")
+                    if (activeJob?.isCancelled == true ||
+                        failure is com.yausername.youtubedl_android.YoutubeDL.CanceledException
+                    ) {
+                        it.copy(status = DownloadStatus.CANCELED)
+                    } else {
+                        it.copy(status = DownloadStatus.FAILED,
+                            error = failure.message?.take(240) ?: "Không thể tải bài hát.")
+                    }
                 }
             } finally {
                 // Service state is touched only from the main dispatcher to serialize intents.
@@ -202,6 +252,7 @@ class SongDownloadService : Service() {
     }
 
     override fun onDestroy() {
+        activeId?.let(YtDlpFallback::cancel)
         activeJob?.cancel()
         scope.cancel()
         super.onDestroy()

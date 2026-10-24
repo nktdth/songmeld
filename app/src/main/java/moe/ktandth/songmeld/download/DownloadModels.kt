@@ -8,6 +8,10 @@ data class AudioFormatChoice(
 ) {
     val label: String
         get() = buildString {
+            if (streamId == YtDlpFallback.FORMAT_PREFIX + "bestaudio") {
+                append("Âm thanh gốc · Tự động (yt-dlp)")
+                return@buildString
+            }
             append(extension.uppercase())
             bitrateKbps?.takeIf { it > 0 }?.let {
                 append(" · ")

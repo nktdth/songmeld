@@ -38,6 +38,8 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.newpipe.extractor)
+    // Back-up SoundCloud audio extractor from the maintained Seal / SongMeld-v1 stack.
+    implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
     // NewPipe Extractor uses newer Java APIs on Android 8 through Android 12.
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.1.5")
 

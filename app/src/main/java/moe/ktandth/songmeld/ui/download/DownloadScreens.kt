@@ -108,7 +108,7 @@ fun AddSongScreen(
             preview = null
             failure = null
             try {
-                val result = NewPipeAudioResolver.preview(submitted)
+                val result = NewPipeAudioResolver.preview(submitted, context.applicationContext)
                 preview = result
                 selectedFormatId = DownloadPreferences.chooseDefaultFormat(
                     result.formats, downloadPreferences.quality, downloadPreferences.preferredCodec

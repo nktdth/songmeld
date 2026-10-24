@@ -114,3 +114,20 @@ or an M4A format to have predictable music-library indexing.
 
 This does not transcode WebM to MP3, which would falsely label the underlying
 bytes. The write is marked IS_PENDING until complete and cleaned up on failure.
+
+## SoundCloud source fallback (experimental)
+
+NewPipe's SoundCloud `client_id` extraction breaks intermittently when SoundCloud
+changes its pages or blocks JavaScript access. A single upstream update is not a
+reliable cure. For validated SoundCloud links only, SongMeld tries the
+`io.github.junkfood02.youtubedl-android:library:0.18.1` yt-dlp engine if NewPipe
+cannot preview audio. Its format IDs are kept distinct (`ytdlp:` prefix) and
+the engine downloads into the app's private cache. Original files are then
+imported using the same MediaStore/SAF writer; the task's subprocess can be
+cancelled and its temporary files are deleted. This **increases APK size** and
+may still fail if SoundCloud blocks both extractors or a track is unavailable.
+No private API key is hard-coded, and no DRM/access restrictions are bypassed.
+
+The alternate engine requires bundled native Python and setting
+`android:extractNativeLibs=true`. Confirm the actual SoundCloud link and
+Android ABI on a physical device; CI compile cannot verify live providers.
