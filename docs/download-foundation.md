@@ -131,3 +131,9 @@ No private API key is hard-coded, and no DRM/access restrictions are bypassed.
 The alternate engine requires bundled native Python and setting
 `android:extractNativeLibs=true`. Confirm the actual SoundCloud link and
 Android ABI on a physical device; CI compile cannot verify live providers.
+
+### Recommended new-install audio default
+New installs now prefer **M4A/AAC** when the source offers it. This is the
+most predictable container for Android music indexing and metadata editing;
+if unavailable, the existing soft-preference policy falls back to any supported
+source audio. Existing user selections remain unchanged.

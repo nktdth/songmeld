@@ -19,7 +19,7 @@ class DownloadPreferences(context: Context) {
         set(value) { storage.edit().putString("quality", value.name).apply() }
 
     var preferredCodec: PreferredAudioCodec
-        get() = enumOrDefault(storage.getString("codec", null), PreferredAudioCodec.AUTO)
+        get() = enumOrDefault(storage.getString("codec", null), PreferredAudioCodec.M4A_AAC)
         set(value) { storage.edit().putString("codec", value.name).apply() }
 
     var folderPolicy: DownloadFolderPolicy
