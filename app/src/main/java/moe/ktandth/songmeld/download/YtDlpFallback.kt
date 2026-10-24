@@ -1,6 +1,7 @@
 package moe.ktandth.songmeld.download
 
 import android.content.Context
+import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import java.io.File
@@ -35,6 +36,9 @@ internal object YtDlpFallback {
             val provider = detectDownloadProvider(url)
                 ?: throw IllegalArgumentException("Chỉ hỗ trợ liên kết bài hát YouTube, YouTube Music hoặc SoundCloud.")
             YoutubeDL.init(context.applicationContext)
+            // The native FFmpeg binary is bundled as a compressed asset. It must be
+            // extracted into the runtime path before yt-dlp can assemble HLS audio.
+            FFmpeg.init(context.applicationContext)
             val info = YoutubeDL.getInfo(
                 YoutubeDLRequest(url).addOption("--no-playlist")
             )
@@ -88,6 +92,7 @@ internal object YtDlpFallback {
             throw IllegalArgumentException("Liên kết nhạc không hợp lệ.")
         }
         YoutubeDL.init(context.applicationContext)
+        FFmpeg.init(context.applicationContext)
         val directory = File(context.cacheDir, "songmeld-yt-dlp/$taskId")
         directory.deleteRecursively()
         if (!directory.mkdirs()) throw IOException("Không thể tạo thư mục tải tạm.")
