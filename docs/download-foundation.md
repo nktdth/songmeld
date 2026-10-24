@@ -158,3 +158,11 @@ fallback on Android devices that refuse `audio/webm` in the Music collection.
 This deliberately follows the **engine architecture**, not GPL-licensed Seal UI
 or source code. It does not imply that every source track is legally or technically
 accessible. Live streaming/download capability must still be tested on device.
+
+### Manual yt-dlp updates (Seal-style)
+Download Settings contains an explicit update action for the upstream yt-dlp
+Stable release, using the library's official update API. It shows the saved
+runtime version/status and refuses an update while SongMeld has active tasks.
+No automatic network updates are performed without user action, and errors
+are shown as a local status message. Runtime updates can restore compatibility
+when media providers change, but they do not guarantee download access.

@@ -218,4 +218,12 @@
     <string name="download_notify_completion">Báo khi tải xong</string>
     <string name="download_notify_completion_description">Hiện thông báo hoàn thành khi được cấp quyền. Tiến trình tải nền vẫn cần thông báo hệ thống.</string>
     <string name="download_settings_limits">Hiện hỗ trợ tải một bài mỗi lần theo thứ tự. Hàng đợi sẽ không được khôi phục sau khi tiến trình ứng dụng bị hệ thống kết thúc. Chỉ tải nội dung được phép lưu.</string>
+    <string name="download_settings_engine">Công cụ tải xuống</string>
+    <string name="download_engine_bundled">Đang sử dụng yt-dlp đi kèm ứng dụng</string>
+    <string name="download_engine_update">Kiểm tra và cập nhật yt-dlp</string>
+    <string name="download_engine_updated">Đã cập nhật yt-dlp. Anh có thể thử tải lại bài hát.</string>
+    <string name="download_engine_current">Đã có phiên bản yt-dlp mới nhất trên kênh Stable.</string>
+    <string name="download_engine_wait_for_tasks">Hãy chờ các tác vụ tải hiện tại kết thúc rồi cập nhật.</string>
+    <string name="download_engine_update_failed">Không thể cập nhật yt-dlp</string>
+    <string name="download_engine_update_note">Tương tự Seal, SongMeld cho phép cập nhật bộ trích xuất yt-dlp từ bản phát hành Stable chính thức. Cần Internet và chỉ cập nhật khi không tải nhạc.</string>
 </resources>

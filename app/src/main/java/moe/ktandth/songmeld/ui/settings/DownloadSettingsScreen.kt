@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
@@ -34,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +50,11 @@ import moe.ktandth.songmeld.download.DownloadFolderPolicy
 import moe.ktandth.songmeld.download.DownloadPreferences
 import moe.ktandth.songmeld.download.DownloadQualityPolicy
 import moe.ktandth.songmeld.download.PreferredAudioCodec
+import moe.ktandth.songmeld.download.DownloadRepository
+import com.yausername.youtubedl_android.YoutubeDL
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * The first download settings page deliberately contains only working switches and choices.
@@ -63,6 +71,10 @@ fun DownloadSettingsScreen(onBack: () -> Unit) {
     var notifyCompletion by remember { mutableStateOf(preferences.completionNotifications) }
     var customTree by remember { mutableStateOf(preferences.customTreeUri) }
     var directoryError by remember { mutableStateOf<String?>(null) }
+    val updateScope = rememberCoroutineScope()
+    var ytDlpUpdating by remember { mutableStateOf(false) }
+    var ytDlpVersion by remember { mutableStateOf(YoutubeDL.version(context.applicationContext)) }
+    var ytDlpUpdateMessage by remember { mutableStateOf<String?>(null) }
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) {
             runCatching {
@@ -227,6 +239,82 @@ fun DownloadSettingsScreen(onBack: () -> Unit) {
                 description = stringResource(R.string.download_notify_completion_description),
                 checked = notifyCompletion,
                 onCheckedChange = { notifyCompletion = it; preferences.completionNotifications = it },
+            )
+            Spacer(Modifier.height(8.dp))
+            SectionTitle(stringResource(R.string.download_settings_engine))
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text("yt-dlp", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        ytDlpVersion?.let { "Phiên bản: $it" }
+                            ?: stringResource(R.string.download_engine_bundled),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(
+                        enabled = !ytDlpUpdating,
+                        onClick = {
+                            if (DownloadRepository.tasks.value.any { it.isActive }) {
+                                ytDlpUpdateMessage = context.getString(
+                                    R.string.download_engine_wait_for_tasks
+                                )
+                            } else {
+                                updateScope.launch {
+                                    ytDlpUpdating = true
+                                    ytDlpUpdateMessage = null
+                                    try {
+                                        val result = withContext(Dispatchers.IO) {
+                                            YoutubeDL.init(context.applicationContext)
+                                            YoutubeDL.updateYoutubeDL(
+                                                context.applicationContext,
+                                                YoutubeDL.UpdateChannel.STABLE,
+                                            )
+                                        }
+                                        ytDlpVersion = YoutubeDL.version(context.applicationContext)
+                                        ytDlpUpdateMessage = context.getString(
+                                            if (result == YoutubeDL.UpdateStatus.DONE)
+                                                R.string.download_engine_updated
+                                            else R.string.download_engine_current
+                                        )
+                                    } catch (error: Exception) {
+                                        ytDlpUpdateMessage = context.getString(
+                                            R.string.download_engine_update_failed
+                                        ) + ": " + (error.message?.take(110) ?: "Lỗi không xác định")
+                                    } finally {
+                                        ytDlpUpdating = false
+                                    }
+                                }
+                            }
+                        },
+                    ) {
+                        if (ytDlpUpdating) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text(stringResource(R.string.download_engine_update))
+                        }
+                    }
+                    ytDlpUpdateMessage?.let { message ->
+                        Text(
+                            message,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+            Text(
+                stringResource(R.string.download_engine_update_note),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
             )
             Text(
                 stringResource(R.string.download_settings_limits),
