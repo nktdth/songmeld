@@ -370,6 +370,13 @@ fun DownloadActivityScreen(
                                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                             }
                         }
+                        task.savedFolder?.let { folder ->
+                            Text(
+                                "Đã lưu tại: " + folder,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                         task.error?.let { message ->
                             Text(message, color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall)

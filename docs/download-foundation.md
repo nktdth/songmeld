@@ -99,3 +99,18 @@ single legacy option; this preserves the functional download history. No custom
 colors or overlay backgrounds are imposed on the native Material FABs. This
 intentionally uses v1's exact motion instead of M3E FAB Menu motion because the
 user specifically requested the original bounce, arrangement and background.
+
+## OEM MediaStore MIME compatibility (YouTube Music WebM/Opus)
+
+Some Android MediaProvider implementations throw
+`IllegalArgumentException("Unsupported MIME type audio/webm")` when inserting
+WebM/Opus into `MediaStore.Audio.Media`. SongMeld now **attempts Music/SongMeld
+first** and, only on this exact unsupported-MIME category, retries via the
+generic `MediaStore.Downloads` collection into `Download/SongMeld`, preserving
+the real MIME and file extension. Completed queue items show the destination
+folder so people can find the file. If the fallback is used, the file may not
+appear in music-only library queries; the user may choose a custom SAF folder
+or an M4A format to have predictable music-library indexing.
+
+This does not transcode WebM to MP3, which would falsely label the underlying
+bytes. The write is marked IS_PENDING until complete and cleaned up on failure.

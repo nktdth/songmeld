@@ -106,7 +106,7 @@ class SongDownloadService : Service() {
                     it.copy(title = audio.title, status = DownloadStatus.DOWNLOADING)
                 }
                 updateNotification(audio.title, null)
-                AudioFileSaver.save(applicationContext, audio) { bytes, total ->
+                val savedAudio = AudioFileSaver.save(applicationContext, audio) { bytes, total ->
                     val progress = total?.takeIf { it > 0 }?.let { bytes.toFloat() / it }
                     DownloadRepository.update(id) {
                         it.copy(status = DownloadStatus.DOWNLOADING,
@@ -115,7 +115,12 @@ class SongDownloadService : Service() {
                     updateNotification(audio.title, progress)
                 }
                 DownloadRepository.update(id) {
-                    it.copy(status = DownloadStatus.COMPLETED, progress = 1f, error = null)
+                    it.copy(
+                        status = DownloadStatus.COMPLETED,
+                        progress = 1f,
+                        error = null,
+                        savedFolder = savedAudio.folderLabel,
+                    )
                 }
                 if (preferences.completionNotifications) notifyCompletion(id, audio.title)
             } catch (_: CancellationException) {

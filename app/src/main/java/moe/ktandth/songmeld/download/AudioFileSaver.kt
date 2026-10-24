@@ -19,12 +19,14 @@ import kotlinx.coroutines.ensureActive
  * Export an actual audio file, NOT a Media3 playback cache. Preserve the source
  * container/codec; in particular, never rename a WebM/Opus stream to .mp3.
  */
+internal data class SavedAudio(val uri: Uri, val folderLabel: String)
+
 internal object AudioFileSaver {
     suspend fun save(
         context: Context,
         audio: ResolvedAudio,
         onProgress: (Long, Long?) -> Unit,
-    ): Uri {
+    ): SavedAudio {
         val filename = safeFilename(audio.title) + "." + audio.format.extension
         val preferences = DownloadPreferences(context.applicationContext)
         val customTree = preferences.customTreeUri?.let(Uri::parse)
@@ -39,6 +41,8 @@ internal object AudioFileSaver {
         }
         var outputUri: Uri? = null
         val usesMediaStore = customTree == null && Build.VERSION.SDK_INT >= 29
+        var folderLabel = if (customTree != null) "Thư mục đã chọn" else
+            Environment.DIRECTORY_MUSIC + "/SongMeld" + sourceFolder
         var published = false
         var legacyFile: File? = null
         try {
@@ -64,13 +68,32 @@ internal object AudioFileSaver {
                     put(MediaStore.Audio.Media.IS_MUSIC, 1)
                     put(MediaStore.Audio.Media.IS_PENDING, 1)
                 }
-                outputUri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values)
-                    ?: throw IOException("Không thể tạo tệp âm thanh trong MediaStore.")
+                // Android OEM MediaProviders often reject audio/webm or audio/opus on the
+                // AUDIO_MEDIA collection: IllegalArgumentException("Unsupported MIME type ...").
+                // Generic Downloads accepts media files without forcing a fake MP3 MIME or suffix.
+                // Other insert errors are deliberately not swallowed.
+                outputUri = try {
+                    resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values)
+                } catch (unsupported: IllegalArgumentException) {
+                    if (!MediaStoreAudioFallback.shouldUseDownloads(unsupported.message)) {
+                        throw unsupported
+                    }
+                    folderLabel = Environment.DIRECTORY_DOWNLOADS + "/SongMeld" + sourceFolder
+                    val genericValues = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                        put(MediaStore.MediaColumns.MIME_TYPE, audio.format.mimeType)
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, folderLabel)
+                        put(MediaStore.MediaColumns.IS_PENDING, 1)
+                    }
+                    resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, genericValues)
+                        ?: throw IOException("Không thể lưu định dạng này trong Downloads/SongMeld.")
+                } ?: throw IOException("Không thể tạo tệp âm thanh trong MediaStore.")
             } else {
                 // API 26–28: app-specific external music directory, no broad storage permission.
                 val dir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
                     ?: throw IOException("Bộ nhớ ngoài không khả dụng.")
                 val appDir = File(dir, "SongMeld" + sourceFolder).apply { mkdirs() }
+                folderLabel = "Thư mục nhạc riêng của SongMeld"
                 legacyFile = File(appDir, filename)
                 if (legacyFile!!.exists()) {
                     legacyFile = File(appDir, System.currentTimeMillis().toString() + "-" + filename)
@@ -117,7 +140,7 @@ internal object AudioFileSaver {
             }
             published = true
             onProgress(written, contentLength ?: written)
-            return destination
+            return SavedAudio(destination, folderLabel)
         } finally {
             connection.disconnect()
             if (!published) {

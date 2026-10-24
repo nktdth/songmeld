@@ -41,6 +41,7 @@ data class DownloadTask(
     val downloadedBytes: Long = 0,
     val totalBytes: Long? = null,
     val error: String? = null,
+    val savedFolder: String? = null,
 ) {
     val isActive: Boolean
         get() = status in setOf(
