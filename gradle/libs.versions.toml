@@ -8,6 +8,7 @@ activityCompose = "1.13.0"
 core = "1.19.1"
 coreSplashscreen = "1.2.0"
 coroutines = "1.11.0"
+newpipe = "v0.26.5"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -21,6 +22,7 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+newpipe-extractor = { module = "com.github.TeamNewPipe:NewPipeExtractor", version.ref = "newpipe" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

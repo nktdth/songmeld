@@ -191,4 +191,39 @@
     <string name="changelog_removed">Đã loại bỏ</string>
     <string name="changelog_other">Thay đổi khác</string>
     <string name="terms_heading">Sử dụng SongMeld</string>
+
+    <!-- Functional download settings. -->
+    <string name="download_settings_title">Cài đặt tải xuống</string>
+    <string name="download_settings_summary">Chất lượng, định dạng, thư mục và mạng</string>
+    <string name="download_settings_audio">Âm thanh</string>
+    <string name="download_settings_quality">Chất lượng mặc định</string>
+    <string name="download_quality_best">Tốt nhất</string>
+    <string name="download_quality_saver">Tiết kiệm</string>
+    <string name="download_quality_ask">Tự chọn</string>
+    <string name="download_settings_quality_note">Chọn luồng âm thanh có bitrate cao nhất hoặc thấp nhất được nguồn cung cấp. Tự chọn yêu cầu chọn định dạng trước mỗi lần tải.</string>
+    <string name="download_settings_codec">Định dạng âm thanh ưu tiên</string>
+    <string name="download_codec_auto">Tự động</string>
+    <string name="download_settings_codec_note">Ưu tiên M4A/AAC hoặc Opus/WebM khi nguồn hỗ trợ; nếu không có, dùng định dạng sẵn có. Không chuyển mã sang MP3.</string>
+    <string name="download_settings_storage">Lưu trữ</string>
+    <string name="download_folder_single">Lưu chung</string>
+    <string name="download_folder_sources">Nhóm theo nguồn</string>
+    <string name="download_settings_storage_note">Mặc định Android 10+: Music/SongMeld; Android 8–9: thư mục nhạc riêng ứng dụng. Nếu chọn thư mục khác, tệp sẽ được lưu ngay tại đó và không chia theo nguồn.</string>
+    <string name="download_custom_folder">Chọn thư mục khác</string>
+    <string name="download_custom_folder_default">Dùng thư mục mặc định của SongMeld</string>
+    <string name="download_custom_folder_selected">Đang sử dụng thư mục tùy chỉnh (SAF)</string>
+    <string name="download_custom_folder_reset">Trở về thư mục mặc định</string>
+    <string name="download_settings_behavior">Mạng và thông báo</string>
+    <string name="download_wifi_only">Chỉ tải qua Wi-Fi</string>
+    <string name="download_wifi_only_description">Không bắt đầu tải khi chỉ có dữ liệu di động hoặc chưa kết nối Wi-Fi.</string>
+    <string name="download_notify_completion">Báo khi tải xong</string>
+    <string name="download_notify_completion_description">Hiện thông báo hoàn thành khi được cấp quyền. Tiến trình tải nền vẫn cần thông báo hệ thống.</string>
+    <string name="download_settings_limits">Hiện hỗ trợ tải một bài mỗi lần theo thứ tự. Hàng đợi sẽ không được khôi phục sau khi tiến trình ứng dụng bị hệ thống kết thúc. Chỉ tải nội dung được phép lưu.</string>
+    <string name="download_settings_engine">Công cụ tải xuống</string>
+    <string name="download_engine_bundled">Đang sử dụng yt-dlp đi kèm ứng dụng</string>
+    <string name="download_engine_update">Kiểm tra và cập nhật yt-dlp</string>
+    <string name="download_engine_updated">Đã cập nhật yt-dlp. Anh có thể thử tải lại bài hát.</string>
+    <string name="download_engine_current">Đã có phiên bản yt-dlp mới nhất trên kênh Stable.</string>
+    <string name="download_engine_wait_for_tasks">Hãy chờ các tác vụ tải hiện tại kết thúc rồi cập nhật.</string>
+    <string name="download_engine_update_failed">Không thể cập nhật yt-dlp</string>
+    <string name="download_engine_update_note">Tương tự Seal, SongMeld cho phép cập nhật bộ trích xuất yt-dlp từ bản phát hành Stable chính thức. Cần Internet và chỉ cập nhật khi không tải nhạc.</string>
 </resources>

@@ -70,6 +70,7 @@ enum class SongMeldIconId(val codepoint: Int) {
     FolderOpen(0xE2C8), Info(0xE88E), LibraryMusic(0xE030),
     Lock(0xE897), MoreVert(0xE5D4), MusicNote(0xE405),
     Palette(0xE40A), Refresh(0xE5D5), Search(0xE8B6),
+    Link(0xE157), Download(0xF090),
     SearchOff(0xEA76), Settings(0xE8B8),
     LightMode(0xE518), DarkMode(0xE51C), SettingsBrightness(0xE8BD),
 }

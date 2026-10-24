@@ -78,6 +78,7 @@ import moe.ktandth.songmeld.ui.icons.songMeldIconShape
 import moe.ktandth.songmeld.data.model.Song
 import moe.ktandth.songmeld.data.local.LocalSongArtworkLoader
 import moe.ktandth.songmeld.ui.theme.SongMeldCodeStyle
+import moe.ktandth.songmeld.ui.components.SongMeldDownloadFab
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -89,6 +90,8 @@ fun SongsScreen(
     isLoading: Boolean,
     errorMessage: String?,
     onRetry: () -> Unit,
+    onAddSong: () -> Unit,
+    onDownloads: () -> Unit,
     modifier: Modifier = Modifier,
     isRefreshing: Boolean = false,
     refreshFailed: Boolean = false,
@@ -133,7 +136,10 @@ fun SongsScreen(
     }?.songs
     val pullState = rememberPullToRefreshState()
 
-    Column(modifier = modifier.fillMaxSize().imePadding()) {
+    // Both FABs share the same bottom row, just like SongMeld-v1.
+    // The menu itself expands upward with Google's native Expressive motion.
+    Box(modifier = modifier.fillMaxSize().imePadding()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -277,6 +283,15 @@ fun SongsScreen(
             }
         }
     }
+    // A single bottom-end anchored Column owns both FABs and their expanding menu.
+    // Unlike the previous parent Row, changes in menu width cannot move the + button.
+    SongMeldDownloadFab(
+        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 16.dp),
+        onAddSong = onAddSong,
+        onDownloads = onDownloads,
+        scrollAction = { SongsScrollToTopFab(listState = listState) },
+    )
+    }
     if (sourceOpen) {
         LibrarySourceSheet(
             songs = songs,
@@ -357,7 +372,7 @@ private fun SongList(
             modifier = Modifier.fillMaxSize(),
             state = state,
             // The floating scroll action must not cover the last library entry.
-            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 88.dp),
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 170.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             itemsIndexed(
@@ -381,11 +396,6 @@ private fun SongList(
             songs = songs,
             sort = sort,
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-        )
-        SongsScrollToTopFab(
-            listState = state,
-            modifier = Modifier.align(Alignment.BottomEnd)
-                .padding(end = 28.dp, bottom = 18.dp),
         )
     }
 }

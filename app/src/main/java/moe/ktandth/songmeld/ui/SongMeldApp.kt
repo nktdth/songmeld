@@ -43,7 +43,9 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -53,6 +55,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import moe.ktandth.songmeld.R
 import moe.ktandth.songmeld.data.local.MediaStoreSongRepository
+import moe.ktandth.songmeld.download.DownloadRepository
+import moe.ktandth.songmeld.download.DownloadStatus
+import moe.ktandth.songmeld.download.SongDownloadService
+import moe.ktandth.songmeld.download.TrackPreview
+import moe.ktandth.songmeld.ui.download.AddSongScreen
+import moe.ktandth.songmeld.ui.download.DownloadActivityScreen
+import moe.ktandth.songmeld.ui.components.SongMeldDownloadFab
 import moe.ktandth.songmeld.ui.songs.LibraryLoadState
 import moe.ktandth.songmeld.ui.components.SongMeldHeader
 import moe.ktandth.songmeld.ui.icons.MaterialSymbolAppearance
@@ -70,6 +79,7 @@ import moe.ktandth.songmeld.ui.settings.LicenseDocument
 import moe.ktandth.songmeld.ui.settings.ChangelogScreen
 import moe.ktandth.songmeld.ui.settings.TermsScreen
 import moe.ktandth.songmeld.ui.settings.SettingsScreen
+import moe.ktandth.songmeld.ui.settings.DownloadSettingsScreen
 import moe.ktandth.songmeld.ui.settings.LocalDecorativeMotionEnabled
 import moe.ktandth.songmeld.ui.songs.MusicPermissionScreen
 import moe.ktandth.songmeld.ui.songs.SongsScreen
@@ -107,9 +117,11 @@ fun SongMeldApp(
     var libraryWasShown by rememberSaveable { mutableStateOf(false) }
     // One saveable destination prevents conflicting combinations of page flags.
     var currentPage by rememberSaveable { mutableStateOf(SongMeldPage.LIBRARY) }
+    var downloadSettingsReturnPage by rememberSaveable { mutableStateOf(SongMeldPage.SETTINGS) }
     var selectedLicense by rememberSaveable { mutableStateOf(LicenseDocument.SONGMELD) }
     fun navigateBack() {
-        currentPage = currentPage.parent
+        currentPage = if (currentPage == SongMeldPage.DOWNLOAD_SETTINGS)
+            downloadSettingsReturnPage else currentPage.parent
     }
     BackHandler(enabled = currentPage != SongMeldPage.LIBRARY) { navigateBack() }
     var libraryState by remember { mutableStateOf(LibraryLoadState()) }
@@ -310,10 +322,81 @@ fun SongMeldApp(
                             amoledBlackEnabled = amoledBlackEnabled,
                             onBack = { navigateBack() },
                             onOpenAppearance = { currentPage = SongMeldPage.APPEARANCE },
+                            onOpenDownloads = {
+                                downloadSettingsReturnPage = SongMeldPage.SETTINGS
+                                currentPage = SongMeldPage.DOWNLOAD_SETTINGS
+                            },
                             onOpenAbout = { currentPage = SongMeldPage.ABOUT },
                         )
                     }
 
+                    SongMeldPage.DOWNLOAD_SETTINGS -> key("download_settings") {
+                        DownloadSettingsScreen(onBack = { navigateBack() })
+                    }
+                    SongMeldPage.DOWNLOAD_ADD -> key("download_add") {
+                        AddSongScreen(
+                            onBack = { navigateBack() },
+                            onOpenSettings = {
+                                downloadSettingsReturnPage = SongMeldPage.DOWNLOAD_ADD
+                                currentPage = SongMeldPage.DOWNLOAD_SETTINGS
+                            },
+                            onQueue = { preview, formatId ->
+                                // Avoid duplicate simultaneous downloads of the same source URL.
+                                if (DownloadRepository.tasks.value.none {
+                                    it.sourceUrl == preview.sourceUrl && it.isActive
+                                }) {
+                                    val task = DownloadRepository.enqueue(preview, formatId)
+                                    try {
+                                        SongDownloadService.enqueue(context, task.id)
+                                    } catch (error: Exception) {
+                                        DownloadRepository.update(task.id) {
+                                            it.copy(status = DownloadStatus.FAILED,
+                                                error = error.message ?: "Không thể bắt đầu tải nền.")
+                                        }
+                                    }
+                                }
+                                currentPage = SongMeldPage.DOWNLOADS
+                            },
+                        )
+                    }
+                    SongMeldPage.DOWNLOADS -> key("downloads") {
+                        DownloadActivityScreen(
+                            onBack = { navigateBack() },
+                            onAddSong = { currentPage = SongMeldPage.DOWNLOAD_ADD },
+                            onOpenSettings = {
+                                downloadSettingsReturnPage = SongMeldPage.DOWNLOADS
+                                currentPage = SongMeldPage.DOWNLOAD_SETTINGS
+                            },
+                            onCancel = { id ->
+                                try {
+                                    SongDownloadService.cancel(context, id)
+                                } catch (_: Exception) {
+                                    DownloadRepository.update(id) {
+                                        it.copy(status = DownloadStatus.CANCELED)
+                                    }
+                                }
+                            },
+                            onRetry = { previous ->
+                                val preview = TrackPreview(
+                                    sourceUrl = previous.sourceUrl,
+                                    provider = previous.provider,
+                                    title = previous.title,
+                                    uploader = "",
+                                    durationSeconds = 0,
+                                    formats = emptyList(),
+                                )
+                                val task = DownloadRepository.enqueue(preview, previous.requestedFormatId)
+                                try {
+                                    SongDownloadService.enqueue(context, task.id)
+                                } catch (error: Exception) {
+                                    DownloadRepository.update(task.id) {
+                                        it.copy(status = DownloadStatus.FAILED,
+                                            error = error.message ?: "Không thể bắt đầu tải nền.")
+                                    }
+                                }
+                            },
+                        )
+                    }
                     SongMeldPage.LIBRARY -> Unit // Handled by the outer branch.
                 }
             } else {
@@ -363,6 +446,17 @@ fun SongMeldApp(
                                 refreshFailed = libraryState.error && libraryState.hasLoaded,
                                 errorMessage = if (libraryState.error && !libraryState.hasLoaded) "load_error" else null,
                                 onRetry = { refreshKey++ },
+                                onAddSong = { currentPage = SongMeldPage.DOWNLOAD_ADD },
+                                onDownloads = { currentPage = SongMeldPage.DOWNLOADS },
+                            )
+                        }
+                        if (!permissionGranted) {
+                            // Access to downloading a link does not require audio-library read access.
+                            SongMeldDownloadFab(
+                                onAddSong = { currentPage = SongMeldPage.DOWNLOAD_ADD },
+                                onDownloads = { currentPage = SongMeldPage.DOWNLOADS },
+                                modifier = Modifier.align(Alignment.BottomEnd)
+                                    .padding(end = 16.dp, bottom = 16.dp),
                             )
                         }
                     }
@@ -374,22 +468,22 @@ fun SongMeldApp(
 
 /** Parent destinations for the Settings flow; saved/restored as one enum value. */
 private enum class SongMeldPage {
-    LIBRARY, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER,
+    LIBRARY, DOWNLOAD_ADD, DOWNLOADS, DOWNLOAD_SETTINGS, SETTINGS, APPEARANCE, ABOUT, ICON_APPEARANCE, ICON_PICKER,
     LICENSES, LICENSE_DETAIL, CHANGELOG, TERMS;
 
     val depth: Int
         get() = when (this) {
             LIBRARY -> 0
-            SETTINGS -> 1
-            APPEARANCE, ABOUT -> 2
+            DOWNLOAD_ADD, DOWNLOADS, SETTINGS -> 1
+            DOWNLOAD_SETTINGS, APPEARANCE, ABOUT -> 2
             ICON_APPEARANCE, LICENSES, CHANGELOG, TERMS -> 3
             ICON_PICKER, LICENSE_DETAIL -> 4
         }
 
     val parent: SongMeldPage
         get() = when (this) {
-            LIBRARY, SETTINGS -> LIBRARY
-            APPEARANCE, ABOUT -> SETTINGS
+            LIBRARY, DOWNLOAD_ADD, DOWNLOADS, SETTINGS -> LIBRARY
+            DOWNLOAD_SETTINGS, APPEARANCE, ABOUT -> SETTINGS
             LICENSES, CHANGELOG, TERMS -> ABOUT
             LICENSE_DETAIL -> LICENSES
             ICON_APPEARANCE -> APPEARANCE
