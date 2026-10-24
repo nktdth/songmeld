@@ -181,6 +181,9 @@ class SongDownloadService : Service() {
                     }
                 }
             } finally {
+                // A cancelled yt-dlp task may return before its temporary file is imported.
+                // Clean orphaned cache files even when cancellation interrupts the continuation.
+                YtDlpFallback.clearTemporaryFiles(applicationContext, id)
                 // Service state is touched only from the main dispatcher to serialize intents.
                 kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable + Dispatchers.Main) {
                     activeId = null
